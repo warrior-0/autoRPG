@@ -141,14 +141,15 @@
     <div id="shopTab" style="display:none;">
       <h2>상점</h2>
       <p>보유 골드: <span id="goldShop">0</span></p>
-      <button onclick="buyPotion('small')">소형 물약 (50G)</button>
-      <button onclick="buyPotion('medium')">중형 물약 (100G)</button>
-      <button onclick="buyPotion('large')">대형 물약 (200G)</button>
-      <hr>
-      <h3>대량 구매</h3>
-      <button onclick="buyPotionBulk('small', 5)">소형 물약 5개 (250G)</button>
-      <button onclick="buyPotionBulk('medium', 3)">중형 물약 3개 (300G)</button>
-      <button onclick="buyPotionBulk('large', 2)">대형 물약 2개 (400G)</button>
+    
+      <label for="buyCount">구매 수량: </label>
+      <input type="number" id="buyCount" min="1" value="1" style="width: 80px;" />
+    
+      <div style="margin-top: 10px;">
+        <button onclick="buyPotion('small')">소형 물약 구매 (50G)</button>
+        <button onclick="buyPotion('medium')">중형 물약 구매 (100G)</button>
+        <button onclick="buyPotion('large')">대형 물약 구매 (200G)</button>
+      </div>
     </div>
 
     <div id="donateTab" style="display:none;">
@@ -226,33 +227,22 @@
       const costMap = { small: 50, medium: 100, large: 200 };
       const labelMap = { small: "소형", medium: "중형", large: "대형" };
       const cost = costMap[type];
-
-      if (userData.gold < cost) {
+    
+      let count = parseInt(document.getElementById("buyCount").value);
+      if (isNaN(count) || count <= 0) {
+        alert("구매 수량을 1 이상 올바르게 입력해주세요.");
+        return;
+      }
+    
+      const totalCost = cost * count;
+      if (userData.gold < totalCost) {
         alert("골드가 부족합니다!");
         return;
       }
-
-      userData.gold -= cost;
-      userData.potions[type]++;
-      log(`${labelMap[type]} 물약을 구매했습니다!`);
-      updateUI();
-      saveData();
-    }
-
-    // 대량구매 함수 추가
-    function buyPotionBulk(type, amount) {
-      const costMap = { small: 50, medium: 100, large: 200 };
-      const labelMap = { small: "소형", medium: "중형", large: "대형" };
-      const cost = costMap[type] * amount;
-
-      if (userData.gold < cost) {
-        alert(`골드가 부족합니다! (${labelMap[type]} 물약 ${amount}개 구매 시 ${cost}골드 필요)`);
-        return;
-      }
-
-      userData.gold -= cost;
-      userData.potions[type] += amount;
-      log(`${labelMap[type]} 물약 ${amount}개를 구매했습니다!`);
+    
+      userData.gold -= totalCost;
+      userData.potions[type] += count;
+      log(`${labelMap[type]} 물약 ${count}개를 구매했습니다! (총 ${totalCost}골드)`);
       updateUI();
       saveData();
     }
