@@ -261,7 +261,7 @@
       while (userData.exp >= needExp) {
         userData.exp -= needExp;
         userData.level++;
-        userData.maxHp += 20;
+        userData.maxHp += 20 + Math.floor(userData.maxHp*0.03);
         userData.hp = userData.maxHp;
         log(`레벨업! 현재 레벨: ${userData.level}`);
       }
