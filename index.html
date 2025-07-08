@@ -2,30 +2,123 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>자동사냥 RPG</title>
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
   <script src="firebase-config.js"></script>
   <style>
-    body { font-family: Arial; text-align: center; background: #f5f5f5; padding: 30px; margin-bottom: 140px; }
-    button { margin: 5px; padding: 10px 20px; cursor: pointer; }
-    #log { max-height: 200px; overflow-y: auto; border: 1px solid #ccc; background: #fff; padding: 10px; margin-top: 20px; text-align: left; }
-    #gameUI { display: none; }
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: #f5f5f5;
+      padding: 30px;
+      margin-bottom: 140px;
+    }
+
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    #log {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      background: #fff;
+      padding: 10px;
+      margin-top: 20px;
+      text-align: left;
+    }
+
+    #gameUI {
+      display: none;
+    }
+
     #bottomStatus {
-      position: fixed; bottom: 0; left: 0; width: 100%; background: #222; color: white;
-      padding: 15px 20px; box-sizing: border-box; display: flex; flex-wrap: wrap;
-      align-items: center; justify-content: center; gap: 20px; z-index: 1000;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #222;
+      color: white;
+      padding: 15px 10px;
+      box-sizing: border-box;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      z-index: 1000;
     }
+
     #stagePrev, #stageNext {
-      font-size: 24px; background: #444; border: none; color: white;
-      padding: 4px 12px; border-radius: 4px; user-select: none;
+      font-size: 24px;
+      background: #444;
+      border: none;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 4px;
+      user-select: none;
     }
-    .status-bar-container { width: 300px; min-width: 250px; }
-    .bar-bg { background: #555; border-radius: 8px; height: 22px; width: 100%; overflow: hidden; }
-    #hpBar { height: 100%; background: #e74c3c; width: 100%; transition: width 0.3s ease; }
-    #expBar { height: 100%; background: #3498db; width: 0%; transition: width 0.3s ease; }
-    .bar-text { text-align: right; font-size: 13px; margin-top: 4px; user-select: none; }
+
+    .status-bar-container {
+      width: 90%;
+      max-width: 300px;
+      min-width: 200px;
+    }
+
+    .bar-bg {
+      background: #555;
+      border-radius: 8px;
+      height: 22px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    #hpBar {
+      height: 100%;
+      background: #e74c3c;
+      width: 100%;
+      transition: width 0.3s ease;
+    }
+
+    #expBar {
+      height: 100%;
+      background: #3498db;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .bar-text {
+      text-align: right;
+      font-size: 13px;
+      margin-top: 4px;
+      user-select: none;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 15px 5px;
+      }
+
+      #tabs {
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      button {
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .status-bar-container {
+        width: 95%;
+      }
+    }
   </style>
 </head>
 <body>
