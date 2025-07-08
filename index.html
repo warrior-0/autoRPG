@@ -128,7 +128,14 @@
     
     <div id="homeTab">
       <p>어서오세요! 던전에 입장하여 전투를 시작하세요.</p>
-    </div>
+      <p><strong>현재 유저:</strong> <span id="nicknameDisplay"></span></p>
+      <p>골드: <span id="gold">0</span> | 경험치: <span id="exp">0</span> | 던전 시간: <span id="dungeonTime">60</span>초</p>
+      <p>레벨: <span id="level">1</span></p>
+      <p>체력: <span id="hp">100</span> / <span id="maxHp">100</span></p>
+      <p>물약: 소형: <span id="potionSmall">3</span> 중형: <span id="potionMedium">1</span> 대형: <span id="potionLarge">0</span></p>
+      <button onclick="signOut()">로그아웃</button>
+      <div id="log"></div>
+      </div>
     <div id="dungeonTab" style="display:none;">
       <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;">
         <button id="stagePrev">⬅</button>
@@ -136,6 +143,7 @@
         <button id="stageNext">➡</button>
       </div>
       <button onclick="enterDungeon()" id="dungeonToggleBtn">던전 입장</button>
+      <div id="log"></div>
     </div>
     
     <div id="shopTab" style="display:none;">
@@ -150,6 +158,7 @@
         <button onclick="buyPotion('medium')">중형 물약 구매 (100G)</button>
         <button onclick="buyPotion('large')">대형 물약 구매 (200G)</button>
       </div>
+      <div id="log"></div>
     </div>
 
     <div id="donateTab" style="display:none;">
@@ -163,14 +172,6 @@
       <h2>🏆 레벨 랭킹 Top 10</h2>
       <ol id="rankingList" style="text-align: left; max-width: 400px; margin: 0 auto;"></ol>
     </div>
-    
-    <p><strong>현재 유저:</strong> <span id="nicknameDisplay"></span></p>
-    <p>골드: <span id="gold">0</span> | 경험치: <span id="exp">0</span> | 던전 시간: <span id="dungeonTime">60</span>초</p>
-    <p>레벨: <span id="level">1</span></p>
-    <p>체력: <span id="hp">100</span> / <span id="maxHp">100</span></p>
-    <p>물약: 소형: <span id="potionSmall">3</span> 중형: <span id="potionMedium">1</span> 대형: <span id="potionLarge">0</span></p>
-    <button onclick="signOut()">로그아웃</button>
-    <div id="log"></div>
   </div>
 
   <div id="bottomStatus" style="display: none;">
