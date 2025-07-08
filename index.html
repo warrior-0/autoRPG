@@ -284,12 +284,12 @@
         }
 
         if (monsterHp <= 0) {
-            userData.gold += currentStage * 20;
-            userData.exp += currentStage * 10;
-            log("몬스터 처치 보상 획득! 골드: "+currentStage * 20+" 경험치: "+currentStage * 10);
-        
+          userData.gold += currentStage * 20;
+          userData.exp += currentStage * 10;
+          log("몬스터 처치 보상 획득! 골드: "+currentStage * 20+" 경험치: "+currentStage * 10);
+          checkLevelUp();
+        }
         autoUsePotion();
-        checkLevelUp();
         updateUI();
         saveData();
         
