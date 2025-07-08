@@ -182,6 +182,7 @@
       <div class="bar-bg"><div id="expBar"></div></div>
       <div class="bar-text" id="expText">0 / 100</div>
     </div>
+    <div id="goldDisplay" style="font-size: 14px;"> 골드: 0</div>
   </div>
 
   <script>
@@ -212,6 +213,7 @@
       document.getElementById("potionLarge").innerText = userData.potions.large;
       document.getElementById("stageDisplay").innerText = currentStage;
       document.getElementById("goldShop").innerText = userData.gold;
+      document.getElementById("goldDisplay").innerText = ` 골드: ${userData.gold}`;
 
       const hpPercent = (userData.hp / userData.maxHp) * 100;
       document.getElementById("hpBar").style.width = hpPercent + "%";
