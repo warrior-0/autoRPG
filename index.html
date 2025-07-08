@@ -104,7 +104,7 @@
         }
       }, 1000);
     }
-
+    
     async function signUp() {
       const email = document.getElementById("email").value;
       const pw = document.getElementById("password").value;
@@ -116,18 +116,16 @@
       }
     
       try {
-        // 닉네임 중복 체크
         const snapshot = await db.collection("users").where("nickname", "==", nickname).get();
         if (!snapshot.empty) {
           alert("이미 존재하는 닉네임입니다.");
           return;
         }
     
-        // ✅ Firebase Authentication에 계정 생성
+        // 회원가입 시도
         const cred = await auth.createUserWithEmailAndPassword(email, pw);
-        const uid = cred.user.uid; // 반드시 cred.user.uid를 사용해야 함
+        const uid = cred.user.uid;
     
-        // ✅ Firestore에 유저 정보 저장
         await db.collection("users").doc(uid).set({
           nickname: nickname,
           gold: 0,
@@ -138,16 +136,10 @@
         alert("회원가입 완료! 로그인해주세요.");
       } catch (err) {
         console.error("회원가입 오류:", err);
-        if (err.code === 'auth/email-already-in-use') {
-          alert('이미 사용 중인 이메일입니다.');
-        } else {
-          alert('회원가입 중 오류가 발생했습니다: ' + err.message);
-        }
+        alert("회원가입 중 오류가 발생했습니다: " + err.message);
       }
     }
-
-
-
+    
     function signIn() {
       const email = document.getElementById("email").value;
       const pw = document.getElementById("password").value;
