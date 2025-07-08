@@ -380,7 +380,7 @@
         document.getElementById("gameUI").style.display = "block";
         document.getElementById("bottomStatus").style.display = "flex";
         updateUI();
-      });
+      })
       .catch(error => {
         if (error.code === "auth/email-already-in-use") {
           alert("이미 사용 중인 이메일입니다.");
