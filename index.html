@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>자동사냥 RPG</title>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <style>
+    body { font-family: Arial; text-align: center; background: #f5f5f5; padding: 30px; }
+    button { margin: 5px; padding: 10px 20px; }
+    #log { max-height: 200px; overflow-y: auto; border: 1px solid #ccc; background: #fff; padding: 10px; margin-top: 20px; }
+    #gameUI { display: none; }
+  </style>
+</head>
+<body>
+  <h1>자동사냥 RPG</h1>
+
+  <!-- 로그인 UI -->
+  <div id="authUI">
+    <input type="email" id="email" placeholder="이메일" /><br />
+    <input type="password" id="password" placeholder="비밀번호" /><br />
+    <button onclick="signUp()">회원가입</button>
+    <button onclick="signIn()">로그인</button>
+  </div>
+
+  <!-- 게임 UI -->
+  <div id="gameUI">
+    <p><strong>현재 유저:</strong> <span id="userEmail"></span></p>
+    <p>골드: <span id="gold">0</span> | 경험치: <span id="exp">0</span> | 던전 시간: <span id="dungeonTime">60</span>초</p>
+    <button onclick="enterDungeon()">던전 입장</button>
+    <button onclick="signOut()">로그아웃</button>
+    <div id="log"></div>
+  </div>
+
+  <script>
+    let userData = { gold: 0, exp: 0, dungeonTime: 60 };
+    let inDungeon = false;
+    let dungeonInterval;
+
+    function log(message) {
+      const logDiv = document.getElementById("log");
+      logDiv.innerHTML = `<div>> ${message}</div>` + logDiv.innerHTML;
+    }
+
+    function updateUI() {
+      document.getElementById("gold").innerText = userData.gold;
+      document.getElementById("exp").innerText = userData.exp;
+      document.getElementById("dungeonTime").innerText = userData.dungeonTime;
+    }
+
+    function saveData() {
+      const user = auth.currentUser;
+      if (user) {
+        db.collection("users").doc(user.uid).set(userData, { merge: true });
+      }
+    }
+
+    function loadData() {
+      const user = auth.currentUser;
+      if (user) {
+        db.collection("users").doc(user.uid).get().then(doc => {
+          if (doc.exists) {
+            userData = doc.data();
+            updateUI();
+          }
+        });
+      }
+    }
+
+    function startAutoHunt() {
+      setInterval(() => {
+        if (!inDungeon) {
+          userData.gold += 10;
+          userData.exp += 5;
+          log("몬스터 처치! 골드 +10, 경험치 +5");
+          updateUI();
+          saveData();
+        }
+      }, 1000);
+    }
+
+    function enterDungeon() {
+      if (inDungeon || userData.dungeonTime <= 0) {
+        alert("던전에 입장할 수 없습니다.");
+        return;
+      }
+      inDungeon = true;
+      log("던전에 입장합니다!");
+      dungeonInterval = setInterval(() => {
+        userData.dungeonTime--;
+        userData.gold += 50;
+        userData.exp += 20;
+        log("던전 몬스터 처치! 골드 +50, 경험치 +20");
+        updateUI();
+        saveData();
+        if (userData.dungeonTime <= 0) {
+          clearInterval(dungeonInterval);
+          inDungeon = false;
+          log("던전 시간이 종료되었습니다.");
+        }
+      }, 1000);
+    }
+
+    function signUp() {
+      const email = document.getElementById("email").value;
+      const pw = document.getElementById("password").value;
+      auth.createUserWithEmailAndPassword(email, pw)
+        .then(() => alert("회원가입 성공"))
+        .catch(err => alert(err.message));
+    }
+
+    function signIn() {
+      const email = document.getElementById("email").value;
+      const pw = document.getElementById("password").value;
+      auth.signInWithEmailAndPassword(email, pw)
+        .then(() => {
+          document.getElementById("authUI").style.display = "none";
+          document.getElementById("gameUI").style.display = "block";
+          document.getElementById("userEmail").innerText = auth.currentUser.email;
+          loadData();
+          startAutoHunt();
+        })
+        .catch(err => alert(err.message));
+    }
+
+    function signOut() {
+      auth.signOut().then(() => {
+        location.reload();
+      });
+    }
+  </script>
+</body>
+</html>
