@@ -285,7 +285,7 @@
         alert("스탯 포인트가 부족합니다.");
         return;
       }
-      if (!['atk', 'con', 'dex'].includes(type)) return;
+      if (!['str', 'con', 'dex'].includes(type)) return;
     
       userData[type]++;
       userData.statPoints--;
@@ -296,7 +296,7 @@
     
     function calculateStats() {
       const level = userData.level || 1;
-      const atk = userData.str || 0;
+      const str = userData.str || 0;
       const dex = userData.dex || 0;
       const con = userData.con || 0;
     
