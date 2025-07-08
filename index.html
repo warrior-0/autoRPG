@@ -283,26 +283,28 @@
           log("몬스터에게 피해를 입혔습니다");
         }
 
-        autoUsePotion();
-        checkLevelUp();
-        updateUI();
-        saveData();
-
         if (monsterHp <= 0) {
             userData.gold += currentStage * 20;
             userData.exp += currentStage * 10;
             log("몬스터 처치 보상 획득! 골드: "+currentStage * 20+" 경험치: "+currentStage * 10);
         
+        autoUsePotion();
+        checkLevelUp();
+        updateUI();
+        saveData();
+        
         if (userData.hp <= 0) {
           clearInterval(dungeonInterval);
           inDungeon = false;
           document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
-          log("던전에서 나왔습니다.");
+          log("던전에서 사망했습니다. 체력이 100%회복되고 보유 경험치의 30%와 보유 골드의 50%를 잃습니다");
           userData.exp = Math.floor(userData.exp * 0.7);
           userData.gold = Math.floor(userData.gold * 0.5);
+          userData.hp = userData.maxHp;
           updateUI();
           saveData();
           showTab("home");
+          alert("던전에서 사망했습니다. 체력이 100%회복되고 보유 경험치의 30%와 보유 골드의 50%를 잃습니다")
         }
       }, 1000);
     }
