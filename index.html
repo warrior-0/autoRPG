@@ -169,9 +169,6 @@
         updateUI();
         saveData();
         if (userData.hp <= 0 || userData.dungeonTime <= 0) {
-          clearInterval(dungeonInterval);
-          inDungeon = false;
-          log("던전 종료");
           showTab("home");
         }
       }, 1000);
@@ -190,6 +187,7 @@
     function showTab(name) {
       if (name === "home" && inDungeon) {
         exitDungeon(); // ✅ 홈으로 이동할 때 던전 나가기 자동 호출
+        log("던전에서 나왔습니다")
       }
       
       document.getElementById("homeTab").style.display = name === "home" ? "block" : "none";
