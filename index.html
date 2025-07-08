@@ -268,16 +268,35 @@
       userData.hp = Math.min(userData.hp, userData.maxHp);
     }
 
+    function calculateStats() {
+      const level = userData.level || 1;
+      const atk = userData.str || 0;
+      const dex = userData.dex || 0;
+      const con = userData.con || 0;
+    
+      return {
+        공격력: 1 + (Math.floor(level / 2) + 1) * str * 1.5,
+        적중률: dex * 5,
+        치명타확률: dex * 5,
+        방어력: (Math.floor(level / 3) + 1) * con,
+        체력계산값: (Math.floor(level / 3) + 1) * con * 5 + 10,
+        회피율: dex
+      };
+    }
+
+    
     function checkLevelUp() {
       const needExp = userData.level * 100;
       while (userData.exp >= needExp) {
         userData.exp -= needExp;
         userData.level++;
-        userData.maxHp += 20 + Math.floor(userData.maxHp*0.03);
+        const stats = calculateStats();
+        userData.maxHp = Math.floor(stats.체력계산값);
         userData.hp = userData.maxHp;
         log(`레벨업! 현재 레벨: ${userData.level}`);
       }
     }
+
 
     function enterDungeon() {
       if (inDungeon) {
@@ -450,6 +469,9 @@
           hp: 100,
           maxHp: 100,
           potions: { small: 3, medium: 1, large: 0 },
+          str: 0,
+          dex: 0,
+          con: 0
         });
     
         alert("회원가입 성공! 로그인 해주세요.");
