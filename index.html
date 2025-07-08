@@ -40,19 +40,15 @@
   </div>
 
   <div id="gameUI">
-    //버튼 구성
     <div id="tabs" align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;">
       <button onclick="showTab('home')">홈</button>
       <button onclick="showTab('dungeon')">던전</button>
-      <button onclick="showTab('shop')">상점</button>
     </div>
-    
-    //홈
+
     <div id="homeTab">
       <p>어서오세요! 던전에 입장하여 전투를 시작하세요.</p>
     </div>
 
-    //던전
     <div id="dungeonTab" style="display:none;">
       <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;">
         <button id="stagePrev">⬅</button>
@@ -62,55 +58,13 @@
       <button onclick="enterDungeon()">던전 입장</button>
     </div>
 
-    //상점
-    <div id="shopTab" style="display:none;">
-      <h2>상점</h2>
-      <p>골드: <span id="goldShop">0</span></p>
-      <div>
-        <button onclick="buyPotion('small')">소형 물약 (50G)</button>
-        <button onclick="buyPotion('medium')">중형 물약 (100G)</button>
-        <button onclick="buyPotion('large')">대형 물약 (200G)</button>
-      </div>
-    </div>
-
     <p><strong>현재 유저:</strong> <span id="nicknameDisplay"></span></p>
-    <p>골드: <span id="gold">0</span> | 경험치: <span id="exp">0</span> | 던전 시간: <span id="dungeonTime">60</span>초</p>
-    <p>레벨: <span id="level">1</span></p>
-    <p>체력: <span id="hp">100</span> / <span id="maxHp">100</span></p>
-    <p>
-      물약:
-      소형: <span id="potionSmall">3</span>
-      중형: <span id="potionMedium">1</span>
-      대형: <span id="potionLarge">0</span>
-    </p>
-    <button onclick="signOut()">로그아웃</button>
-    <div id="log"></div>
-  </div>
-
-  <div id="bottomStatus" style="display: none;">
-    <div class="status-bar-container">
-      <div class="bar-bg"><div id="hpBar"></div></div>
-      <div class="bar-text" id="hpText">100 / 100</div>
-    </div>
-    <div class="status-bar-container">
-      <div class="bar-bg"><div id="expBar"></div></div>
-      <div class="bar-text" id="expText">0 / 100</div>
-    </div>
-  </div>
-
-  <script>
-    let userData = null;
-    let inDungeon = false;
-    let dungeonInterval;
-    let currentStage = 1;
-    const maxStage = 100;
-
-    //로그창 띄워주는 함수
+    <p>골드: <span id="gold">0</span> | 경험치: <span id="exp">0</span> | 던전 시간: <span id="dungeon수
     function log(msg) {
       document.getElementById("log").innerHTML = `<div>> ${msg}</div>` + document.getElementById("log").innerHTML;
     }
 
-    //정보 반영 함수
+    //UI업뎃 함수
     function updateUI() {
       if (!userData) return;
       document.getElementById("gold").innerText = userData.gold;
@@ -134,7 +88,7 @@
       document.getElementById("expText").innerText = `${userData.exp} / ${expToNext}`;
     }
 
-    //포션 자동 사용 함수
+    //포션 자동사용 함수
     function autoUsePotion() {
       const missingHp = userData.maxHp - userData.hp;
       if (missingHp <= 0) return;
@@ -205,7 +159,7 @@
       log("던전에서 나왔습니다.");
     }
 
-    //화면 전환 함수
+    //유저가 있는 곳에 맞춰서 관련 화면 보여주는 함수
     function showTab(name) {
       if (name === "home" && inDungeon) {
         exitDungeon(); // ✅ 홈으로 이동할 때 던전 나가기 자동 호출
@@ -216,7 +170,7 @@
       document.getElementById("dungeonTab").style.display = name === "dungeon" ? "block" : "none";
     }
 
-    //정보 저장 함수
+    //유저 정보 저장하는 함수
     function saveData() {
       const user = auth.currentUser;
       if (user) db.collection("users").doc(user.uid).set(userData);
@@ -242,29 +196,34 @@
       });
     }
 
-    //상점 함수
-    function buyPotion(type) {
-      const costMap = { small: 50, medium: 100, large: 200 };
-      const potionName = { small: "소형", medium: "중형", large: "대형" };
-      const cost = costMap[type];
-    
-      if (userData.gold < cost) {
-        alert("골드가 부족합니다!");
-        return;
-      }
-    
-      userData.gold -= cost;
-      userData.potions[type]++;
-      log(`${potionName[type]} 물약을 구매했습니다!`);
-      updateUI();
-      saveData();
-    }
-
     //회원가입 함수
     function signUp() {
       const nickname = document.getElementById("nicknameInput").value.trim();
       const email = document.getElementById("email").value.trim();
-      const pw = document.getElementById(수
+      const pw = document.getElementById("password").value;
+      if (!nickname || !email || !pw) {
+        alert("닉네임, 이메일, 비밀번호를 모두 입력해주세요")
+        return;
+      }
+      auth.createUserWithEmailAndPassword(email, pw).then(userCred => {
+        userData = {
+          nickname: nickname,
+          gold: 0, exp: 0, level: 1,
+          dungeonTime: 60,
+          hp: 100, maxHp: 100,
+          potions: { small: 3, medium: 1, large: 0 }
+        };
+        return db.collection("users").doc(userCred.user.uid).set(userData);
+      }).then(() => {
+        alert("회원가입 성공");
+        document.getElementById("authUI").style.display = "none";
+        document.getElementById("gameUI").style.display = "block";
+        document.getElementById("bottomStatus").style.display = "flex";
+        updateUI();
+      });
+    }
+
+    //로그인 함수
     function signIn() {
       const email = document.getElementById("email").value.trim();
       const pw = document.getElementById("password").value;
