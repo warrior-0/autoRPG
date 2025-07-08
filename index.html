@@ -146,9 +146,10 @@
       <input type="number" id="buyCount" min="1" value="1" style="width: 80px;" />
     
       <div style="margin-top: 10px;">
-        <button onclick="buyPotion('small')">소형 물약 구매 (50G)</button>
+        <button onclick="buyPotion('small')">소형 물약 구매 (10G)</button>
         <button onclick="buyPotion('medium')">중형 물약 구매 (100G)</button>
-        <button onclick="buyPotion('large')">대형 물약 구매 (200G)</button>
+        <button onclick="buyPotion('large')">대형 물약 구매 (1000G)</button>
+        <button onclick="buyPotion('extralarge')">초대형 물약 구매 (10000G)</button>
       </div>
     </div>
 
@@ -168,7 +169,7 @@
     <p>레벨: <span id="level">1</span></p>
     <p>체력: <span id="hp">100</span> / <span id="maxHp">100</span></p>
     <p>골드: <span id="gold">0</span> | 경험치: <span id="exp">0</span> | 던전 시간: <span id="dungeonTime">60</span>초</p>
-    <p>물약: 소형: <span id="potionSmall">3</span> 중형: <span id="potionMedium">1</span> 대형: <span id="potionLarge">0</span></p>
+    <p>물약: 소형: <span id="potionSmall">3</span> 중형: <span id="potionMedium">1</span> 대형: <span id="potionLarge">0</span> 초대형: <span id="potionExtralarge">0</span></p>
     <div style="margin-top: 10px;">
       <p>스탯 포인트: <span id="statPointDisplay">0</span></p>
       <button onclick="addStat('atk')">str +1</button>
@@ -192,49 +193,7 @@
   </div>
 
   <script>
-    let userData = null;
-    let inDungeon = false;
-    let dungeonInterval;
-    let currentStage = 1;
-    const maxStage = 100;
-
-    function log(msg) {
-      const logDiv = document.getElementById("log");
-      logDiv.innerHTML = `<div>> ${msg}</div>` + logDiv.innerHTML;
-      if (logDiv.childElementCount > 50) {
-        logDiv.removeChild(logDiv.lastChild); // 오래된 로그 제거
-      }
-    }
-
-    function updateUI() {
-      if (!userData) return;
-      document.getElementById("gold").innerText = userData.gold;
-      document.getElementById("exp").innerText = userData.exp;
-      document.getElementById("dungeonTime").innerText = userData.dungeonTime;
-      document.getElementById("hp").innerText = userData.hp;
-      document.getElementById("maxHp").innerText = userData.maxHp;
-      document.getElementById("level").innerText = userData.level;
-      document.getElementById("potionSmall").innerText = userData.potions.small;
-      document.getElementById("potionMedium").innerText = userData.potions.medium;
-      document.getElementById("potionLarge").innerText = userData.potions.large;
-      document.getElementById("stageDisplay").innerText = currentStage;
-      document.getElementById("goldShop").innerText = userData.gold;
-      document.getElementById("goldDisplay").innerText = ` 골드: ${userData.gold}`;
-      document.getElementById("statPointDisplay").innerText = userData.statPoints;
-
-      const hpPercent = (userData.hp / userData.maxHp) * 100;
-      document.getElementById("hpBar").style.width = hpPercent + "%";
-      document.getElementById("hpText").innerText = `${userData.hp} / ${userData.maxHp}`;
-
-      const expToNext = userData.level * 100;
-      const expPercent = (userData.exp / expToNext) * 100;
-      document.getElementById("expBar").style.width = expPercent + "%";
-      document.getElementById("expText").innerText = `${userData.exp} / ${expToNext}`;
-    }
-
-    function buyPotion(type) {
-      const costMap = { small: 50, medium: 100, large: 200 };
-      const labelMap = { small: "소형", medium: "중형", large: "대형" extraLarge: "초대"};
+    let userData 형"};
       const cost = costMap[type];
     
       let count = parseInt(document.getElementById("buyCount").value);
@@ -259,18 +218,22 @@
     function autoUsePotion() {
       const missingHp = userData.maxHp - userData.hp;
       if (missingHp <= 0) return;
-      if (userData.potions.large > 0 && missingHp >= 200 + userData.maxHp*0.07) {
+      if (userData.potions.extralarge > 0 && missingHp >= 10000 + userData.maxHp*0.15) {
+        userData.potions.extralarge--;
+        userData.hp += 10000 + userData.maxHp*0.15
+        log("초대형 물약 사용! 체력 "+10000 + userData.maxHp*0.15+" 회복");
+      } else if (userData.potions.large > 0 && missingHp >= 1000 + userData.maxHp*0.07) {
         userData.potions.large--;
-        userData.hp += Math.floor(200 + userData.maxHp*0.07);
-        log("대형 물약 사용! 체력 "+Math.floor(200 + userData.maxHp*0.07)+" 회복");
+        userData.hp += 1000 + userData.maxHp*0.07;
+        log("대형 물약 사용! 체력 "+1000 + userData.maxHp*0.07+" 회복");
       } else if (userData.potions.medium > 0 && missingHp >= 100 + userData.maxHp*0.03) {
         userData.potions.medium--;
-        userData.hp += Math.floor(100 + userData.maxHp*0.03);
-        log("중형 물약 사용! 체력 "+Math.floor(100 + userData.maxHp*0.03)+" 회복");
-      } else if (userData.potions.small > 0 && missingHp >= 50 + userData.maxHp*0.01) {
+        userData.hp += 100 + userData.maxHp*0.03;
+        log("중형 물약 사용! 체력 "+100 + userData.maxHp*0.03+" 회복");
+      } else if (userData.potions.small > 0 && missingHp >= 10 + userData.maxHp*0.01) {
         userData.potions.small--;
-        userData.hp += Math.floor(50 + userData.maxHp*0.01);
-        log("소형 물약 사용! 체력 "+Math.floor(50 + userData.maxHp*0.01)+" 회복");
+        userData.hp += 10 + userData.maxHp*0.01;
+        log("소형 물약 사용! 체력 "+10 + userData.maxHp*0.01+" 회복");
       }
       userData.hp = Math.min(userData.hp, userData.maxHp);
     }
@@ -296,11 +259,11 @@
       const con = userData.con || 0;
     
       return {
-        공격력: 1 + (Math.floor(level / 2) + 1) * str * 1.5,
+        공격력: 1 + ((level / 2) + 1) * str * 1.5,
         적중률: dex * 5,
         치명타확률: dex * 5,
-        방어력: (Math.floor(level / 3) + 1) * con,
-        체력계산값: (Math.floor(level / 3) + 1) * con * 5 + 10,
+        방어력: ((level / 3) + 1) * con,
+        체력계산값: ((level / 3) + 1) * con * 5 + 10,
         회피율: dex
       };
     }
