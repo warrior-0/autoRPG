@@ -294,6 +294,11 @@
           document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
           log("던전에서 나왔습니다.");
           showTab("home");
+          if (userData.hp <= 0) {
+            userData.hp = userData.maxHp;
+            userData.exp -= userData.exp*0.3
+            userData.gold -= userData.gold*0.5
+          }
         }
       }, 1000);
     }
@@ -307,7 +312,7 @@
     }
 
     function showTab(name) {
-      if (name === "home" && inDungeon) {
+      if (name === ("home" && inDungeon) || ("shop" && inDungeon)) {
         exitDungeon();
       }
       document.getElementById("homeTab").style.display = name === "home" ? "block" : "none";
