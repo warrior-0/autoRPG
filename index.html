@@ -292,6 +292,8 @@
           userData.exp += currentStage * 10;
           log("몬스터 처치 보상 획득! 골드: "+currentStage * 20+" 경험치: "+currentStage * 10);
           monsterHp = 50 + currentStage * 10;
+          monsterAtk = 5 + currentStage * 2;
+          monsterDodge = Math.min(20, currentStage);
           checkLevelUp();
         }
         autoUsePotion();
