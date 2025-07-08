@@ -36,7 +36,7 @@
   </div>
 
   <script>
-    let userData = { gold: 0, exp: 0, dungeonTime: 60 };
+    let userData = {};
     let inDungeon = false;
     let dungeonInterval;
 
@@ -136,7 +136,12 @@
         .then(() => {
           alert("회원가입 완료! 로그인해주세요.");
         })
-        .catch(err => alert(err.message));
+        .catch(err => {
+          // 이미 가입된 이메일인 경우 이런 에러코드 발생
+          if (err.code === 'auth/email-already-in-use') {
+            alert('이미 사용 중인 이메일입니다.');
+          }
+        });
     }
 
     function signIn() {
