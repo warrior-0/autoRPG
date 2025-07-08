@@ -33,6 +33,26 @@
     <button onclick="enterDungeon()">던전 입장</button>
     <button onclick="signOut()">로그아웃</button>
     <div id="log"></div>
+    <div id="bottomStatus" style="position: fixed; bottom: 0; left: 0; width: 100%; background: #222; color: white; padding: 10px 20px; box-sizing: border-box; font-family: Arial;">
+
+  <div style="margin-bottom: 6px;">
+    <strong>스테이지: </strong><span id="stageDisplay">1</span>
+  </div>
+
+  <div style="margin-bottom: 6px;">
+    <div style="background: #555; border-radius: 5px; height: 20px; width: 100%; overflow: hidden;">
+      <div id="hpBar" style="height: 100%; background: #e74c3c; width: 100%; transition: width 0.3s ease;"></div>
+    </div>
+    <div style="text-align: right; font-size: 12px;">체력: <span id="hpText">100 / 100</span></div>
+  </div>
+
+  <div>
+    <div style="background: #555; border-radius: 5px; height: 20px; width: 100%; overflow: hidden;">
+      <div id="expBar" style="height: 100%; background: #3498db; width: 0%; transition: width 0.3s ease;"></div>
+    </div>
+      <div style="text-align: right; font-size: 12px;">경험치: <span id="expText">0 / 100</span></div>
+    </div>
+    </div>
   </div>
 
   <script>
