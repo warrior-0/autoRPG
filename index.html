@@ -105,44 +105,50 @@
       }, 1000);
     }
 
-    // 🔹 닉네임 중복 검사 후 회원가입
-    async function signUp() {
+   async function signUp() {
       const email = document.getElementById("email").value;
       const pw = document.getElementById("password").value;
       const nickname = document.getElementById("nicknameInput").value;
-
+    
       if (!nickname || !email || !pw) {
         alert("모든 항목을 입력해주세요.");
         return;
       }
-
-      // 닉네임 중복 검사
-      const snapshot = await db.collection("users").where("nickname", "==", nickname).get();
-      if (!snapshot.empty) {
-        alert("이미 존재하는 닉네임입니다. 다른 닉네임을 사용해주세요.");
-        return;
-      }
-
-      auth.createUserWithEmailAndPassword(email, pw)
-        .then(cred => {
-          const uid = cred.user.uid;
-          return db.collection("users").doc(uid).set({
-            nickname: nickname,
-            gold: 0,
-            exp: 0,
-            dungeonTime: 60
-          });
-        })
-        .then(() => {
-          alert("회원가입 완료! 로그인해주세요.");
-        })
-        .catch(err => {
-          // 이미 가입된 이메일인 경우 이런 에러코드 발생
-          if (err.code === 'auth/email-already-in-use') {
-            alert('이미 사용 중인 이메일입니다.');
-          }
+    
+      try {
+        // 닉네임 중복 검사
+        const snapshot = await db.collection("users").where("nickname", "==", nickname).get();
+        if (!snapshot.empty) {
+          alert("이미 존재하는 닉네임입니다. 다른 닉네임을 사용해주세요.");
+          return;
+        }
+    
+        // 회원가입
+        const cred = await auth.createUserWithEmailAndPassword(email, pw);
+    
+        // 유저 정보 저장
+        await db.collection("users").doc(cred.user.uid).set({
+          nickname: nickname,
+          gold: 0,
+          exp: 0,
+          dungeonTime: 60
         });
+    
+        alert("회원가입 완료! 로그인해주세요.");
+      } catch (err) {
+        if (err.code === 'auth/email-already-in-use') {
+          alert('이미 사용 중인 이메일입니다.');
+        } else if (err.code === 'auth/invalid-email') {
+          alert('이메일 형식이 잘못되었습니다.');
+        } else if (err.code === 'auth/weak-password') {
+          alert('비밀번호는 최소 6자 이상이어야 합니다.');
+        } else {
+          alert("회원가입 중 오류가 발생했습니다: " + err.message);
+          console.error(err);
+        }
+      }
     }
+
 
     function signIn() {
       const email = document.getElementById("email").value;
