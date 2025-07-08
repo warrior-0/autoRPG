@@ -346,13 +346,16 @@
     
           if (isCrit) {
             dmg = Math.floor(monsterAtk * (monsterCrit / 2000 + 1.1));
-            log("몬스터의 치명타 공격!");
+            dmg = Math.floor(dmg * dmgReduction);
+            dmg = Math.max(1, dmg);
+            userData.hp -= dmg;
+            log("몬스터의 치명타 공격! 플레이어가 ${dmg} 피해를 받았습니다.");
+          } else {
+            dmg = Math.floor(dmg * dmgReduction);
+            dmg = Math.max(1, dmg);
+            userData.hp -= dmg;
+            log(`플레이어가 ${dmg} 피해를 받았습니다.`);
           }
-    
-          dmg = Math.floor(dmg * dmgReduction);
-          dmg = Math.max(0, dmg);
-          userData.hp -= dmg;
-          log(`플레이어가 ${dmg} 피해를 받았습니다.`);
         }
     
         // 플레이어 공격
@@ -370,19 +373,19 @@
     
           let monsterDefFinal = monsterDef;
           let dmgReductionPlayer = 1 - (monsterDefFinal / (userData.level * 2 + monsterDefFinal));
-    
           let dmg;
           if (isCrit) {
             const critDamage = playerAtk * (critStat / 2000 + 1.1);
             dmg = Math.floor(critDamage * dmgReductionPlayer);
-            log("플레이어의 치명타 공격!");
+            dmg = Math.max(1, dmg);
+            monsterHp -= dmg;
+            log("플레이어의 치명타 공격! 몬스터가 ${dmg} 피해를 받았습니다.");
           } else {
             dmg = Math.floor(playerAtk * dmgReductionPlayer);
+            dmg = Math.max(1,dmg);
+            monsterHp -= dmg;
+            log(`몬스터가 ${dmg} 피해를 받았습니다.`);
           }
-    
-          dmg = Math.max(0, dmg);
-          monsterHp -= dmg;
-          log(`몬스터가 ${dmg} 피해를 받았습니다.`);
         }
     
         log(`몬스터 남은 체력: ${Math.max(0, monsterHp)}`);
