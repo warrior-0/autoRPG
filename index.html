@@ -288,19 +288,18 @@
         updateUI();
         saveData();
 
-        if (userData.hp <= 0 || monsterHp <= 0) {
+        if (monsterHp <= 0) {
+            userData.gold += currentStage * 20;
+            userData.exp += currentStage * 10;
+            log("몬스터 처치 보상 획득! 골드: "+currentStage * 20+" 경험치: "+currentStage * 10);
+        
+        if (userData.hp <= 0) {
           clearInterval(dungeonInterval);
           inDungeon = false;
           document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
           log("던전에서 나왔습니다.");
-          if (monsterHp <= 0) {
-            userData.gold += currentStage * 20;
-            userData.exp += currentStage * 10;
-            log("몬스터 처치 보상 획득!");
-          } else {
-            userData.exp = Math.floor(userData.exp * 0.7);
-            userData.gold = Math.floor(userData.gold * 0.5);
-          }
+          userData.exp = Math.floor(userData.exp * 0.7);
+          userData.gold = Math.floor(userData.gold * 0.5);
           updateUI();
           saveData();
           showTab("home");
