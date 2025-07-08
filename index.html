@@ -381,6 +381,13 @@
         document.getElementById("bottomStatus").style.display = "flex";
         updateUI();
       });
+      .catch(error => {
+        if (error.code === "auth/email-already-in-use") {
+          alert("이미 사용 중인 이메일입니다.");
+        } else {
+          alert("회원가입 실패: " + error.message);
+        }
+      });
     }
 
     function signIn() {
