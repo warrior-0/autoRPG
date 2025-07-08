@@ -281,9 +281,9 @@
       log("던전에 입장합니다!");
       dungeonInterval = setInterval(() => {
         userData.dungeonTime--;
-        userData.gold += 50;
-        userData.exp += 20;
-        userData.hp -= 15;
+        userData.gold += 5*currentStage;
+        userData.exp += 2*currentStage;
+        userData.hp -= 1*currentStage;
         autoUsePotion();
         checkLevelUp();
         updateUI();
