@@ -121,7 +121,6 @@
     <div id="tabs" style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px;">
       <button onclick="showTab('home')">홈</button>
       <button onclick="showTab('dungeon')">던전</button>
-      <button onclick="showTab('specialDungeon')">특수 던전</button>
       <button onclick="showTab('shop')">상점</button>
       <button onclick="showTab('donate')">후원</button>
       <button onclick="showTab('ranking')">랭킹</button>
@@ -129,14 +128,7 @@
     
     <div id="homeTab">
       <p>어서오세요! 던전에 입장하여 전투를 시작하세요.</p>
-      <p><strong>현재 유저:</strong> <span id="nicknameDisplay"></span></p>
-      <p>골드: <span id="gold">0</span></p>
-      <p>던전 시간: <span id="dungeonTime">60</span>초</p>
-      <p>레벨: <span id="level">1</span></p>
-      <p>물약: 소형: <span id="potionSmall">3</span> 중형: <span id="potionMedium">1</span> 대형: <span id="potionLarge">0</span></p>
-      <button onclick="signOut()">로그아웃</button>
-      </div>
-    
+    </div>
     <div id="dungeonTab" style="display:none;">
       <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;">
         <button id="stagePrev">⬅</button>
@@ -145,20 +137,14 @@
       </div>
       <button onclick="enterDungeon()" id="dungeonToggleBtn">던전 입장</button>
     </div>
-
-    <div id="specialDungeonTab" style="display: none;">
-      <h2>특수 던전</h2>
-      <p>특수 던전 시간: <span id="specialDungeonTimeDisplay">60</span>초</p>
-      <button onclick="enterSpecialDungeon()" id="specialDungeonBtn">입장하기</button>
-    </div>
-
+    
     <div id="shopTab" style="display:none;">
       <h2>상점</h2>
       <p>보유 골드: <span id="goldShop">0</span></p>
     
       <label for="buyCount">구매 수량: </label>
       <input type="number" id="buyCount" min="1" value="1" style="width: 80px;" />
-      <p>물약: 소형: <span id="potionSmall">3</span> 중형: <span id="potionMedium">1</span> 대형: <span id="potionLarge">0</span></p>
+    
       <div style="margin-top: 10px;">
         <button onclick="buyPotion('small')">소형 물약 구매 (50G)</button>
         <button onclick="buyPotion('medium')">중형 물약 구매 (100G)</button>
@@ -177,6 +163,13 @@
       <h2>🏆 레벨 랭킹 Top 10</h2>
       <ol id="rankingList" style="text-align: left; max-width: 400px; margin: 0 auto;"></ol>
     </div>
+    
+    <p><strong>현재 유저:</strong> <span id="nicknameDisplay"></span></p>
+    <p>골드: <span id="gold">0</span> | 경험치: <span id="exp">0</span> | 던전 시간: <span id="dungeonTime">60</span>초</p>
+    <p>레벨: <span id="level">1</span></p>
+    <p>체력: <span id="hp">100</span> / <span id="maxHp">100</span></p>
+    <p>물약: 소형: <span id="potionSmall">3</span> 중형: <span id="potionMedium">1</span> 대형: <span id="potionLarge">0</span></p>
+    <button onclick="signOut()">로그아웃</button>
     <div id="log"></div>
   </div>
 
@@ -300,7 +293,6 @@
       log("던전에 입장합니다!");
       let monsterHp = 50 + currentStage * 10;
       let monsterAtk = 5 + currentStage * 2;
-      let reward = currentStage
       let monsterDodge = Math.min(20, currentStage);
       dungeonInterval = setInterval(() => {
         if (Math.random() * 100 < 10) {
@@ -334,9 +326,9 @@
         log("몬스터 남은 체력: "+monsterHp)
         
         if (monsterHp <= 0) {
-          userData.gold += reward * 20;
-          userData.exp += reward * 10;
-          log("몬스터 처치 보상 획득! 골드: "+reward * 20+" 경험치: "+reward * 10);
+          userData.gold += currentStage * 20;
+          userData.exp += currentStage * 10;
+          log("몬스터 처치 보상 획득! 골드: "+currentStage * 20+" 경험치: "+currentStage * 10);
           monsterHp = 50 + currentStage * 10;
           monsterAtk = 5 + currentStage * 2;
           monsterDodge = Math.min(20, currentStage);
@@ -439,7 +431,7 @@
           hp: 100,
           maxHp: 100,
           potions: { small: 3, medium: 1, large: 0 },
-          specialDungeonTime: 60,
+          dungeonTime: 60,
           atk: 10,
           con: 10,
           dex: 10,
@@ -466,15 +458,6 @@
         }
         userData = userDoc.data();
         userData.uid = userCredential.user.uid;
-        
-        // 누락된 필드 기본값으로 초기화
-        if (userData.atk === undefined) userData.atk = 10;
-        if (userData.con === undefined) userData.con = 10;
-        if (userData.dex === undefined) userData.dex = 10;
-        if (userData.specialDungeonTime === undefined) userData.specialDungeonTime = 60; // 또는 dungeonTime
-        
-        // 자동으로 저장
-        saveData();
         document.getElementById("authUI").style.display = "none";
         document.getElementById("gameUI").style.display = "block";
         document.getElementById("nicknameDisplay").innerText = userData.nickname;
