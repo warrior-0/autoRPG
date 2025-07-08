@@ -122,12 +122,25 @@
       <button onclick="showTab('home')">홈</button>
       <button onclick="showTab('dungeon')">던전</button>
       <button onclick="showTab('shop')">상점</button>
-      <button onclick="showTab('donate')">후원</button>
+      <button onclick="showTab('donation')">후원</button>
     </div>
-    
+
     <div id="homeTab">
       <p>어서오세요! 던전에 입장하여 전투를 시작하세요.</p>
+      <div id="statUI">
+        <h3>스탯 분배</h3>
+        <p>남은 스탯 포인트: <span id="statPoint">0</span></p>
+        <p>
+          ATK: <span id="statAtk">0</span>
+          <button onclick="addStat('atk')">+1</button><br/>
+          CON: <span id="statCon">0</span>
+          <button onclick="addStat('con')">+1</button><br/>
+          DEX: <span id="statDex">0</span>
+          <button onclick="addStat('dex')">+1</button>
+        </p>
+      </div>
     </div>
+    
     <div id="dungeonTab" style="display:none;">
       <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;">
         <button id="stagePrev">⬅</button>
@@ -455,6 +468,20 @@
         updateUI();
       }
     };
+    function addStat(stat) {
+      if (userData.statPoint <= 0) {
+        alert("스탯 포인트가 부족합니다.");
+        return;
+      }
+      userData[stat]++;
+      userData.statPoint--;
+      if (stat === 'con') {
+        userData.maxHp += 10;
+        userData.hp += 10;
+      }
+      updateUI();
+      saveData();
+    }
   </script>
 </body>
 </html>
