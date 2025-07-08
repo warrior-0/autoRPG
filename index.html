@@ -359,14 +359,13 @@
     
           let dmg = monsterAtk;
           if (isCrit) {
-            dmg *= 1.5;
+            dmg = Math.floor(monsterAtk * (monsterCrit / 2000 + 1.1));
             log(`몬스터의 치명타 공격!`);
           }
           dmg = Math.floor(dmg * dmgReduction);
           dmg = Math.max(0, dmg);
           userData.hp -= dmg;
           log(`플레이어가 ${dmg} 피해를 받았습니다.`);
-        }
     
         const monsterEvasion = 0;
         const evasionRateMonster = monsterEvasion / (monsterEvasion + userData.dex * 5);
