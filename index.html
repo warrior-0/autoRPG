@@ -361,33 +361,47 @@
       const nickname = document.getElementById("nicknameInput").value.trim();
       const email = document.getElementById("email").value.trim();
       const pw = document.getElementById("password").value;
+    
       if (!nickname || !email || !pw) {
-        alert("닉네임, 이메일, 비밀번호를 모두 입력해주세요")
+        alert("닉네임, 이메일, 비밀번호를 모두 입력해주세요");
         return;
       }
-      auth.createUserWithEmailAndPassword(email, pw).then(userCred => {
-        userData = {
-          nickname: nickname,
-          gold: 0, exp: 0, level: 1,
-          dungeonTime: 60,
-          hp: 100, maxHp: 100,
-          potions: { small: 3, medium: 1, large: 0 }
-        };
-        return db.collection("users").doc(userCred.user.uid).set(userData);
-      }).then(() => {
-        alert("회원가입 성공");
-        document.getElementById("authUI").style.display = "none";
-        document.getElementById("gameUI").style.display = "block";
-        document.getElementById("bottomStatus").style.display = "flex";
-        updateUI();
-      })
-      .catch(error => {
-        if (error.code === "auth/email-already-in-use") {
-          alert("이미 사용 중인 이메일입니다.");
-        } else {
-          alert("회원가입 실패: " + error.message);
-        }
-      });
+    
+      // 닉네임 중복 확인
+      db.collection("users").where("nickname", "==", nickname).get()
+        .then(snapshot => {
+          if (!snapshot.empty) {
+            alert("이미 사용 중인 닉네임입니다.");
+            throw new Error("닉네임 중복");
+          }
+    
+          // 닉네임 중복이 없으면 회원가입 진행
+          return auth.createUserWithEmailAndPassword(email, pw);
+        })
+        .then(userCred => {
+          userData = {
+            nickname: nickname,
+            gold: 0, exp: 0, level: 1,
+            dungeonTime: 60,
+            hp: 100, maxHp: 100,
+            potions: { small: 3, medium: 1, large: 0 }
+          };
+          return db.collection("users").doc(userCred.user.uid).set(userData);
+        })
+        .then(() => {
+          alert("회원가입 성공");
+          document.getElementById("authUI").style.display = "none";
+          document.getElementById("gameUI").style.display = "block";
+          document.getElementById("bottomStatus").style.display = "flex";
+          updateUI();
+        })
+        .catch(error => {
+          if (error.code === "auth/email-already-in-use") {
+            alert("이미 사용 중인 이메일입니다.");
+          } else if (error.message !== "닉네임 중복") {
+            alert("회원가입 실패: " + error.message);
+          }
+        });
     }
 
     function signIn() {
