@@ -378,15 +378,13 @@
             return;
           }
           rankingList.innerHTML = "";
-          let rank = 1;
           snapshot.forEach(doc => {
             const data = doc.data();
             const nickname = data.nickname || "익명";
             const level = data.level || 1;
             const li = document.createElement("li");
-            li.textContent = `${rank}. ${nickname} - 레벨 ${level}`;
+            li.textContent = `${nickname} - 레벨 ${level}`;
             rankingList.appendChild(li);
-            rank++;
           });
         })
         .catch(err => {
