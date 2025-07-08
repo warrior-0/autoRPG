@@ -170,7 +170,17 @@
         }
       }, 1000);
     }
-
+    
+    function exitDungeon() {
+      if (!inDungeon) {
+        alert("던전에 입장하지 않았습니다.");
+        return;
+      }
+      clearInterval(dungeonInterval);
+      inDungeon = false;
+      log("던전에서 나왔습니다.");
+    }
+    
     function showTab(name) {
       document.getElementById("homeTab").style.display = name === "home" ? "block" : "none";
       document.getElementById("dungeonTab").style.display = name === "dungeon" ? "block" : "none";
