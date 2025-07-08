@@ -329,44 +329,47 @@
         exitDungeon();
         return;
       }
+    
       if (userData.hp <= 0) {
         alert("체력이 부족합니다.");
         return;
       }
+    
       inDungeon = true;
       document.getElementById("dungeonToggleBtn").innerText = "던전 나가기";
       log("던전에 입장합니다!");
     
       let monsterHp = Math.floor((currentStage / 7 + 1) * currentStage * 2);
-      let monsterCrit = currentStage; // 몬스터 치명타
-      let monsterHit = currentStage * 7; // 몬스터 명중
-      let monsterDef = (currentStage / 20 + 1) * currentStage; // 몬스터 방어력
-      let monsterAtk = Math.floor((currentStage / 4 + 1) * currentStage); // 몬스터 공격력
+      let monsterCrit = currentStage;
+      let monsterHit = currentStage * 7;
+      let monsterDef = (currentStage / 20 + 1) * currentStage;
+      let monsterAtk = Math.floor((currentStage / 4 + 1) * currentStage);
       let reward = currentStage;
     
       dungeonInterval = setInterval(() => {
-        // 플레이어 회피 계산
-        const playerEvasion = userData.dex;
-        const evasionRatePlayer = playerEvasion / (playerEvasion + monsterHit);
+        // 플레이어 회피
+        const evasionRatePlayer = userData.dex / (userData.dex + monsterHit);
     
         if (Math.random() < evasionRatePlayer) {
           log("플레이어가 몬스터 공격을 회피했습니다.");
         } else {
           let isCrit = Math.random() * 100 < monsterCrit;
-    
           let playerDef = userData.con;
           let dmgReduction = 1 - (playerDef / (userData.level * 2 + playerDef));
-    
           let dmg = monsterAtk;
+    
           if (isCrit) {
             dmg = Math.floor(monsterAtk * (monsterCrit / 2000 + 1.1));
-            log(`몬스터의 치명타 공격!`);
+            log("몬스터의 치명타 공격!");
           }
+    
           dmg = Math.floor(dmg * dmgReduction);
           dmg = Math.max(0, dmg);
           userData.hp -= dmg;
           log(`플레이어가 ${dmg} 피해를 받았습니다.`);
+        }
     
+        // 플레이어 공격
         const monsterEvasion = 0;
         const evasionRateMonster = monsterEvasion / (monsterEvasion + userData.dex * 5);
     
@@ -391,6 +394,7 @@
           } else {
             dmg = Math.floor(playerAtk * dmgReductionPlayer);
           }
+    
           dmg = Math.max(0, dmg);
           monsterHp -= dmg;
           log(`몬스터가 ${dmg} 피해를 받았습니다.`);
@@ -402,7 +406,6 @@
           userData.gold += reward * 20;
           userData.exp += reward * 10;
           log(`몬스터 처치 보상 획득! 골드: ${reward * 20} 경험치: ${reward * 10}`);
-          // 몬스터 체력, 공격력, 기타 스탯 초기화
           monsterHp = Math.floor((currentStage / 7 + 1) * currentStage * 2);
           monsterCrit = currentStage;
           monsterHit = currentStage * 7;
@@ -421,6 +424,7 @@
           document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
           log("던전에서 사망했습니다. 체력이 100%회복되고 보유 경험치의 30%를 잃습니다");
           userData.exp = Math.floor(userData.exp * 0.7);
+          userData.gold = Math.floor(userData.gold * 0.5);
           userData.hp = userData.maxHp;
           updateUI();
           saveData();
