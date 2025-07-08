@@ -169,6 +169,12 @@
     <p>체력: <span id="hp">100</span> / <span id="maxHp">100</span></p>
     <p>골드: <span id="gold">0</span> | 경험치: <span id="exp">0</span> | 던전 시간: <span id="dungeonTime">60</span>초</p>
     <p>물약: 소형: <span id="potionSmall">3</span> 중형: <span id="potionMedium">1</span> 대형: <span id="potionLarge">0</span></p>
+    <div style="margin-top: 10px;">
+      <p>스탯 포인트: <span id="statPointDisplay">0</span></p>
+      <button onclick="addStat('atk')">str +1</button>
+      <button onclick="addStat('dex')">dex +1</button>
+      <button onclick="addStat('con')">con +1</button>
+    </div>
     <button onclick="signOut()">로그아웃</button>
     <div id="log"></div>
   </div>
@@ -214,6 +220,7 @@
       document.getElementById("stageDisplay").innerText = currentStage;
       document.getElementById("goldShop").innerText = userData.gold;
       document.getElementById("goldDisplay").innerText = ` 골드: ${userData.gold}`;
+      document.getElementById("statPointDisplay").innerText = userData.statPoints;
 
       const hpPercent = (userData.hp / userData.maxHp) * 100;
       document.getElementById("hpBar").style.width = hpPercent + "%";
@@ -268,6 +275,20 @@
       userData.hp = Math.min(userData.hp, userData.maxHp);
     }
 
+    function addStat(type) {
+      if (userData.statPoints <= 0) {
+        alert("스탯 포인트가 부족합니다.");
+        return;
+      }
+      if (!['atk', 'con', 'dex'].includes(type)) return;
+    
+      userData[type]++;
+      userData.statPoints--;
+      log(`${type.toUpperCase()} 스탯이 1 증가했습니다.`);
+      updateUI();
+      saveData();
+    }
+    
     function calculateStats() {
       const level = userData.level || 1;
       const atk = userData.str || 0;
