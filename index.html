@@ -169,7 +169,11 @@
     const maxStage = 100;
 
     function log(msg) {
-      document.getElementById("log").innerHTML = `<div>> ${msg}</div>` + document.getElementById("log").innerHTML;
+      const logDiv = document.getElementById("log");
+      logDiv.innerHTML = `<div>> ${msg}</div>` + logDiv.innerHTML;
+      if (logDiv.childElementCount > 50) {
+        logDiv.removeChild(logDiv.lastChild); // 오래된 로그 제거
+      }
     }
 
     function updateUI() {
