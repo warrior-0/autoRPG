@@ -272,7 +272,7 @@
             log("몬스터의 치명타 공격");
           }
           userData.hp -= dmg;
-          log("몬스터에게 피해를 받았습니다");
+          log("몬스터에게 "+dmg+"피해를 받았습니다");
         }
 
         if (Math.random() * 100 < monsterDodge) {
@@ -284,13 +284,14 @@
             log("플레이어의 치명타 공격");
           }
           monsterHp -= dmg;
-          log("몬스터에게 피해를 입혔습니다");
+          log("몬스터에게 "+dmg+"피해를 입혔습니다");
         }
 
         if (monsterHp <= 0) {
           userData.gold += currentStage * 20;
           userData.exp += currentStage * 10;
           log("몬스터 처치 보상 획득! 골드: "+currentStage * 20+" 경험치: "+currentStage * 10);
+          monsterHp = 50 + currentStage * 10;
           checkLevelUp();
         }
         autoUsePotion();
