@@ -105,41 +105,13 @@
       }, 1000);
     }
     
-    async function signUp() {
+    function signUp() {
+      const nickname = documen.getElementById("nicknameInput").value;
       const email = document.getElementById("email").value;
       const pw = document.getElementById("password").value;
-      const nickname = document.getElementById("nicknameInput").value;
-    
-      if (!nickname || !email || !pw) {
-        alert("모든 항목을 입력해주세요.");
-        return;
-      }
-    
-      try {
-        // 닉네임 중복 검사
-        const snapshot = await db.collection("users").where("nickname", "==", nickname).get();
-        if (!snapshot.empty) {
-          alert("이미 존재하는 닉네임입니다.");
-          return;
-        }
-    
-        // 회원가입
-        const cred = await auth.createUserWithEmailAndPassword(email, pw);
-        const uid = cred.user.uid;
-    
-        // Firestore에 유저 데이터 저장
-        await db.collection("users").doc(uid).set({
-          nickname: nickname,
-          gold: 0,
-          exp: 0,
-          dungeonTime: 60
-        });
-    
-        alert("회원가입 성공! 로그인해주세요.");
-    
-      } catch (err) {
-        alert(err.message);
-      }
+      auth.createUserWithEmailAndPassword(email, pw)
+        .then(() => alert("회원가입 성공"))
+        .catch(err => alert(err.message));
     }
     
     function signIn() {
