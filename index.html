@@ -22,12 +22,6 @@
       cursor: pointer;
       font-size: 16px;
     }
-    input[type=number] {
-      width: 60px;
-      padding: 5px;
-      font-size: 14px;
-      text-align: center;
-    }
     #log {
       max-height: 200px;
       overflow-y: auto;
@@ -129,6 +123,7 @@
       <button onclick="showTab('dungeon')">던전</button>
       <button onclick="showTab('shop')">상점</button>
       <button onclick="showTab('donate')">후원</button>
+      <button onclick="showTab('ranking')">랭킹</button>
     </div>
     
     <div id="homeTab">
@@ -146,22 +141,14 @@
     <div id="shopTab" style="display:none;">
       <h2>상점</h2>
       <p>보유 골드: <span id="goldShop">0</span></p>
-
-      <div>
-        <label>소형 물약 수량:</label>
-        <input type="number" id="buySmallQty" value="1" min="1" />
-        <button onclick="buyPotionBulk('small')">구매</button>
-      </div>
-      <div>
-        <label>중형 물약 수량:</label>
-        <input type="number" id="buyMediumQty" value="1" min="1" />
-        <button onclick="buyPotionBulk('medium')">구매</button>
-      </div>
-      <div>
-        <label>대형 물약 수량:</label>
-        <input type="number" id="buyLargeQty" value="1" min="1" />
-        <button onclick="buyPotionBulk('large')">구매</button>
-      </div>
+      <button onclick="buyPotion('small')">소형 물약 (50G)</button>
+      <button onclick="buyPotion('medium')">중형 물약 (100G)</button>
+      <button onclick="buyPotion('large')">대형 물약 (200G)</button>
+      <hr>
+      <h3>대량 구매</h3>
+      <button onclick="buyPotionBulk('small', 5)">소형 물약 5개 (250G)</button>
+      <button onclick="buyPotionBulk('medium', 3)">중형 물약 3개 (300G)</button>
+      <button onclick="buyPotionBulk('large', 2)">대형 물약 2개 (400G)</button>
     </div>
 
     <div id="donateTab" style="display:none;">
@@ -169,6 +156,11 @@
       <p>게임이 즐거우셨다면 커피 한 잔으로 응원해주세요!</p>
       <p><a href="https://open.kakao.com/o/sMywfUFh" target="_blank">👉 카카오톡으로 후원하기</a></p>
       <p style="margin-top: 10px; font-size: 14px; color: gray;">※ 후원은 자발적이며 게임 내 혜택은 없습니다.</p>
+    </div>
+
+    <div id="rankingTab" style="display:none;">
+      <h2>🏆 레벨 랭킹 Top 10</h2>
+      <ol id="rankingList" style="text-align: left; max-width: 400px; margin: 0 auto;"></ol>
     </div>
     
     <p><strong>현재 유저:</strong> <span id="nicknameDisplay"></span></p>
@@ -247,32 +239,22 @@
       saveData();
     }
 
-    function buyPotionBulk(type) {
-      const qtyInput = document.getElementById(`buy${capitalize(type)}Qty`);
-      let quantity = parseInt(qtyInput.value);
-      if (isNaN(quantity) || quantity < 1) {
-        alert("올바른 수량을 입력하세요.");
-        return;
-      }
-
+    // 대량구매 함수 추가
+    function buyPotionBulk(type, amount) {
       const costMap = { small: 50, medium: 100, large: 200 };
       const labelMap = { small: "소형", medium: "중형", large: "대형" };
-      const totalCost = costMap[type] * quantity;
+      const cost = costMap[type] * amount;
 
-      if (userData.gold < totalCost) {
-        alert("골드가 부족합니다!");
+      if (userData.gold < cost) {
+        alert(`골드가 부족합니다! (${labelMap[type]} 물약 ${amount}개 구매 시 ${cost}골드 필요)`);
         return;
       }
 
-      userData.gold -= totalCost;
-      userData.potions[type] += quantity;
-      log(`${labelMap[type]} 물약 ${quantity}개를 구매했습니다!`);
+      userData.gold -= cost;
+      userData.potions[type] += amount;
+      log(`${labelMap[type]} 물약 ${amount}개를 구매했습니다!`);
       updateUI();
       saveData();
-    }
-
-    function capitalize(str) {
-      return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
     function autoUsePotion() {
@@ -388,23 +370,150 @@
       log("던전에서 나왔습니다.");
     }
 
+    // 랭킹 불러오기 함수
+    function loadRanking() {
+      const rankingList = document.getElementById("rankingList");
+      rankingList.innerHTML = "불러오는 중...";
+
+      db.collection("users")
+        .orderBy("level", "desc")
+        .limit(10)
+        .get()
+        .then(snapshot => {
+          if (snapshot.empty) {
+            rankingList.innerHTML = "<li>데이터가 없습니다.</li>";
+            return;
+          }
+          rankingList.innerHTML = "";
+          let rank = 1;
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const nickname = data.nickname || "익명";
+            const level = data.level || 1;
+            const li = document.createElement("li");
+            li.textContent = `${rank}. ${nickname} - 레벨 ${level}`;
+            rankingList.appendChild(li);
+            rank++;
+          });
+        })
+        .catch(err => {
+          rankingList.innerHTML = "랭킹 불러오기 실패";
+          console.error(err);
+        });
+    }
+
     function showTab(name) {
-      if (name === ("home" || "shop" || "donate") && inDungeon) {
+      if ((name === "home" || name === "shop" || name === "donate" || name === "ranking") && inDungeon) {
         exitDungeon();
       }
       document.getElementById("homeTab").style.display = name === "home" ? "block" : "none";
       document.getElementById("dungeonTab").style.display = name === "dungeon" ? "block" : "none";
       document.getElementById("shopTab").style.display = name === "shop" ? "block" : "none";
       document.getElementById("donateTab").style.display = name === "donate" ? "block" : "none";
+      document.getElementById("rankingTab").style.display = name === "ranking" ? "block" : "none";
+
       if (name === "shop") {
         document.getElementById("goldShop").innerText = userData.gold;
       }
+      if (name === "ranking") {
+        loadRanking();
+      }
     }
 
-    function saveData() {
-      const user = auth.currentUser;
-      if (user) db.collection("users").doc(user.uid).set(userData);
+    async function signUp() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const nickname = document.getElementById("nicknameInput").value.trim();
+
+      if (!email || !password || !nickname) {
+        alert("이메일, 비밀번호, 닉네임을 모두 입력하세요.");
+        return;
+      }
+      try {
+        const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+        await db.collection("users").doc(userCredential.user.uid).set({
+          nickname,
+          gold: 100,
+          exp: 0,
+          level: 1,
+          hp: 100,
+          maxHp: 100,
+          potions: { small: 3, medium: 1, large: 0 },
+          dungeonTime: 60,
+          atk: 10,
+          con: 10,
+          dex: 10,
+        });
+        alert("회원가입 성공! 로그인 해주세요.");
+      } catch (error) {
+        alert("회원가입 실패: " + error.message);
+      }
     }
 
-    function loadData() {
-      const user
+    async function signIn() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      if (!email || !password) {
+        alert("이메일과 비밀번호를 입력하세요.");
+        return;
+      }
+      try {
+        const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+        const userDoc = await db.collection("users").doc(userCredential.user.uid).get();
+        if (!userDoc.exists) {
+          alert("사용자 데이터를 찾을 수 없습니다.");
+          return;
+        }
+        userData = userDoc.data();
+        userData.uid = userCredential.user.uid;
+        document.getElementById("authUI").style.display = "none";
+        document.getElementById("gameUI").style.display = "block";
+        document.getElementById("nicknameDisplay").innerText = userData.nickname;
+        updateUI();
+        showTab("home");
+        log("로그인 성공!");
+      } catch (error) {
+        alert("로그인 실패: " + error.message);
+      }
+    }
+
+    async function saveData() {
+      if (!userData) return;
+      try {
+        await db.collection("users").doc(userData.uid).set(userData);
+      } catch (error) {
+        console.error("저장 실패", error);
+      }
+    }
+
+    async function signOut() {
+      if (inDungeon) exitDungeon();
+      await firebase.auth().signOut();
+      userData = null;
+      document.getElementById("authUI").style.display = "block";
+      document.getElementById("gameUI").style.display = "none";
+      log("로그아웃 되었습니다.");
+    }
+
+    // 스테이지 변경 버튼 이벤트
+    document.getElementById("stagePrev").addEventListener("click", () => {
+      if (currentStage > 1) {
+        currentStage--;
+        document.getElementById("stageDisplay").innerText = currentStage;
+      }
+    });
+    document.getElementById("stageNext").addEventListener("click", () => {
+      if (currentStage < maxStage) {
+        currentStage++;
+        document.getElementById("stageDisplay").innerText = currentStage;
+      }
+    });
+
+    // 자동 저장 5초 간격
+    setInterval(() => {
+      if (userData) saveData();
+    }, 5000);
+
+  </script>
+</body>
+</html>
