@@ -107,8 +107,27 @@
     function signUp() {
       const email = document.getElementById("email").value;
       const pw = document.getElementById("password").value;
+      const nickname = document.getElementById("nickname").value;
+    
+      if (!nickname || !email || !pw) {
+        alert("모든 항목을 입력해주세요.");
+        return;
+      }
+    
       auth.createUserWithEmailAndPassword(email, pw)
-        .then(() => alert("회원가입 성공"))
+        .then(cred => {
+          const uid = cred.user.uid;
+          // 초기 유저 정보 Firestore에 저장
+          return db.collection("users").doc(uid).set({
+            nickname: nickname,
+            gold: 0,
+            exp: 0,
+            dungeonTime: 60
+          });
+        })
+        .then(() => {
+          alert("회원가입 완료! 로그인해주세요.");
+        })
         .catch(err => alert(err.message));
     }
 
