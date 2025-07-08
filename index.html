@@ -16,12 +16,14 @@
       padding: 30px;
       margin-bottom: 140px;
     }
+
     button {
       margin: 5px;
       padding: 10px 20px;
       cursor: pointer;
       font-size: 16px;
     }
+
     #log {
       max-height: 200px;
       overflow-y: auto;
@@ -31,9 +33,11 @@
       margin-top: 20px;
       text-align: left;
     }
+
     #gameUI {
       display: none;
     }
+
     #bottomStatus {
       position: fixed;
       bottom: 0;
@@ -50,6 +54,7 @@
       gap: 10px;
       z-index: 1000;
     }
+
     #stagePrev, #stageNext {
       font-size: 24px;
       background: #444;
@@ -59,11 +64,13 @@
       border-radius: 4px;
       user-select: none;
     }
+
     .status-bar-container {
       width: 90%;
       max-width: 300px;
       min-width: 200px;
     }
+
     .bar-bg {
       background: #555;
       border-radius: 8px;
@@ -71,36 +78,43 @@
       width: 100%;
       overflow: hidden;
     }
+
     #hpBar {
       height: 100%;
       background: #e74c3c;
       width: 100%;
       transition: width 0.3s ease;
     }
+
     #expBar {
       height: 100%;
       background: #3498db;
       width: 0%;
       transition: width 0.3s ease;
     }
+
     .bar-text {
       text-align: right;
       font-size: 13px;
       margin-top: 4px;
       user-select: none;
     }
+
     @media (max-width: 600px) {
       body {
         padding: 15px 5px;
       }
+
       #tabs {
         flex-direction: column;
         gap: 5px;
       }
+
       button {
         width: 100%;
         box-sizing: border-box;
       }
+
       .status-bar-container {
         width: 95%;
       }
@@ -109,6 +123,7 @@
 </head>
 <body>
   <h1>자동사냥 RPG</h1>
+
   <div id="authUI">
     <input type="text" id="nicknameInput" placeholder="닉네임" /><br />
     <input type="email" id="email" placeholder="이메일" /><br />
@@ -116,16 +131,18 @@
     <button onclick="signUp()">회원가입</button>
     <button onclick="signIn()">로그인</button>
   </div>
+
   <div id="gameUI">
     <div id="tabs" style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px;">
       <button onclick="showTab('home')">홈</button>
       <button onclick="showTab('dungeon')">던전</button>
-      <button onclick="showTab('boss')">보스</button>
       <button onclick="showTab('shop')">상점</button>
     </div>
+
     <div id="homeTab">
       <p>어서오세요! 던전에 입장하여 전투를 시작하세요.</p>
     </div>
+
     <div id="dungeonTab" style="display:none;">
       <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;">
         <button id="stagePrev">⬅</button>
@@ -134,11 +151,7 @@
       </div>
       <button onclick="enterDungeon()" id="dungeonToggleBtn">던전 입장</button>
     </div>
-    <div id="bossTab" style="display:none;">
-      <h3>보스 던전</h3>
-      <p>던전 시간: <span id="dungeonTimeBoss">60</span>초</p>
-      <button onclick="enterBossDungeon()" id="bossToggleBtn">보스 입장</button>
-    </div>
+
     <div id="shopTab" style="display:none;">
       <h2>상점</h2>
       <p>보유 골드: <span id="goldShop">0</span></p>
@@ -146,14 +159,21 @@
       <button onclick="buyPotion('medium')">중형 물약 (100G)</button>
       <button onclick="buyPotion('large')">대형 물약 (200G)</button>
     </div>
+
     <p><strong>현재 유저:</strong> <span id="nicknameDisplay"></span></p>
     <p>골드: <span id="gold">0</span> | 경험치: <span id="exp">0</span> | 던전 시간: <span id="dungeonTime">60</span>초</p>
     <p>레벨: <span id="level">1</span></p>
     <p>체력: <span id="hp">100</span> / <span id="maxHp">100</span></p>
-    <p>물약: 소형: <span id="potionSmall">3</span> 중형: <span id="potionMedium">1</span> 대형: <span id="potionLarge">0</span></p>
+    <p>
+      물약:
+      소형: <span id="potionSmall">3</span>
+      중형: <span id="potionMedium">1</span>
+      대형: <span id="potionLarge">0</span>
+    </p>
     <button onclick="signOut()">로그아웃</button>
     <div id="log"></div>
   </div>
+
   <div id="bottomStatus" style="display: none;">
     <div class="status-bar-container">
       <div class="bar-bg"><div id="hpBar"></div></div>
@@ -164,36 +184,106 @@
       <div class="bar-text" id="expText">0 / 100</div>
     </div>
   </div>
+
   <script>
     let userData = null;
     let inDungeon = false;
     let dungeonInterval;
     let currentStage = 1;
     const maxStage = 100;
-    let currentDungeonType = "none"; // normal or boss
 
     function log(msg) {
       document.getElementById("log").innerHTML = `<div>> ${msg}</div>` + document.getElementById("log").innerHTML;
     }
 
-    function enterBossDungeon() {
+    function updateUI() {
+      if (!userData) return;
+      document.getElementById("gold").innerText = userData.gold;
+      document.getElementById("exp").innerText = userData.exp;
+      document.getElementById("dungeonTime").innerText = userData.dungeonTime;
+      document.getElementById("hp").innerText = userData.hp;
+      document.getElementById("maxHp").innerText = userData.maxHp;
+      document.getElementById("level").innerText = userData.level;
+      document.getElementById("potionSmall").innerText = userData.potions.small;
+      document.getElementById("potionMedium").innerText = userData.potions.medium;
+      document.getElementById("potionLarge").innerText = userData.potions.large;
+      document.getElementById("stageDisplay").innerText = currentStage;
+      document.getElementById("goldShop").innerText = userData.gold;
+
+      const hpPercent = (userData.hp / userData.maxHp) * 100;
+      document.getElementById("hpBar").style.width = hpPercent + "%";
+      document.getElementById("hpText").innerText = `${userData.hp} / ${userData.maxHp}`;
+
+      const expToNext = userData.level * 100;
+      const expPercent = (userData.exp / expToNext) * 100;
+      document.getElementById("expBar").style.width = expPercent + "%";
+      document.getElementById("expText").innerText = `${userData.exp} / ${expToNext}`;
+    }
+
+    function buyPotion(type) {
+      const costMap = { small: 50, medium: 100, large: 200 };
+      const labelMap = { small: "소형", medium: "중형", large: "대형" };
+      const cost = costMap[type];
+
+      if (userData.gold < cost) {
+        alert("골드가 부족합니다!");
+        return;
+      }
+
+      userData.gold -= cost;
+      userData.potions[type]++;
+      log(`${labelMap[type]} 물약을 구매했습니다!`);
+      updateUI();
+      saveData();
+    }
+
+    function autoUsePotion() {
+      const missingHp = userData.maxHp - userData.hp;
+      if (missingHp <= 0) return;
+      if (userData.potions.large > 0 && missingHp >= 200) {
+        userData.potions.large--;
+        userData.hp += Math.floor(200 + userData.maxHp*0.07);
+        log("대형 물약 사용! 체력 "+Math.floor(200+userData.maxHp*0.07)+" 회복");
+      } else if (userData.potions.medium > 0 && missingHp >= 100) {
+        userData.potions.medium--;
+        userData.hp += Math.floor(100 + userData.maxHp*0.05);
+        log("중형 물약 사용! 체력 "+Math.floor(100+userData.maxHp*0.05)+" 회복");
+      } else if (userData.potions.small > 0 && missingHp >= 50) {
+        userData.potions.small--;
+        userData.hp += Math.floor(50 + userData.maxHp*0.03);
+        log("소형 물약 사용! 체력 "+Math.floor(50+userData.maxHp*0.03)+" 회복");
+      }
+      userData.hp = Math.min(userData.hp, userData.maxHp);
+    }
+
+    function checkLevelUp() {
+      const needExp = userData.level * 100;
+      while (userData.exp >= needExp) {
+        userData.exp -= needExp;
+        userData.level++;
+        userData.maxHp += 20 + Math.floor(userData.maxHp*0.03);
+        userData.hp = userData.maxHp;
+        log(`레벨업! 현재 레벨: ${userData.level}`);
+      }
+    }
+
+    function enterDungeon() {
       if (inDungeon) {
         exitDungeon();
         return;
       }
       if (userData.dungeonTime <= 0) {
-        alert("보스 던전에 입장할 수 없습니다.");
+        alert("던전에 입장할 수 없습니다.");
         return;
       }
       inDungeon = true;
-      currentDungeonType = "boss";
-      document.getElementById("bossToggleBtn").innerText = "보스 나가기";
-      log("보스 던전에 입장합니다!");
+      document.getElementById("dungeonToggleBtn").innerText = "던전 나가기";
+      log("던전에 입장합니다!");
       dungeonInterval = setInterval(() => {
         userData.dungeonTime--;
-        userData.gold += 100;
-        userData.exp += 50;
-        userData.hp -= 25;
+        userData.gold += 5*currentStage;
+        userData.exp += 2*currentStage;
+        userData.hp -= 1*currentStage;
         autoUsePotion();
         checkLevelUp();
         updateUI();
@@ -201,13 +291,116 @@
         if (userData.hp <= 0 || userData.dungeonTime <= 0) {
           clearInterval(dungeonInterval);
           inDungeon = false;
-          currentDungeonType = "none";
-          document.getElementById("bossToggleBtn").innerText = "보스 입장";
-          log("보스 던전 종료!");
+          document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
+          log("던전에서 나왔습니다.");
           showTab("home");
+          if (userData.hp <= 0) {
+            userData.hp = userData.maxHp;
+            userData.exp -= userData.exp*0.3
+            userData.gold -= userData.gold*0.5
+          }
         }
       }, 1000);
     }
+
+    function exitDungeon() {
+      if (!inDungeon) return;
+      clearInterval(dungeonInterval);
+      inDungeon = false;
+      document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
+      log("던전에서 나왔습니다.");
+    }
+
+    function showTab(name) {
+      if (name === ("home" && inDungeon) || ("shop" && inDungeon)) {
+        exitDungeon();
+      }
+      document.getElementById("homeTab").style.display = name === "home" ? "block" : "none";
+      document.getElementById("dungeonTab").style.display = name === "dungeon" ? "block" : "none";
+      document.getElementById("shopTab").style.display = name === "shop" ? "block" : "none";
+      if (name === "shop") {
+        document.getElementById("goldShop").innerText = userData.gold;
+      }
+    }
+
+    function saveData() {
+      const user = auth.currentUser;
+      if (user) db.collection("users").doc(user.uid).set(userData);
+    }
+
+    function loadData() {
+      const user = auth.currentUser;
+      return db.collection("users").doc(user.uid).get().then(doc => {
+        if (doc.exists) {
+          userData = doc.data();
+        } else {
+          userData = {
+            nickname: user.email,
+            gold: 0, exp: 0, level: 1,
+            dungeonTime: 60,
+            hp: 100, maxHp: 100,
+            potions: { small: 3, medium: 1, large: 0 }
+          };
+        }
+        document.getElementById("nicknameDisplay").innerText = userData.nickname;
+        updateUI();
+      });
+    }
+
+    function signUp() {
+      const nickname = document.getElementById("nicknameInput").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const pw = document.getElementById("password").value;
+      if (!nickname || !email || !pw) {
+        alert("닉네임, 이메일, 비밀번호를 모두 입력해주세요")
+        return;
+      }
+      auth.createUserWithEmailAndPassword(email, pw).then(userCred => {
+        userData = {
+          nickname: nickname,
+          gold: 0, exp: 0, level: 1,
+          dungeonTime: 60,
+          hp: 100, maxHp: 100,
+          potions: { small: 3, medium: 1, large: 0 }
+        };
+        return db.collection("users").doc(userCred.user.uid).set(userData);
+      }).then(() => {
+        alert("회원가입 성공");
+        document.getElementById("authUI").style.display = "none";
+        document.getElementById("gameUI").style.display = "block";
+        document.getElementById("bottomStatus").style.display = "flex";
+        updateUI();
+      });
+    }
+
+    function signIn() {
+      const email = document.getElementById("email").value.trim();
+      const pw = document.getElementById("password").value;
+      auth.signInWithEmailAndPassword(email, pw).then(() => {
+        document.getElementById("authUI").style.display = "none";
+        document.getElementById("gameUI").style.display = "block";
+        document.getElementById("bottomStatus").style.display = "flex";
+        showTab('home');
+        return loadData();
+      });
+    }
+
+    function signOut() {
+      auth.signOut().then(() => location.reload());
+    }
+
+    document.getElementById("stagePrev").onclick = () => {
+      if (currentStage > 1) {
+        currentStage--;
+        updateUI();
+      }
+    };
+    document.getElementById("stageNext").onclick = () => {
+      if (currentStage < maxStage) {
+        currentStage++;
+        updateUI();
+      }
+    };
   </script>
 </body>
 </html>
