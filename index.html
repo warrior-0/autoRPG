@@ -262,20 +262,20 @@
       if (missingHp <= 0) return;
       if (userData.potions.extralarge > 0 && missingHp >= 10000 + userData.maxHp*0.15) {
         userData.potions.extralarge--;
-        userData.hp += 10000 + userData.maxHp*0.15
-        log("초대형 물약 사용! 체력 "+(10000 + userData.maxHp*0.15)+" 회복");
+        userData.hp += Math.floor(10000 + userData.maxHp*0.15)
+        log("초대형 물약 사용! 체력 "+Math.floor(10000 + userData.maxHp*0.15)+" 회복");
       } else if (userData.potions.large > 0 && missingHp >= 1000 + userData.maxHp*0.07) {
         userData.potions.large--;
-        userData.hp += 1000 + userData.maxHp*0.07;
-        log("대형 물약 사용! 체력 "+(1000 + userData.maxHp*0.07)+" 회복");
+        userData.hp += Math.floor(1000 + userData.maxHp*0.07);
+        log("대형 물약 사용! 체력 "+Math.floor(1000 + userData.maxHp*0.07)+" 회복");
       } else if (userData.potions.medium > 0 && missingHp >= 100 + userData.maxHp*0.03) {
         userData.potions.medium--;
-        userData.hp += 100 + userData.maxHp*0.03;
-        log("중형 물약 사용! 체력 "+(100 + userData.maxHp*0.03)+" 회복");
+        userData.hp += Math.floor(100 + userData.maxHp*0.03);
+        log("중형 물약 사용! 체력 "+Math.floor(100 + userData.maxHp*0.03)+" 회복");
       } else if (userData.potions.small > 0 && missingHp >= 10 + userData.maxHp*0.01) {
         userData.potions.small--;
-        userData.hp += 10 + userData.maxHp*0.01;
-        log("소형 물약 사용! 체력 "+(10 + userData.maxHp*0.01)+" 회복");
+        userData.hp += Math.floor(10 + userData.maxHp*0.01);
+        log("소형 물약 사용! 체력 "+Math.floor(10 + userData.maxHp*0.01)+" 회복");
       }
       userData.hp = Math.min(userData.hp, userData.maxHp);
     }
