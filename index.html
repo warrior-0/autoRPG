@@ -122,7 +122,9 @@
       <button onclick="showTab('home')">홈</button>
       <button onclick="showTab('dungeon')">던전</button>
       <button onclick="showTab('shop')">상점</button>
+      <button onclick="showTab('donation')">후원</button>
     </div>
+    
     <div id="homeTab">
       <p>어서오세요! 던전에 입장하여 전투를 시작하세요.</p>
     </div>
@@ -134,6 +136,7 @@
       </div>
       <button onclick="enterDungeon()" id="dungeonToggleBtn">던전 입장</button>
     </div>
+    
     <div id="shopTab" style="display:none;">
       <h2>상점</h2>
       <p>보유 골드: <span id="goldShop">0</span></p>
@@ -141,6 +144,14 @@
       <button onclick="buyPotion('medium')">중형 물약 (100G)</button>
       <button onclick="buyPotion('large')">대형 물약 (200G)</button>
     </div>
+
+    <div id="donateTab" style="display:none;">
+      <h2>🎁 후원하기</h2>
+      <p>게임이 즐거우셨다면 커피 한 잔으로 응원해주세요!</p>
+      <p><a href="https://open.kakao.com/o/sMywfUFh" target="_blank">👉 카카오톡으로 후원하기</a></p>
+      <p style="margin-top: 10px; font-size: 14px; color: gray;">※ 후원은 자발적이며 게임 내 혜택은 없습니다.</p>
+    </div>
+    
     <p><strong>현재 유저:</strong> <span id="nicknameDisplay"></span></p>
     <p>골드: <span id="gold">0</span> | 경험치: <span id="exp">0</span> | 던전 시간: <span id="dungeonTime">60</span>초</p>
     <p>레벨: <span id="level">1</span></p>
@@ -331,12 +342,13 @@
     }
 
     function showTab(name) {
-      if (name === ("home" && inDungeon) || ("shop" && inDungeon)) {
+      if (name === ("home" || "shop" || "donate") && inDungeon) {
         exitDungeon();
       }
       document.getElementById("homeTab").style.display = name === "home" ? "block" : "none";
       document.getElementById("dungeonTab").style.display = name === "dungeon" ? "block" : "none";
       document.getElementById("shopTab").style.display = name === "shop" ? "block" : "none";
+      document.getElementById("donateTab").style.display = name === "donate" ? "block" : "none";
       if (name === "shop") {
         document.getElementById("goldShop").innerText = userData.gold;
       }
