@@ -168,6 +168,7 @@
     <p><strong>현재 유저:</strong> <span id="nicknameDisplay"></span></p>
     <p>레벨: <span id="level">1</span></p>
     <p>체력: <span id="hp">100</span> / <span id="maxHp">100</span></p>
+    <p>스탯 — STR: <span id="statStr">0</span> | DEX: <span id="statDex">0</span> | CON: <span id="statCon">0</span></p>
     <p>골드: <span id="gold">0</span> | 경험치: <span id="exp">0</span> | 던전 시간: <span id="dungeonTime">60</span>초</p>
     <p>물약: 소형: <span id="potionSmall">3</span> 중형: <span id="potionMedium">1</span> 대형: <span id="potionLarge">0</span> 초대형: <span id="potionExtralarge">0</span></p>
     <div style="margin-top: 10px;">
@@ -222,6 +223,9 @@
       document.getElementById("goldShop").innerText = userData.gold;
       document.getElementById("goldDisplay").innerText = ` 골드: ${userData.gold}`;
       document.getElementById("statPointDisplay").innerText = userData.statPoints;
+      document.getElementById("statStr").innerText = userData.str || 0;
+      document.getElementById("statDex").innerText = userData.dex || 0;
+      document.getElementById("statCon").innerText = userData.con || 0;
 
       const hpPercent = (userData.hp / userData.maxHp) * 100;
       document.getElementById("hpBar").style.width = hpPercent + "%";
@@ -294,29 +298,11 @@
       saveData();
     }
     
-    function calculateStats() {
-      const level = userData.level || 1;
-      const str = userData.str || 0;
-      const dex = userData.dex || 0;
-      const con = userData.con || 0;
-    
-      return {
-        공격력: 1 + ((level / 2) + 1) * str * 1.5,
-        적중률: dex * 5,
-        치명타확률: dex * 5,
-        방어력: ((level / 3) + 1) * con,
-        체력계산값: ((level / 3) + 1) * con * 5 + 10,
-        회피율: dex
-      };
-    }
-
-    
     function checkLevelUp() {
       while (userData.exp >= userData.level * 100) {
         const needExp = userData.level * 100;
         userData.exp -= needExp;
         userData.level++;
-        const stats = calculateStats();
         userData.maxHp = Math.floor(stats.체력계산값);
         userData.hp = userData.maxHp;
         log(`레벨업! 현재 레벨: ${userData.level}`);
