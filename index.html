@@ -172,7 +172,7 @@
     <p>물약: 소형: <span id="potionSmall">3</span> 중형: <span id="potionMedium">1</span> 대형: <span id="potionLarge">0</span> 초대형: <span id="potionExtralarge">0</span></p>
     <div style="margin-top: 10px;">
       <p>스탯 포인트: <span id="statPointDisplay">0</span></p>
-      <button onclick="addStat('atk')">str +1</button>
+      <button onclick="addStat('str')">str +1</button>
       <button onclick="addStat('dex')">dex +1</button>
       <button onclick="addStat('con')">con +1</button>
     </div>
@@ -358,7 +358,7 @@
         if (Math.random() * 100 < monsterDodge) {
           log("몬스터가 회피했습니다");
         } else {
-          let dmg = 10 + userData.atk;
+          let dmg = 10 + userData.str;
           if (Math.random() < 0.1) {
             dmg *= 1.5;
             monsterHp -= dmg;
