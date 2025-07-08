@@ -50,7 +50,9 @@
     </div>
 
     <div id="dungeonTab" style="display:none;">
-      <p>던전 스테이지: <span id="stageDisplay">1</span></p>
+      <button id="stagePrev">⬅</button>
+      <div><strong>스테이지:</strong> <span id="stageDisplay">1</span></div>
+      <button id="stageNext">➡</button>
       <button onclick="enterDungeon()">던전 입장</button>
     </div>
 
@@ -69,9 +71,6 @@
   </div>
 
   <div id="bottomStatus" style="display: none;">
-    <button id="stagePrev">⬅</button>
-    <div><strong>스테이지:</strong> <span id="stageDisplay">1</span></div>
-    <button id="stageNext">➡</button>
     <div class="status-bar-container">
       <div class="bar-bg"><div id="hpBar"></div></div>
       <div class="bar-text" id="hpText">100 / 100</div>
