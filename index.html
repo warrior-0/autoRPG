@@ -187,6 +187,10 @@
     }
     
     function showTab(name) {
+      if (name === "home" && inDungeon) {
+        exitDungeon(); // ✅ 홈으로 이동할 때 던전 나가기 자동 호출
+      }
+      
       document.getElementById("homeTab").style.display = name === "home" ? "block" : "none";
       document.getElementById("dungeonTab").style.display = name === "dungeon" ? "block" : "none";
     }
