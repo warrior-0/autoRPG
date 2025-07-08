@@ -22,6 +22,12 @@
       cursor: pointer;
       font-size: 16px;
     }
+    input[type=number] {
+      width: 60px;
+      padding: 5px;
+      font-size: 14px;
+      text-align: center;
+    }
     #log {
       max-height: 200px;
       overflow-y: auto;
@@ -122,25 +128,12 @@
       <button onclick="showTab('home')">홈</button>
       <button onclick="showTab('dungeon')">던전</button>
       <button onclick="showTab('shop')">상점</button>
-      <button onclick="showTab('donation')">후원</button>
-    </div>
-
-    <div id="homeTab">
-      <p>어서오세요! 던전에 입장하여 전투를 시작하세요.</p>
-      <div id="statUI">
-        <h3>스탯 분배</h3>
-        <p>남은 스탯 포인트: <span id="statPoint">0</span></p>
-        <p>
-          ATK: <span id="statAtk">0</span>
-          <button onclick="addStat('atk')">+1</button><br/>
-          CON: <span id="statCon">0</span>
-          <button onclick="addStat('con')">+1</button><br/>
-          DEX: <span id="statDex">0</span>
-          <button onclick="addStat('dex')">+1</button>
-        </p>
-      </div>
+      <button onclick="showTab('donate')">후원</button>
     </div>
     
+    <div id="homeTab">
+      <p>어서오세요! 던전에 입장하여 전투를 시작하세요.</p>
+    </div>
     <div id="dungeonTab" style="display:none;">
       <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;">
         <button id="stagePrev">⬅</button>
@@ -153,9 +146,22 @@
     <div id="shopTab" style="display:none;">
       <h2>상점</h2>
       <p>보유 골드: <span id="goldShop">0</span></p>
-      <button onclick="buyPotion('small')">소형 물약 (50G)</button>
-      <button onclick="buyPotion('medium')">중형 물약 (100G)</button>
-      <button onclick="buyPotion('large')">대형 물약 (200G)</button>
+
+      <div>
+        <label>소형 물약 수량:</label>
+        <input type="number" id="buySmallQty" value="1" min="1" />
+        <button onclick="buyPotionBulk('small')">구매</button>
+      </div>
+      <div>
+        <label>중형 물약 수량:</label>
+        <input type="number" id="buyMediumQty" value="1" min="1" />
+        <button onclick="buyPotionBulk('medium')">구매</button>
+      </div>
+      <div>
+        <label>대형 물약 수량:</label>
+        <input type="number" id="buyLargeQty" value="1" min="1" />
+        <button onclick="buyPotionBulk('large')">구매</button>
+      </div>
     </div>
 
     <div id="donateTab" style="display:none;">
@@ -239,6 +245,34 @@
       log(`${labelMap[type]} 물약을 구매했습니다!`);
       updateUI();
       saveData();
+    }
+
+    function buyPotionBulk(type) {
+      const qtyInput = document.getElementById(`buy${capitalize(type)}Qty`);
+      let quantity = parseInt(qtyInput.value);
+      if (isNaN(quantity) || quantity < 1) {
+        alert("올바른 수량을 입력하세요.");
+        return;
+      }
+
+      const costMap = { small: 50, medium: 100, large: 200 };
+      const labelMap = { small: "소형", medium: "중형", large: "대형" };
+      const totalCost = costMap[type] * quantity;
+
+      if (userData.gold < totalCost) {
+        alert("골드가 부족합니다!");
+        return;
+      }
+
+      userData.gold -= totalCost;
+      userData.potions[type] += quantity;
+      log(`${labelMap[type]} 물약 ${quantity}개를 구매했습니다!`);
+      updateUI();
+      saveData();
+    }
+
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
     function autoUsePotion() {
@@ -361,7 +395,7 @@
       document.getElementById("homeTab").style.display = name === "home" ? "block" : "none";
       document.getElementById("dungeonTab").style.display = name === "dungeon" ? "block" : "none";
       document.getElementById("shopTab").style.display = name === "shop" ? "block" : "none";
-      document.getElementById("donateTab").style.display = name === "donation" ? "block" : "none";
+      document.getElementById("donateTab").style.display = name === "donate" ? "block" : "none";
       if (name === "shop") {
         document.getElementById("goldShop").innerText = userData.gold;
       }
@@ -373,115 +407,4 @@
     }
 
     function loadData() {
-      const user = auth.currentUser;
-      return db.collection("users").doc(user.uid).get().then(doc => {
-        if (doc.exists) {
-          userData = doc.data();
-          if (!userData.atk) userData.atk = 1;
-        } else {
-          userData = {
-            nickname: user.email,
-            gold: 0, exp: 0, level: 1,
-            dungeonTime: 60,
-            hp: 100, maxHp: 100,
-            potions: { small: 3, medium: 1, large: 0 }
-          };
-        }
-        document.getElementById("nicknameDisplay").innerText = userData.nickname;
-        updateUI();
-      });
-    }
-
-    function signUp() {
-      const nickname = document.getElementById("nicknameInput").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const pw = document.getElementById("password").value;
-    
-      if (!nickname || !email || !pw) {
-        alert("닉네임, 이메일, 비밀번호를 모두 입력해주세요");
-        return;
-      }
-    
-      // 닉네임 중복 확인
-      db.collection("users").where("nickname", "==", nickname).get()
-        .then(snapshot => {
-          if (!snapshot.empty) {
-            alert("이미 사용 중인 닉네임입니다.");
-            throw new Error("닉네임 중복");
-          }
-    
-          // 닉네임 중복이 없으면 회원가입 진행
-          return auth.createUserWithEmailAndPassword(email, pw);
-        })
-        .then(userCred => {
-          userData = {
-            nickname: nickname,
-            gold: 0, exp: 0, level: 1,
-            atk: 1,
-            dungeonTime: 60,
-            hp: 100, maxHp: 100,
-            potions: { small: 3, medium: 1, large: 0 }
-          };
-          return db.collection("users").doc(userCred.user.uid).set(userData);
-        })
-        .then(() => {
-          alert("회원가입 성공");
-          document.getElementById("authUI").style.display = "none";
-          document.getElementById("gameUI").style.display = "block";
-          document.getElementById("bottomStatus").style.display = "flex";
-          updateUI();
-        })
-        .catch(error => {
-          if (error.code === "auth/email-already-in-use") {
-            alert("이미 사용 중인 이메일입니다.");
-          } else if (error.message !== "닉네임 중복") {
-            alert("회원가입 실패: " + error.message);
-          }
-        });
-    }
-
-    function signIn() {
-      const email = document.getElementById("email").value.trim();
-      const pw = document.getElementById("password").value;
-      auth.signInWithEmailAndPassword(email, pw).then(() => {
-        document.getElementById("authUI").style.display = "none";
-        document.getElementById("gameUI").style.display = "block";
-        document.getElementById("bottomStatus").style.display = "flex";
-        showTab('home');
-        return loadData();
-      });
-    }
-
-    function signOut() {
-      auth.signOut().then(() => location.reload());
-    }
-
-    document.getElementById("stagePrev").onclick = () => {
-      if (currentStage > 1) {
-        currentStage--;
-        updateUI();
-      }
-    };
-    document.getElementById("stageNext").onclick = () => {
-      if (currentStage < maxStage) {
-        currentStage++;
-        updateUI();
-      }
-    };
-    function addStat(stat) {
-      if (userData.statPoint <= 0) {
-        alert("스탯 포인트가 부족합니다.");
-        return;
-      }
-      userData[stat]++;
-      userData.statPoint--;
-      if (stat === 'con') {
-        userData.maxHp += 10;
-        userData.hp += 10;
-      }
-      updateUI();
-      saveData();
-    }
-  </script>
-</body>
-</html>
+      const user
