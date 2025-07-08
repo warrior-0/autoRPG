@@ -16,14 +16,12 @@
       padding: 30px;
       margin-bottom: 140px;
     }
-
     button {
       margin: 5px;
       padding: 10px 20px;
       cursor: pointer;
       font-size: 16px;
     }
-
     #log {
       max-height: 200px;
       overflow-y: auto;
@@ -33,11 +31,9 @@
       margin-top: 20px;
       text-align: left;
     }
-
     #gameUI {
       display: none;
     }
-
     #bottomStatus {
       position: fixed;
       bottom: 0;
@@ -54,7 +50,6 @@
       gap: 10px;
       z-index: 1000;
     }
-
     #stagePrev, #stageNext {
       font-size: 24px;
       background: #444;
@@ -64,13 +59,11 @@
       border-radius: 4px;
       user-select: none;
     }
-
     .status-bar-container {
       width: 90%;
       max-width: 300px;
       min-width: 200px;
     }
-
     .bar-bg {
       background: #555;
       border-radius: 8px;
@@ -78,43 +71,36 @@
       width: 100%;
       overflow: hidden;
     }
-
     #hpBar {
       height: 100%;
       background: #e74c3c;
       width: 100%;
       transition: width 0.3s ease;
     }
-
     #expBar {
       height: 100%;
       background: #3498db;
       width: 0%;
       transition: width 0.3s ease;
     }
-
     .bar-text {
       text-align: right;
       font-size: 13px;
       margin-top: 4px;
       user-select: none;
     }
-
     @media (max-width: 600px) {
       body {
         padding: 15px 5px;
       }
-
       #tabs {
         flex-direction: column;
         gap: 5px;
       }
-
       button {
         width: 100%;
         box-sizing: border-box;
       }
-
       .status-bar-container {
         width: 95%;
       }
@@ -123,7 +109,6 @@
 </head>
 <body>
   <h1>자동사냥 RPG</h1>
-
   <div id="authUI">
     <input type="text" id="nicknameInput" placeholder="닉네임" /><br />
     <input type="email" id="email" placeholder="이메일" /><br />
@@ -138,11 +123,9 @@
       <button onclick="showTab('dungeon')">던전</button>
       <button onclick="showTab('shop')">상점</button>
     </div>
-
     <div id="homeTab">
       <p>어서오세요! 던전에 입장하여 전투를 시작하세요.</p>
     </div>
-
     <div id="dungeonTab" style="display:none;">
       <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;">
         <button id="stagePrev">⬅</button>
@@ -151,7 +134,6 @@
       </div>
       <button onclick="enterDungeon()" id="dungeonToggleBtn">던전 입장</button>
     </div>
-
     <div id="shopTab" style="display:none;">
       <h2>상점</h2>
       <p>보유 골드: <span id="goldShop">0</span></p>
@@ -159,17 +141,11 @@
       <button onclick="buyPotion('medium')">중형 물약 (100G)</button>
       <button onclick="buyPotion('large')">대형 물약 (200G)</button>
     </div>
-
     <p><strong>현재 유저:</strong> <span id="nicknameDisplay"></span></p>
     <p>골드: <span id="gold">0</span> | 경험치: <span id="exp">0</span> | 던전 시간: <span id="dungeonTime">60</span>초</p>
     <p>레벨: <span id="level">1</span></p>
     <p>체력: <span id="hp">100</span> / <span id="maxHp">100</span></p>
-    <p>
-      물약:
-      소형: <span id="potionSmall">3</span>
-      중형: <span id="potionMedium">1</span>
-      대형: <span id="potionLarge">0</span>
-    </p>
+    <p>물약: 소형: <span id="potionSmall">3</span> 중형: <span id="potionMedium">1</span> 대형: <span id="potionLarge">0</span></p>
     <button onclick="signOut()">로그아웃</button>
     <div id="log"></div>
   </div>
@@ -267,38 +243,67 @@
       }
     }
 
-    function enterDungeon() {
+        function enterDungeon() {
       if (inDungeon) {
         exitDungeon();
         return;
       }
-      if (userData.dungeonTime <= 0) {
-        alert("던전에 입장할 수 없습니다.");
+      if (userData.hp <= 0) {
+        alert("체력이 부족합니다.");
         return;
       }
       inDungeon = true;
       document.getElementById("dungeonToggleBtn").innerText = "던전 나가기";
       log("던전에 입장합니다!");
+      let monsterHp = 50 + currentStage * 10;
+      let monsterAtk = 5 + currentStage * 2;
+      let monsterDodge = Math.min(20, currentStage);
       dungeonInterval = setInterval(() => {
-        userData.dungeonTime--;
-        userData.gold += 5*currentStage;
-        userData.exp += 2*currentStage;
-        userData.hp -= 1*currentStage;
+        if (Math.random() * 100 < 10) {
+          log("플레이어가 회피했습니다");
+        } else {
+          let dmg = monsterAtk;
+          if (Math.random() < 0.1) {
+            dmg *= 1.5;
+            log("몬스터의 치명타 공격");
+          }
+          userData.hp -= dmg;
+          log("몬스터에게 피해를 받았습니다");
+        }
+
+        if (Math.random() * 100 < monsterDodge) {
+          log("몬스터가 회피했습니다");
+        } else {
+          let dmg = 10 + currentStage;
+          if (Math.random() < 0.1) {
+            dmg *= 1.5;
+            log("플레이어의 치명타 공격");
+          }
+          monsterHp -= dmg;
+          log("몬스터에게 피해를 입혔습니다");
+        }
+
         autoUsePotion();
         checkLevelUp();
         updateUI();
         saveData();
-        if (userData.hp <= 0 || userData.dungeonTime <= 0) {
+
+        if (userData.hp <= 0 || monsterHp <= 0) {
           clearInterval(dungeonInterval);
           inDungeon = false;
           document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
           log("던전에서 나왔습니다.");
-          showTab("home");
-          if (userData.hp <= 0) {
-            userData.hp = userData.maxHp;
-            userData.exp -= userData.exp*0.3
-            userData.gold -= userData.gold*0.5
+          if (monsterHp <= 0) {
+            userData.gold += currentStage * 20;
+            userData.exp += currentStage * 10;
+            log("몬스터 처치 보상 획득!");
+          } else {
+            userData.exp = Math.floor(userData.exp * 0.7);
+            userData.gold = Math.floor(userData.gold * 0.5);
           }
+          updateUI();
+          saveData();
+          showTab("home");
         }
       }, 1000);
     }
