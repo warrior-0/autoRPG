@@ -269,10 +269,12 @@
           let dmg = monsterAtk;
           if (Math.random() < 0.1) {
             dmg *= 1.5;
-            log("몬스터의 치명타 공격");
-          }
+            userData.hp -= dmg
+            log("몬스터의 치명타 공격! 몬스터에게 "+dmg+"피해를 받았습니다");
+          } else {
           userData.hp -= dmg;
-          log("몬스터에게 "+dmg+"피해를 받았습니다");
+          log("몬스터에게 "+dmg+"피해를 받았습니다")
+          }
         }
 
         if (Math.random() * 100 < monsterDodge) {
@@ -281,12 +283,16 @@
           let dmg = 10 + currentStage;
           if (Math.random() < 0.1) {
             dmg *= 1.5;
-            log("플레이어의 치명타 공격");
-          }
+            monsterHp -= dmg;
+            log("플레이어의 치명타 공격! 몬스터에게 "+dmg+"피해를 입혔습니다");
+          } else {
           monsterHp -= dmg;
           log("몬스터에게 "+dmg+"피해를 입혔습니다");
+          }
         }
 
+        log("몬스터 남은 체력: "+mosterHp)
+        
         if (monsterHp <= 0) {
           userData.gold += currentStage * 20;
           userData.exp += currentStage * 10;
