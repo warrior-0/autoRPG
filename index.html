@@ -88,8 +88,6 @@
     let dungeonInterval;
     let currentStage = 1;
     const maxStage = 100;
-    const auth = firebase.auth();
-    const db = firebase.firestore();
 
     function log(msg) {
       document.getElementById("log").innerHTML = `<div>> ${msg}</div>` + document.getElementById("log").innerHTML;
