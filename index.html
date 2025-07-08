@@ -68,7 +68,7 @@
     <div id="log"></div>
   </div>
 
-  <div id="bottomStatus">
+  <div id="bottomStatus" style="display: none;>
     <button id="stagePrev">⬅</button>
     <div><strong>스테이지:</strong> <span id="stageDisplay">1</span></div>
     <button id="stageNext">➡</button>
@@ -215,7 +215,7 @@
       }).then(() => {
         alert("회원가입 성공");
         document.getElementById("authUI").style.display = "none";
-        document.getElementById("gameUI").style.display = "block";
+        document.getElementById("gameUI").style.display = "flex";
         updateUI();
       });
     }
@@ -225,7 +225,7 @@
       const pw = document.getElementById("password").value;
       auth.signInWithEmailAndPassword(email, pw).then(() => {
         document.getElementById("authUI").style.display = "none";
-        document.getElementById("gameUI").style.display = "block";
+        document.getElementById("gameUI").style.display = "flex";
         showTab('home');
         return loadData();
       });
