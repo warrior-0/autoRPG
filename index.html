@@ -303,7 +303,7 @@
         const needExp = userData.level * 100;
         userData.exp -= needExp;
         userData.level++;
-        userData.maxHp = Math.floor(stats.체력계산값);
+        userData.maxHp = (Math.floor(level / 3) + 1) * con * 5 + 10;
         userData.hp = userData.maxHp;
         log(`레벨업! 현재 레벨: ${userData.level}`);
       }
