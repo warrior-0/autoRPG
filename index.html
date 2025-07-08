@@ -294,6 +294,7 @@
       let monsterHp = 50 + currentStage * 10;
       let monsterAtk = 5 + currentStage * 2;
       let monsterDodge = Math.min(20, currentStage);
+      let reward = currentStage
       dungeonInterval = setInterval(() => {
         if (Math.random() * 100 < 10) {
           log("플레이어가 회피했습니다");
@@ -326,9 +327,9 @@
         log("몬스터 남은 체력: "+monsterHp)
         
         if (monsterHp <= 0) {
-          userData.gold += currentStage * 20;
-          userData.exp += currentStage * 10;
-          log("몬스터 처치 보상 획득! 골드: "+currentStage * 20+" 경험치: "+currentStage * 10);
+          userData.gold += reward * 20;
+          userData.exp += reward * 10;
+          log("몬스터 처치 보상 획득! 골드: "+reward * 20+" 경험치: "+reward * 10);
           monsterHp = 50 + currentStage * 10;
           monsterAtk = 5 + currentStage * 2;
           monsterDodge = Math.min(20, currentStage);
@@ -411,6 +412,15 @@
         loadRanking();
       }
     }
+    
+    // 🔹 닉네임 중복 검사 함수 (signUp 위에 위치할 것)
+    async function isNicknameTaken(nickname) {
+      const snapshot = await db.collection("users")
+        .where("nickname", "==", nickname)
+        .get();
+    
+      return !snapshot.empty;  // true면 이미 존재함
+    }
 
     async function signUp() {
       const email = document.getElementById("email").value.trim();
@@ -443,9 +453,6 @@
           maxHp: 100,
           potions: { small: 3, medium: 1, large: 0 },
           specialDungeonTime: 60,
-          atk: 10,
-          con: 10,
-          dex: 10,
         });
     
         alert("회원가입 성공! 로그인 해주세요.");
