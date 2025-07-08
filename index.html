@@ -17,9 +17,9 @@
 <body>
   <h1>자동사냥 RPG</h1>
 
-  <!-- 로그인 UI -->
+  <!-- 로그인/회원가입 UI -->
   <div id="authUI">
-    <input type="text" id="nickname" placeholder="닉네임" /><br />
+    <input type="text" id="nicknameInput" placeholder="닉네임" /><br />
     <input type="email" id="email" placeholder="이메일" /><br />
     <input type="password" id="password" placeholder="비밀번호" /><br />
     <button onclick="signUp()">회원가입</button>
@@ -28,7 +28,7 @@
 
   <!-- 게임 UI -->
   <div id="gameUI">
-    <p><strong>현재 유저:</strong> <span id="nickname"></span></p>
+    <p><strong>현재 유저:</strong> <span id="nicknameDisplay"></span></p>
     <p>골드: <span id="gold">0</span> | 경험치: <span id="exp">0</span> | 던전 시간: <span id="dungeonTime">60</span>초</p>
     <button onclick="enterDungeon()">던전 입장</button>
     <button onclick="signOut()">로그아웃</button>
@@ -64,6 +64,7 @@
         db.collection("users").doc(user.uid).get().then(doc => {
           if (doc.exists) {
             userData = doc.data();
+            document.getElementById("nicknameDisplay").innerText = userData.nickname || user.email;
             updateUI();
           }
         });
@@ -104,20 +105,27 @@
       }, 1000);
     }
 
-    function signUp() {
+    // 🔹 닉네임 중복 검사 후 회원가입
+    async function signUp() {
       const email = document.getElementById("email").value;
       const pw = document.getElementById("password").value;
-      const nickname = document.getElementById("nickname").value;
-    
+      const nickname = document.getElementById("nicknameInput").value;
+
       if (!nickname || !email || !pw) {
         alert("모든 항목을 입력해주세요.");
         return;
       }
-    
+
+      // 닉네임 중복 검사
+      const snapshot = await db.collection("users").where("nickname", "==", nickname).get();
+      if (!snapshot.empty) {
+        alert("이미 존재하는 닉네임입니다. 다른 닉네임을 사용해주세요.");
+        return;
+      }
+
       auth.createUserWithEmailAndPassword(email, pw)
         .then(cred => {
           const uid = cred.user.uid;
-          // 초기 유저 정보 Firestore에 저장
           return db.collection("users").doc(uid).set({
             nickname: nickname,
             gold: 0,
@@ -138,7 +146,6 @@
         .then(() => {
           document.getElementById("authUI").style.display = "none";
           document.getElementById("gameUI").style.display = "block";
-          document.getElementById("userEmail").innerText = auth.currentUser.email;
           loadData();
           startAutoHunt();
         })
