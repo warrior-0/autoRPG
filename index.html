@@ -362,8 +362,7 @@
         if (Math.random() < evasionRateMonster) {
           log("몬스터가 플레이어 공격을 회피했습니다.");
         } else {
-          const stats = calculateStats();
-          let playerAtk = stats.공격력;
+          const playerAtk = 1 + ((userData.level / 2) + 1) * userData.str * 1.5;
     
           const critStat = userData.dex * 5;
           const critChance = (critStat / (critStat + 150)) * 100;
