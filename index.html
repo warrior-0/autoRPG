@@ -36,16 +36,18 @@
   </div>
 
   <script>
-    let userData = {};
+    let userData = null;
     let inDungeon = false;
     let dungeonInterval;
-
+    let autoHuntInterval;
+    
     function log(message) {
       const logDiv = document.getElementById("log");
       logDiv.innerHTML = `<div>> ${message}</div>` + logDiv.innerHTML;
     }
 
     function updateUI() {
+      if (!userData) return;
       document.getElementById("gold").innerText = userData.gold;
       document.getElementById("exp").innerText = userData.exp;
       document.getElementById("dungeonTime").innerText = userData.dungeonTime;
@@ -53,7 +55,7 @@
 
     function saveData() {
       const user = auth.currentUser;
-      if (user) {
+      if (user && userData) {
         db.collection("users").doc(user.uid).set(userData, { merge: true });
       }
     }
@@ -61,19 +63,33 @@
     function loadData() {
       const user = auth.currentUser;
       if (user) {
-        db.collection("users").doc(user.uid).get().then(doc => {
+        return db.collection("users").doc(user.uid).get().then(doc => {
           if (doc.exists) {
             userData = doc.data();
             document.getElementById("nicknameDisplay").innerText = userData.nickname || user.email;
             updateUI();
+          } else {
+            // 문서가 없으면 초기 데이터 설정
+            userData = {
+              nickname: user.email,
+              gold: 0,
+              exp: 0,
+              dungeonTime: 60
+            };
+            document.getElementById("nicknameDisplay").innerText = userData.nickname;
+            updateUI();
+            saveData();
           }
         });
+      } else {
+        return Promise.reject("로그인되지 않음");
       }
     }
 
     function startAutoHunt() {
-      setInterval(() => {
-        if (!inDungeon) {
+      if (autoHuntInterval) return; // 이미 실행 중이면 중복 실행 방지
+      autoHuntInterval = setInterval(() => {
+        if (!inDungeon && userData) {
           userData.gold += 10;
           userData.exp += 5;
           log("몬스터 처치! 골드 +10, 경험치 +5");
@@ -104,30 +120,58 @@
         }
       }, 1000);
     }
-    
+
     function signUp() {
-      const nickname = documen.getElementById("nicknameInput").value;
-      const email = document.getElementById("email").value;
+      const nickname = document.getElementById("nicknameInput").value.trim();
+      const email = document.getElementById("email").value.trim();
       const pw = document.getElementById("password").value;
+      if (!nickname || !email || !pw) {
+        alert("모든 필드를 입력하세요.");
+        return;
+      }
+
       auth.createUserWithEmailAndPassword(email, pw)
-        .then(() => alert("회원가입 성공"))
-        .catch(err => alert(err.message));
-    }
-    
-    function signIn() {
-      const email = document.getElementById("email").value;
-      const pw = document.getElementById("password").value;
-      auth.signInWithEmailAndPassword(email, pw)
-        .then(() => {
+        .then((userCredential) => {
+          const user = userCredential.user;
+          userData = {
+            nickname: nickname,
+            gold: 0,
+            exp: 0,
+            dungeonTime: 60
+          };
+          return db.collection("users").doc(user.uid).set(userData).then(() => user);
+        })
+        .then((user) => {
+          alert("회원가입 성공");
           document.getElementById("authUI").style.display = "none";
           document.getElementById("gameUI").style.display = "block";
-          document.getElementById("nicknameDisplay").innerText = ""; // 닉네임 불러올 때 업데이트
-          loadData();
+          document.getElementById("nicknameDisplay").innerText = userData.nickname;
+          updateUI();
           startAutoHunt();
         })
         .catch(err => alert(err.message));
     }
-    
+
+    function signIn() {
+      const email = document.getElementById("email").value.trim();
+      const pw = document.getElementById("password").value;
+      if (!email || !pw) {
+        alert("이메일과 비밀번호를 입력하세요.");
+        return;
+      }
+
+      auth.signInWithEmailAndPassword(email, pw)
+        .then(() => {
+          document.getElementById("authUI").style.display = "none";
+          document.getElementById("gameUI").style.display = "block";
+          return loadData();
+        })
+        .then(() => {
+          startAutoHunt();
+        })
+        .catch(err => alert(err.message));
+    }
+
     function signOut() {
       auth.signOut().then(() => {
         location.reload();
