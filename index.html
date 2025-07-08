@@ -90,10 +90,20 @@
       user-select: none;
     }
     @media (max-width: 600px) {
-      body { padding: 15px 5px; }
-      #tabs { flex-direction: column; gap: 5px; }
-      button { width: 100%; box-sizing: border-box; }
-      .status-bar-container { width: 95%; }
+      body {
+        padding: 15px 5px;
+      }
+      #tabs {
+        flex-direction: column;
+        gap: 5px;
+      }
+      button {
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .status-bar-container {
+        width: 95%;
+      }
     }
   </style>
 </head>
@@ -110,6 +120,7 @@
     <div id="tabs" style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px;">
       <button onclick="showTab('home')">홈</button>
       <button onclick="showTab('dungeon')">던전</button>
+      <button onclick="showTab('boss')">보스</button>
       <button onclick="showTab('shop')">상점</button>
     </div>
     <div id="homeTab">
@@ -121,8 +132,12 @@
         <div><strong>스테이지:</strong> <span id="stageDisplay">1</span></div>
         <button id="stageNext">➡</button>
       </div>
-      <div id="monsterInfo"></div>
       <button onclick="enterDungeon()" id="dungeonToggleBtn">던전 입장</button>
+    </div>
+    <div id="bossTab" style="display:none;">
+      <h3>보스 던전</h3>
+      <p>던전 시간: <span id="dungeonTimeBoss">60</span>초</p>
+      <button onclick="enterBossDungeon()" id="bossToggleBtn">보스 입장</button>
     </div>
     <div id="shopTab" style="display:none;">
       <h2>상점</h2>
@@ -150,52 +165,48 @@
     </div>
   </div>
   <script>
-    let monster = null;
-    const monsterData = stage => ({
-      name: `몬스터 Lv.${stage}`,
-      hp: 30 + stage * 10,
-      maxHp: 30 + stage * 10,
-      atk: 5 + stage * 2,
-      dodge: 5 + stage
-    });
+    let userData = null;
+    let inDungeon = false;
+    let dungeonInterval;
+    let currentStage = 1;
+    const maxStage = 100;
+    let currentDungeonType = "none"; // normal or boss
 
-    function spawnMonster() {
-      monster = monsterData(currentStage);
-      log(`${monster.name} 등장! HP: ${monster.hp}`);
-      document.getElementById("monsterInfo").innerText = `${monster.name} HP: ${monster.hp} / ${monster.maxHp}`;
+    function log(msg) {
+      document.getElementById("log").innerHTML = `<div>> ${msg}</div>` + document.getElementById("log").innerHTML;
     }
 
-    function playerAttack() {
-      if (!monster) return;
-      if (Math.random() * 100 < monster.dodge) {
-        log(`${monster.name}이 공격을 회피했다!`);
+    function enterBossDungeon() {
+      if (inDungeon) {
+        exitDungeon();
         return;
       }
-      const damage = 10 + Math.floor(userData.level * 1.5);
-      monster.hp -= damage;
-      log(`${monster.name}에게 ${damage} 데미지를 입혔다!`);
-      if (monster.hp <= 0) {
-        const goldEarned = 10 * currentStage;
-        const expEarned = 10 * currentStage;
-        userData.gold += goldEarned;
-        userData.exp += expEarned;
-        log(`${monster.name} 처치! 골드 ${goldEarned}, 경험치 ${expEarned} 획득.`);
+      if (userData.dungeonTime <= 0) {
+        alert("보스 던전에 입장할 수 없습니다.");
+        return;
+      }
+      inDungeon = true;
+      currentDungeonType = "boss";
+      document.getElementById("bossToggleBtn").innerText = "보스 나가기";
+      log("보스 던전에 입장합니다!");
+      dungeonInterval = setInterval(() => {
+        userData.dungeonTime--;
+        userData.gold += 100;
+        userData.exp += 50;
+        userData.hp -= 25;
+        autoUsePotion();
         checkLevelUp();
-        spawnMonster();
-      }
-      updateMonsterUI();
-    }
-
-    function attackPlayer() {
-      if (!monster) return;
-      userData.hp -= monster.atk;
-      log(`${monster.name}의 공격! ${monster.atk} 데미지!`);
-    }
-
-    function updateMonsterUI() {
-      if (monster) {
-        document.getElementById("monsterInfo").innerText = `${monster.name} HP: ${Math.max(0, monster.hp)} / ${monster.maxHp}`;
-      }
+        updateUI();
+        saveData();
+        if (userData.hp <= 0 || userData.dungeonTime <= 0) {
+          clearInterval(dungeonInterval);
+          inDungeon = false;
+          currentDungeonType = "none";
+          document.getElementById("bossToggleBtn").innerText = "보스 입장";
+          log("보스 던전 종료!");
+          showTab("home");
+        }
+      }, 1000);
     }
   </script>
 </body>
