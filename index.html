@@ -148,12 +148,17 @@
     }
 
     function enterDungeon() {
+      if (inDungeon) {
+        exitDungeon(); // ✅ 기존 함수 재활용
+        return;
+      }
       if (inDungeon || userData.dungeonTime <= 0) {
         alert("던전에 입장할 수 없습니다.");
         return;
       }
       inDungeon = true;
       log("던전에 입장합니다!");
+      document.getElementById("dungeonToggleBtn").innerText = "던전 나가기";
       dungeonInterval = setInterval(() => {
         userData.dungeonTime--;
         userData.gold += 50;
