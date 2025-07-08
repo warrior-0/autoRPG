@@ -336,68 +336,102 @@
       inDungeon = true;
       document.getElementById("dungeonToggleBtn").innerText = "던전 나가기";
       log("던전에 입장합니다!");
-      let monsterHp = 50 + currentStage * 10;
-      let monsterAtk = 5 + currentStage * 2;
-      let monsterDodge = Math.min(20, currentStage);
-      let reward = currentStage
+    
+      let monsterHp = Math.floor((currentStage / 7 + 1) * currentStage * 2);
+      let monsterCrit = currentStage; // 몬스터 치명타
+      let monsterHit = currentStage * 7; // 몬스터 명중
+      let monsterDef = (currentStage / 20 + 1) * currentStage; // 몬스터 방어력
+      let monsterAtk = Math.floor((currentStage / 4 + 1) * currentStage); // 몬스터 공격력
+      let reward = currentStage;
+    
       dungeonInterval = setInterval(() => {
-        if (Math.random() * 100 < 10) {
-          log("플레이어가 회피했습니다");
+        // 플레이어 회피 계산
+        const playerEvasion = userData.dex;
+        const evasionRatePlayer = playerEvasion / (playerEvasion + monsterHit);
+    
+        if (Math.random() < evasionRatePlayer) {
+          log("플레이어가 몬스터 공격을 회피했습니다.");
         } else {
+          let isCrit = Math.random() * 100 < monsterCrit;
+    
+          let playerDef = userData.con;
+          let dmgReduction = 1 - (playerDef / (userData.level * 2 + playerDef));
+    
           let dmg = monsterAtk;
-          if (Math.random() < 0.1) {
+          if (isCrit) {
             dmg *= 1.5;
-            userData.hp -= dmg
-            log("몬스터의 치명타 공격! 몬스터에게 "+dmg+"피해를 받았습니다");
-          } else {
+            log(`몬스터의 치명타 공격!`);
+          }
+          dmg = Math.floor(dmg * dmgReduction);
+          dmg = Math.max(0, dmg);
           userData.hp -= dmg;
-          log("몬스터에게 "+dmg+"피해를 받았습니다")
-          }
+          log(`플레이어가 ${dmg} 피해를 받았습니다.`);
         }
-
-        if (Math.random() * 100 < monsterDodge) {
-          log("몬스터가 회피했습니다");
+    
+        const monsterEvasion = 0;
+        const evasionRateMonster = monsterEvasion / (monsterEvasion + userData.dex * 5);
+    
+        if (Math.random() < evasionRateMonster) {
+          log("몬스터가 플레이어 공격을 회피했습니다.");
         } else {
-          let dmg = 10 + userData.str;
-          if (Math.random() < 0.1) {
-            dmg *= 1.5;
-            monsterHp -= dmg;
-            log("플레이어의 치명타 공격! 몬스터에게 "+dmg+"피해를 입혔습니다");
+          const stats = calculateStats();
+          let playerAtk = stats.공격력;
+    
+          const critStat = userData.dex * 5;
+          const critChance = (critStat / (critStat + 150)) * 100;
+          let isCrit = Math.random() * 100 < critChance;
+    
+          let monsterDefFinal = monsterDef;
+          let dmgReductionPlayer = 1 - (monsterDefFinal / (userData.level * 2 + monsterDefFinal));
+    
+          let dmg;
+          if (isCrit) {
+            const critDamage = playerAtk * (critStat / 2000 + 1.1);
+            dmg = Math.floor(critDamage * dmgReductionPlayer);
+            log("플레이어의 치명타 공격!");
           } else {
-          monsterHp -= dmg;
-          log("몬스터에게 "+dmg+"피해를 입혔습니다");
+            dmg = Math.floor(playerAtk * dmgReductionPlayer);
           }
+          dmg = Math.max(0, dmg);
+          monsterHp -= dmg;
+          log(`몬스터가 ${dmg} 피해를 받았습니다.`);
         }
-
-        log("몬스터 남은 체력: "+monsterHp)
-        
+    
+        log(`몬스터 남은 체력: ${Math.max(0, monsterHp)}`);
+    
         if (monsterHp <= 0) {
           userData.gold += reward * 20;
           userData.exp += reward * 10;
-          log("몬스터 처치 보상 획득! 골드: "+reward * 20+" 경험치: "+reward * 10);
-          monsterHp = 50 + currentStage * 10;
-          monsterAtk = 5 + currentStage * 2;
-          monsterDodge = Math.min(20, currentStage);
+          log(`몬스터 처치 보상 획득! 골드: ${reward * 20} 경험치: ${reward * 10}`);
+          // 몬스터 체력, 공격력, 기타 스탯 초기화
+          monsterHp = Math.floor((currentStage / 7 + 1) * currentStage * 2);
+          monsterCrit = currentStage;
+          monsterHit = currentStage * 7;
+          monsterDef = (currentStage / 20 + 1) * currentStage;
+          monsterAtk = Math.floor((currentStage / 4 + 1) * currentStage);
           checkLevelUp();
         }
+    
         autoUsePotion();
         updateUI();
         saveData();
-        
+    
         if (userData.hp <= 0) {
           clearInterval(dungeonInterval);
           inDungeon = false;
           document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
-          log("던전에서 사망했습니다. 체력이 100%회복되고 보유 경험치의 30%를 잃습니다");
+          log("던전에서 사망했습니다. 체력이 100%회복되고 보유 경험치의 30%와 보유 골드의 50%를 잃습니다");
           userData.exp = Math.floor(userData.exp * 0.7);
+          userData.gold = Math.floor(userData.gold * 0.5);
           userData.hp = userData.maxHp;
           updateUI();
           saveData();
           showTab("home");
-          alert("던전에서 사망했습니다. 체력이 100%회복되고 보유 경험치의 30%를 잃습니다")
+          alert("던전에서 사망했습니다. 체력이 100%회복되고 보유 경험치의 30%와 보유 골드의 50%를 잃습니다");
         }
       }, 1000);
     }
+
 
     function exitDungeon() {
       if (!inDungeon) return;
