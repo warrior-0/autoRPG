@@ -8,10 +8,73 @@
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
   <script src="firebase-config.js"></script>
   <style>
-    body { font-family: Arial; text-align: center; background: #f5f5f5; padding: 30px; }
-    button { margin: 5px; padding: 10px 20px; }
-    #log { max-height: 200px; overflow-y: auto; border: 1px solid #ccc; background: #fff; padding: 10px; margin-top: 20px; }
+    body { font-family: Arial; text-align: center; background: #f5f5f5; padding: 30px; margin-bottom: 140px; /* 아래 고정바 공간 확보 */ }
+    button { margin: 5px; padding: 10px 20px; cursor: pointer; }
+    #log { max-height: 200px; overflow-y: auto; border: 1px solid #ccc; background: #fff; padding: 10px; margin-top: 20px; text-align: left; }
     #gameUI { display: none; }
+    /* 하단 고정 상태바 스타일 */
+    #bottomStatus {
+      position: fixed; bottom: 0; left: 0; width: 100%;
+      background: #222; color: white;
+      padding: 15px 20px;
+      box-sizing: border-box;
+      font-family: Arial;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      z-index: 1000;
+    }
+    /* 스테이지 컨트롤 버튼 */
+    #stagePrev, #stageNext {
+      font-size: 24px;
+      background: #444;
+      border: none;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 4px;
+      user-select: none;
+      transition: background 0.2s;
+    }
+    #stagePrev:hover, #stageNext:hover {
+      background: #666;
+    }
+    /* 상태바 컨테이너 */
+    .status-bar-container {
+      width: 300px;
+      min-width: 250px;
+    }
+    /* 바 배경 */
+    .bar-bg {
+      background: #555;
+      border-radius: 8px;
+      height: 22px;
+      width: 100%;
+      overflow: hidden;
+      box-shadow: inset 0 0 5px #00000088;
+    }
+    /* 체력 바 */
+    #hpBar {
+      height: 100%;
+      background: #e74c3c;
+      width: 100%;
+      transition: width 0.3s ease;
+    }
+    /* 경험치 바 */
+    #expBar {
+      height: 100%;
+      background: #3498db;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    /* 텍스트 정렬 */
+    .bar-text {
+      text-align: right;
+      font-size: 13px;
+      margin-top: 4px;
+      user-select: none;
+    }
   </style>
 </head>
 <body>
@@ -30,28 +93,32 @@
   <div id="gameUI">
     <p><strong>현재 유저:</strong> <span id="nicknameDisplay"></span></p>
     <p>골드: <span id="gold">0</span> | 경험치: <span id="exp">0</span> | 던전 시간: <span id="dungeonTime">60</span>초</p>
+    <p>레벨: <span id="level">1</span></p>
+    <p>체력: <span id="hp">100</span> / <span id="maxHp">100</span></p>
+    <p>물약: <span id="potions">3</span> <button onclick="usePotion()">물약 사용</button></p>
     <button onclick="enterDungeon()">던전 입장</button>
     <button onclick="signOut()">로그아웃</button>
     <div id="log"></div>
-    <div id="bottomStatus" style="position: fixed; bottom: 0; left: 0; width: 100%; background: #222; color: white; padding: 10px 20px; box-sizing: border-box; font-family: Arial;">
-
-  <div style="margin-bottom: 6px;">
-    <strong>스테이지: </strong><span id="stageDisplay">1</span>
   </div>
 
-  <div style="margin-bottom: 6px;">
-    <div style="background: #555; border-radius: 5px; height: 20px; width: 100%; overflow: hidden;">
-      <div id="hpBar" style="height: 100%; background: #e74c3c; width: 100%; transition: width 0.3s ease;"></div>
-    </div>
-    <div style="text-align: right; font-size: 12px;">체력: <span id="hpText">100 / 100</span></div>
-  </div>
+  <!-- 하단 상태바 & 스테이지 컨트롤 -->
+  <div id="bottomStatus">
+    <button id="stagePrev" title="이전 스테이지">⬅</button>
+    <div><strong>스테이지:</strong> <span id="stageDisplay">1</span></div>
+    <button id="stageNext" title="다음 스테이지">➡</button>
 
-  <div>
-    <div style="background: #555; border-radius: 5px; height: 20px; width: 100%; overflow: hidden;">
-      <div id="expBar" style="height: 100%; background: #3498db; width: 0%; transition: width 0.3s ease;"></div>
+    <div class="status-bar-container">
+      <div class="bar-bg">
+        <div id="hpBar"></div>
+      </div>
+      <div class="bar-text" id="hpText">100 / 100</div>
     </div>
-      <div style="text-align: right; font-size: 12px;">경험치: <span id="expText">0 / 100</span></div>
-    </div>
+
+    <div class="status-bar-container">
+      <div class="bar-bg">
+        <div id="expBar"></div>
+      </div>
+      <div class="bar-text" id="expText">0 / 100</div>
     </div>
   </div>
 
@@ -60,7 +127,13 @@
     let inDungeon = false;
     let dungeonInterval;
     let autoHuntInterval;
-    
+
+    let currentStage = 1;
+    const maxStage = 100;
+
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
     function log(message) {
       const logDiv = document.getElementById("log");
       logDiv.innerHTML = `<div>> ${message}</div>` + logDiv.innerHTML;
@@ -68,9 +141,29 @@
 
     function updateUI() {
       if (!userData) return;
+
+      // 기본 정보
       document.getElementById("gold").innerText = userData.gold;
       document.getElementById("exp").innerText = userData.exp;
       document.getElementById("dungeonTime").innerText = userData.dungeonTime;
+      document.getElementById("hp").innerText = userData.hp;
+      document.getElementById("maxHp").innerText = userData.maxHp;
+      document.getElementById("level").innerText = userData.level;
+      document.getElementById("potions").innerText = userData.potions;
+
+      // 스테이지
+      document.getElementById("stageDisplay").innerText = currentStage;
+
+      // 체력바 업데이트
+      const hpPercent = Math.max(0, Math.min(100, (userData.hp / userData.maxHp) * 100));
+      document.getElementById("hpBar").style.width = hpPercent + "%";
+      document.getElementById("hpText").innerText = `${userData.hp} / ${userData.maxHp}`;
+
+      // 경험치바 업데이트 (레벨업 필요 경험치 = level * 100)
+      const expToNext = userData.level * 100;
+      const expPercent = Math.min(100, (userData.exp / expToNext) * 100);
+      document.getElementById("expBar").style.width = expPercent + "%";
+      document.getElementById("expText").innerText = `${userData.exp} / ${expToNext}`;
     }
 
     function saveData() {
@@ -86,20 +179,22 @@
         return db.collection("users").doc(user.uid).get().then(doc => {
           if (doc.exists) {
             userData = doc.data();
-            document.getElementById("nicknameDisplay").innerText = userData.nickname || user.email;
-            updateUI();
           } else {
-            // 문서가 없으면 초기 데이터 설정
+            // 새 사용자 초기값
             userData = {
               nickname: user.email,
               gold: 0,
               exp: 0,
-              dungeonTime: 60
+              dungeonTime: 60,
+              hp: 100,
+              maxHp: 100,
+              level: 1,
+              potions: 3
             };
-            document.getElementById("nicknameDisplay").innerText = userData.nickname;
-            updateUI();
-            saveData();
+            db.collection("users").doc(user.uid).set(userData);
           }
+          document.getElementById("nicknameDisplay").innerText = userData.nickname || user.email;
+          updateUI();
         });
       } else {
         return Promise.reject("로그인되지 않음");
@@ -107,12 +202,20 @@
     }
 
     function startAutoHunt() {
-      if (autoHuntInterval) return; // 이미 실행 중이면 중복 실행 방지
+      if (autoHuntInterval) return; // 중복 실행 방지
       autoHuntInterval = setInterval(() => {
         if (!inDungeon && userData) {
+          if (userData.hp <= 0) {
+            log("체력이 0입니다. 자동사냥이 중지되었습니다.");
+            clearInterval(autoHuntInterval);
+            autoHuntInterval = null;
+            return;
+          }
           userData.gold += 10;
           userData.exp += 5;
-          log("몬스터 처치! 골드 +10, 경험치 +5");
+          userData.hp -= 10; // 체력 10 소모
+          log("몬스터 처치! 골드 +10, 경험치 +5, 체력 -10");
+          checkLevelUp();
           updateUI();
           saveData();
         }
@@ -130,9 +233,18 @@
         userData.dungeonTime--;
         userData.gold += 50;
         userData.exp += 20;
-        log("던전 몬스터 처치! 골드 +50, 경험치 +20");
+        userData.hp -= 15; // 던전에서는 체력 더 많이 소모
+        if (userData.hp <= 0) {
+          userData.hp = 0;
+          log("체력이 0이 되어 던전을 탈출합니다.");
+          clearInterval(dungeonInterval);
+          inDungeon = false;
+        }
+        log("던전 몬스터 처치! 골드 +50, 경험치 +20, 체력 -15");
+        checkLevelUp();
         updateUI();
         saveData();
+
         if (userData.dungeonTime <= 0) {
           clearInterval(dungeonInterval);
           inDungeon = false;
@@ -141,10 +253,38 @@
       }, 1000);
     }
 
+    function usePotion() {
+      if (userData.potions <= 0) {
+        alert("물약이 없습니다!");
+        return;
+      }
+      if (userData.hp >= userData.maxHp) {
+        alert("체력이 이미 가득합니다.");
+        return;
+      }
+      userData.potions--;
+      userData.hp = Math.min(userData.hp + 50, userData.maxHp);
+      log("물약 사용! 체력 50 회복");
+      updateUI();
+      saveData();
+    }
+
+    function checkLevelUp() {
+      const expToNextLevel = userData.level * 100;
+      while(userData.exp >= expToNextLevel) {
+        userData.exp -= expToNextLevel;
+        userData.level++;
+        userData.maxHp += 20;
+        userData.hp = userData.maxHp;
+        log(`레벨업! 현재 레벨: ${userData.level}`);
+      }
+    }
+
     function signUp() {
       const nickname = document.getElementById("nicknameInput").value.trim();
       const email = document.getElementById("email").value.trim();
       const pw = document.getElementById("password").value;
+
       if (!nickname || !email || !pw) {
         alert("모든 필드를 입력하세요.");
         return;
@@ -157,7 +297,11 @@
             nickname: nickname,
             gold: 0,
             exp: 0,
-            dungeonTime: 60
+            dungeonTime: 60,
+            hp: 100,
+            maxHp: 100,
+            level: 1,
+            potions: 3
           };
           return db.collection("users").doc(user.uid).set(userData).then(() => user);
         })
@@ -197,6 +341,25 @@
         location.reload();
       });
     }
+
+    // 스테이지 좌우 버튼 이벤트 및 표시 업데이트
+    document.getElementById("stagePrev").addEventListener("click", () => {
+      if (currentStage > 1) {
+        currentStage--;
+        log(`스테이지가 ${currentStage}로 변경되었습니다.`);
+        updateUI();
+      }
+    });
+
+    document.getElementById("stageNext").addEventListener("click", () => {
+      if (currentStage < maxStage) {
+        currentStage++;
+        log(`스테이지가 ${currentStage}로 변경되었습니다.`);
+        updateUI();
+      }
+    });
+
   </script>
 </body>
 </html>
+
