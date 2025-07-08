@@ -280,7 +280,7 @@
         if (Math.random() * 100 < monsterDodge) {
           log("몬스터가 회피했습니다");
         } else {
-          let dmg = 10 + currentStage;
+          let dmg = 10 + userData.atk;
           if (Math.random() < 0.1) {
             dmg *= 1.5;
             monsterHp -= dmg;
@@ -291,7 +291,7 @@
           }
         }
 
-        log("몬스터 남은 체력: "+mosterHp)
+        log("몬스터 남은 체력: "+monsterHp)
         
         if (monsterHp <= 0) {
           userData.gold += currentStage * 20;
