@@ -203,6 +203,10 @@
       const nickname = document.getElementById("nicknameInput").value.trim();
       const email = document.getElementById("email").value.trim();
       const pw = document.getElementById("password").value;
+      if (!nickname || !email || !pw) {
+        alert("닉네임, 이메일, 비밀번호를 모두 입력해주세요")
+        return;
+      }
       auth.createUserWithEmailAndPassword(email, pw).then(userCred => {
         userData = {
           nickname: nickname,
