@@ -312,8 +312,8 @@
 
     
     function checkLevelUp() {
-      const needExp = userData.level * 100;
-      while (userData.exp >= needExp) {
+      while (userData.exp >= userData.level * 100) {
+        const needExp = userData.level * 100;
         userData.exp -= needExp;
         userData.level++;
         const stats = calculateStats();
@@ -497,7 +497,8 @@
           potions: { small: 3, medium: 1, large: 0, extralarge: 0},
           str: 0,
           dex: 0,
-          con: 0
+          con: 0,
+          statPoints: 0
         });
     
         alert("회원가입 성공! 로그인 해주세요.");
