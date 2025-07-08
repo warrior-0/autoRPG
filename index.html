@@ -352,6 +352,7 @@
       return db.collection("users").doc(user.uid).get().then(doc => {
         if (doc.exists) {
           userData = doc.data();
+          if (!userData.atk) userData.atk = 1;
         } else {
           userData = {
             nickname: user.email,
