@@ -219,6 +219,7 @@
         alert("회원가입 성공");
         document.getElementById("authUI").style.display = "none";
         document.getElementById("gameUI").style.display = "flex";
+        document.getElementById("bottomStatus").style.display = "flex";
         updateUI();
       });
     }
@@ -229,6 +230,7 @@
       auth.signInWithEmailAndPassword(email, pw).then(() => {
         document.getElementById("authUI").style.display = "none";
         document.getElementById("gameUI").style.display = "flex";
+        document.getElementById("bottomStatus").style.display = "flex";
         showTab('home');
         return loadData();
       });
