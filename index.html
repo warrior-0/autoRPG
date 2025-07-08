@@ -465,6 +465,15 @@
         }
         userData = userDoc.data();
         userData.uid = userCredential.user.uid;
+        
+        // 누락된 필드 기본값으로 초기화
+        if (userData.atk === undefined) userData.atk = 10;
+        if (userData.con === undefined) userData.con = 10;
+        if (userData.dex === undefined) userData.dex = 10;
+        if (userData.specialDungeonTime === undefined) userData.specialDungeonTime = 60; // 또는 dungeonTime
+        
+        // 자동으로 저장
+        saveData();
         document.getElementById("authUI").style.display = "none";
         document.getElementById("gameUI").style.display = "block";
         document.getElementById("nicknameDisplay").innerText = userData.nickname;
