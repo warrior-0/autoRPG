@@ -296,9 +296,9 @@
     
     function calculateStats() {
       const level = userData.level || 1;
-      const str = userData.str || 10;
-      const dex = userData.dex || 10;
-      const con = userData.con || 10;
+      const str = userData.str || 0;
+      const dex = userData.dex || 0;
+      const con = userData.con || 0;
     
       return {
         공격력: 1 + ((level / 2) + 1) * str * 1.5,
