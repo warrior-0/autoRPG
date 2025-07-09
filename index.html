@@ -394,6 +394,7 @@
           userData.gold += reward * 20;
           userData.exp += reward * 10;
           log(`몬스터 처치 보상 획득! 골드: ${reward * 20} 경험치: ${reward * 10}`);
+          reward = currentStage;
           monsterHp = Math.floor((currentStage / 7 + 1) * currentStage * 2);
           monsterCrit = currentStage;
           monsterHit = currentStage * 7;
