@@ -572,7 +572,7 @@
       const enemyEvasion = enemyDex;
     
       let turn = 1;
-      while (myHp > 0 && enemyHp > 0 && turn <= 20) {
+      while (myHp > 0 && enemyHp > 0 && turn <= 50) {
         // 내가 공격
         const evadeEnemy = enemyEvasion / (enemyEvasion + myDex * 5 + 1);
         if (Math.random() < evadeEnemy) {
