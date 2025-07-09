@@ -293,6 +293,11 @@
     
       userData[type]++;
       userData.statPoints--;
+    
+      // 📌 스탯 변화에 따른 능력치 갱신
+      userData.maxHp = (Math.floor(userData.level / 3) + 1) * userData.con * 5 + 100;
+      userData.hp = Math.min(userData.hp, userData.maxHp);  // 현재 체력이 최대 체력을 넘지 않도록
+    
       log(`${type.toUpperCase()} 스탯이 1 증가했습니다.`);
       updateUI();
       saveData();
