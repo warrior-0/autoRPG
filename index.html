@@ -303,6 +303,7 @@
         const needExp = userData.level * 100;
         userData.exp -= needExp;
         userData.level++;
+        userData.maxHp = (Math.floor(userData.level / 3) + 1) * userData.con * 5 + 100;
         userData.hp = userData.maxHp;
         log(`레벨업! 현재 레벨: ${userData.level}`);
       }
