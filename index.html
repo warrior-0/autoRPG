@@ -176,13 +176,6 @@
         <button id="stageJumpNext">⏩ +10</button>
       </div>
       <button onclick="enterDungeon()" id="dungeonToggleBtn">던전 입장</button>
-      <!-- 채팅 UI -->
-      <div id="chatSection" style="max-width: 400px; margin: 0 auto; text-align: left;">
-        <h3>실시간 채팅</h3>
-        <div id="chatLog" style="height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; background: #fff;"></div>
-        <input type="text" id="chatInput" placeholder="메시지를 입력하세요" style="width: 100%; box-sizing: border-box; margin-top: 5px;" />
-        <button id="sendBtn" style="margin-top: 5px; width: 100%;">전송</button>
-      </div>
     </div>
     
     <div id="shopTab" style="display:none;">
@@ -225,6 +218,13 @@
       <button onclick="addStat('con')">con +1</button>
     </div>
     <button onclick="signOut()">로그아웃</button>
+    <!-- 채팅 UI -->
+    <div id="chatSection" style="max-width: 400px; margin: 0 auto; text-align: left;">
+      <h3>실시간 채팅</h3>
+      <div id="chatLog" style="height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; background: #fff;"></div>
+      <input type="text" id="chatInput" placeholder="메시지를 입력하세요" style="width: 100%; box-sizing: border-box; margin-top: 5px;" />
+      <button id="sendBtn" style="margin-top: 5px; width: 100%;">전송</button>
+    </div>
     <div id="log"></div>
   </div>
 
