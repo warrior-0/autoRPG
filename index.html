@@ -597,11 +597,30 @@
         document.getElementById("stageDisplay").innerText = currentStage;
       }
     });
+    
     document.getElementById("stageNext").addEventListener("click", () => {
       if (currentStage < maxStage) {
         currentStage++;
         document.getElementById("stageDisplay").innerText = currentStage;
       }
+    });
+    
+    document.getElementById("stageJumpPrev").addEventListener("click", () => {
+      if (currentStage > 10) {
+        currentStage -= 10;
+      } else {
+        currentStage = 1;
+      }
+      document.getElementById("stageDisplay").innerText = currentStage;
+    });
+    
+    document.getElementById("stageJumpNext").addEventListener("click", () => {
+      if (currentStage <= maxStage - 10) {
+        currentStage += 10;
+      } else {
+        currentStage = maxStage;
+      }
+      document.getElementById("stageDisplay").innerText = currentStage;
     });
 
     // 자동 저장 5초 간격
