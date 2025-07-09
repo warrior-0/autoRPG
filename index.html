@@ -369,6 +369,9 @@
         // 플레이어 공격
         const monsterEvasion = currentStage - 1;
         const evasionRateMonster = monsterEvasion / (monsterEvasion + userData.dex * 5);
+        if (isNaN(evasionRateMonster) || !isFinite(evasionRateMonster)) {
+          evasionRateMonster = 0; // 회피 불가로 처리
+        }
     
         if (Math.random() < evasionRateMonster) {
           log("몬스터가 플레이어 공격을 회피했습니다.");
