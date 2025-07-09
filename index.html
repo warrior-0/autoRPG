@@ -162,6 +162,7 @@
       <button onclick="showTab('shop')">상점</button>
       <button onclick="showTab('donate')">후원</button>
       <button onclick="showTab('ranking')">랭킹</button>
+      <button onclick="showTab('arena')">아레나</button>
     </div>
     
     <div id="homeTab">
@@ -203,6 +204,15 @@
     <div id="rankingTab" style="display:none;">
       <h2>🏆 레벨 랭킹 Top 10</h2>
       <ol id="rankingList" style="text-align: left; max-width: 400px; margin: 0 auto;"></ol>
+    </div>
+
+    <div id="arenaTab" style="display:none;">
+      <h2>⚔️ 아레나 대전</h2>
+      <p>도전 대상:
+        <select id="pvpTargetSelect"></select>
+        <button onclick="startPvpBattle()">대전 시작</button>
+      </p>
+      <div id="pvpLog" style="text-align:left; max-width:400px; margin:0 auto; background:#fff; padding:10px; border:1px solid #ccc; height:200px; overflow-y:auto;"></div>
     </div>
     
     <p><strong>현재 유저:</strong> <span id="nicknameDisplay"></span></p>
@@ -496,6 +506,81 @@
       return Math.floor(baseDamage * variance);
     }
 
+    async function loadPvpTargets() {
+      const select = document.getElementById("pvpTargetSelect");
+      select.innerHTML = "";
+      const snapshot = await db.collection("users").get();
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.uid !== userData.uid && data.nickname) {
+          const option = document.createElement("option");
+          option.value = doc.id;
+          option.textContent = data.nickname;
+          select.appendChild(option);
+        }
+      });
+    }
+    
+    function logPvp(msg) {
+      const logBox = document.getElementById("pvpLog");
+      const div = document.createElement("div");
+      div.textContent = `> ${msg}`;
+      logBox.appendChild(div);
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+    
+    async function startPvpBattle() {
+      const targetUid = document.getElementById("pvpTargetSelect").value;
+      const targetDoc = await db.collection("users").doc(targetUid).get();
+      if (!targetDoc.exists) {
+        logPvp("상대 유저 정보를 찾을 수 없습니다.");
+        return;
+      }
+      const enemy = targetDoc.data();
+      logPvp(`▶️ ${enemy.nickname}님과의 대전을 시작합니다.`);
+    
+      let myHp = userData.hp;
+      let enemyHp = enemy.hp;
+    
+      const myAtk = 1 + ((userData.level / 2) + 1) * userData.str * 1.5;
+      const enemyAtk = 1 + ((enemy.level / 2) + 1) * enemy.str * 1.5;
+    
+      const myCritStat = userData.dex * 5;
+      const enemyCritStat = enemy.dex * 5;
+    
+      const myCritChance = myCritStat / (myCritStat + 150);
+      const enemyCritChance = enemyCritStat / (enemyCritStat + 150);
+    
+      let turn = 1;
+      while (myHp > 0 && enemyHp > 0 && turn <= 20) {
+        // 내가 공격
+        const isMyCrit = Math.random() < myCritChance;
+        let myDmg = isMyCrit
+          ? myAtk * (myCritStat / 2000 + 1.1)
+          : myAtk;
+        myDmg = applyRandomVariance(myDmg);
+        enemyHp -= Math.floor(myDmg);
+        logPvp(`👤 나의 ${isMyCrit ? "치명타 " : ""}공격! ${Math.floor(myDmg)} 데미지`);
+    
+        // 상대가 공격
+        if (enemyHp > 0) {
+          const isEnemyCrit = Math.random() < enemyCritChance;
+          let enemyDmg = isEnemyCrit
+            ? enemyAtk * (enemyCritStat / 2000 + 1.1)
+            : enemyAtk;
+          enemyDmg = applyRandomVariance(enemyDmg);
+          myHp -= Math.floor(enemyDmg);
+          logPvp(`🧑‍💼 ${enemy.nickname}의 ${isEnemyCrit ? "치명타 " : ""}공격! ${Math.floor(enemyDmg)} 데미지`);
+        }
+    
+        turn++;
+      }
+    
+      if (myHp > 0 && enemyHp <= 0) logPvp("🎉 승리!");
+      else if (enemyHp > 0 && myHp <= 0) logPvp("💀 패배...");
+      else logPvp("🤝 무승부!");
+    }
+    
     // 랭킹 불러오기 함수
     function loadRanking() {
       const rankingList = document.getElementById("rankingList");
@@ -527,21 +612,20 @@
     }
 
     function showTab(name) {
-      if ((name === "home" || name === "shop" || name === "donate" || name === "ranking") && inDungeon) {
+      if ((name === "home" || name === "shop" || name === "donate" || name === "ranking" || name === "arena") && inDungeon) {
         exitDungeon();
       }
+    
       document.getElementById("homeTab").style.display = name === "home" ? "block" : "none";
       document.getElementById("dungeonTab").style.display = name === "dungeon" ? "block" : "none";
       document.getElementById("shopTab").style.display = name === "shop" ? "block" : "none";
       document.getElementById("donateTab").style.display = name === "donate" ? "block" : "none";
       document.getElementById("rankingTab").style.display = name === "ranking" ? "block" : "none";
-
-      if (name === "shop") {
-        document.getElementById("goldShop").innerText = userData.gold;
-      }
-      if (name === "ranking") {
-        loadRanking();
-      }
+      document.getElementById("arenaTab").style.display = name === "arena" ? "block" : "none";
+    
+      if (name === "shop") document.getElementById("goldShop").innerText = userData.gold;
+      if (name === "ranking") loadRanking();
+      if (name === "arena") loadPvpTargets(); // 🔹 대상 유저 불러오기
     }
     
     // 🔹 닉네임 중복 검사 함수 (signUp 위에 위치할 것)
