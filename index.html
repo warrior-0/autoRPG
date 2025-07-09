@@ -447,6 +447,12 @@
       log("던전에서 나왔습니다.");
     }
 
+    //공격 데미지 랜덤 함수 (0.95배 ~ 1.05배)
+    function applyRandomVariance(baseDamage) {
+      const variance = 0.95 + Math.random() * 0.1; // 0.95 ~ 1.05
+      return Math.floor(baseDamage * variance);
+    }
+
     // 랭킹 불러오기 함수
     function loadRanking() {
       const rankingList = document.getElementById("rankingList");
