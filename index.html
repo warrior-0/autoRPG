@@ -303,7 +303,7 @@
         const needExp = userData.level * 100;
         userData.exp -= needExp;
         userData.level++;
-        userData.maxHp = (Math.floor(level / 3) + 1) * con * 5 + 10;
+        userData.maxHp = (Math.floor(userData.level / 3) + 1) * userData.con * 5 + 10;
         userData.hp = userData.maxHp;
         log(`레벨업! 현재 레벨: ${userData.level}`);
       }
@@ -349,7 +349,7 @@
             dmg = Math.floor(dmg * dmgReduction);
             dmg = Math.max(1, dmg);
             userData.hp -= dmg;
-            log("몬스터의 치명타 공격! 플레이어가 ${dmg} 피해를 받았습니다.");
+            log(`몬스터의 치명타 공격! 플레이어가 ${dmg} 피해를 받았습니다.`);
           } else {
             dmg = Math.floor(dmg * dmgReduction);
             dmg = Math.max(1, dmg);
@@ -379,7 +379,7 @@
             dmg = Math.floor(critDamage * dmgReductionPlayer);
             dmg = Math.max(1, dmg);
             monsterHp -= dmg;
-            log("플레이어의 치명타 공격! 몬스터가 ${dmg} 피해를 받았습니다.");
+            log(`플레이어의 치명타 공격! 몬스터가 ${dmg} 피해를 받았습니다.`);
           } else {
             dmg = Math.floor(playerAtk * dmgReductionPlayer);
             dmg = Math.max(1,dmg);
