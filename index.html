@@ -728,13 +728,17 @@
       }
       try {
         const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
-        const userDoc = await db.collection("users").doc(userCredential.user.uid).get();
-        if (!userDoc.exists) {
-          alert("사용자 데이터를 찾을 수 없습니다.");
+        const uid = userCredential.user.uid;
+        
+        // MySQL API에서 유저 데이터 요청
+        const res = await fetch(`/api/userdata?uid=${uid}`);
+        if (!res.ok) {
+          alert("사용자 데이터를 불러오는 데 실패했습니다.");
           return;
         }
-        userData = userDoc.data();
-        userData.uid = userCredential.user.uid;
+        userData = await res.json();
+        userData.uid = uid;
+        
         document.getElementById("authUI").style.display = "none";
         document.getElementById("gameUI").style.display = "block";
         document.getElementById("nicknameDisplay").innerText = userData.nickname;
