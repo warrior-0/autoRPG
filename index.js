@@ -76,25 +76,22 @@ app.get('/api/userdata', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // 유저 기본 정보
     const user = rows[0];
-
-    // 물약 정보도 같이 가져오기
     const [potionRows] = await pool.query(
       'SELECT small, medium, large, extralarge FROM user_potions WHERE uid = ?',
       [uid]
     );
 
     if (potionRows.length > 0) {
-      user.potions = potionRows[0]; // potions 필드에 넣기
+      user.potions = potionRows[0];
     } else {
       user.potions = { small: 0, medium: 0, large: 0, extralarge: 0 };
     }
 
     res.json(user);
   } catch (err) {
-    console.error('DB error:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error('DB error detail:', err);
+    res.status(500).json({ error: 'Internal Server Error', detail: err.message });
   }
 });
 
