@@ -694,18 +694,23 @@
         const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
     
         // Firestore에 사용자 데이터 저장
-        await db.collection("users").doc(userCredential.user.uid).set({
-          nickname,
-          gold: 100,
-          exp: 0,
-          level: 1,
-          hp: 100,
-          maxHp: 100,
-          potions: { small: 3, medium: 1, large: 0, extralarge: 0},
-          str: 0,
-          dex: 0,
-          con: 0,
-          statPoints: 0
+        await fetch('/api/createUser', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            uid: userCredential.user.uid,
+            nickname: nickname,
+            gold: 100,
+            exp: 0,
+            level: 1,
+            hp: 100,
+            maxHp: 100,
+            potions: { small: 3, medium: 1, large: 0, extralarge: 0 },
+            str: 0,
+            dex: 0,
+            con: 0,
+            statPoints: 0
+          })
         });
     
         alert("회원가입 성공! 로그인 해주세요.");
