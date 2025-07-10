@@ -12,7 +12,7 @@ admin.initializeApp({
 
 const app = express();
 app.use(cors({
-  origin: 'https://warrior-0.github.io',  // 요청 허용할 도메인
+  origin: 'https://github.com/warrior-0/autoRPG',  // 요청 허용할 도메인
   credentials: true // 인증 헤더를 함께 보낼 경우
 }));
 app.use(bodyParser.json());
