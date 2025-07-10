@@ -618,33 +618,28 @@
     }
     
     // 랭킹 불러오기 함수
-    function loadRanking() {
+    async function loadRanking() {
       const rankingList = document.getElementById("rankingList");
       rankingList.innerHTML = "불러오는 중...";
-
-      db.collection("users")
-        .orderBy("level", "desc")
-        .limit(10)
-        .get()
-        .then(snapshot => {
-          if (snapshot.empty) {
-            rankingList.innerHTML = "<li>데이터가 없습니다.</li>";
-            return;
-          }
-          rankingList.innerHTML = "";
-          snapshot.forEach(doc => {
-            const data = doc.data();
-            const nickname = data.nickname || "익명";
-            const level = data.level || 1;
-            const li = document.createElement("li");
-            li.textContent = `${nickname} - 레벨 ${level}`;
-            rankingList.appendChild(li);
-          });
-        })
-        .catch(err => {
-          rankingList.innerHTML = "랭킹 불러오기 실패";
-          console.error(err);
+      try {
+        const res = await fetch('/api/ranking?limit=10');
+        if (!res.ok) throw new Error('랭킹 불러오기 실패');
+        const rankings = await res.json();
+        
+        if (rankings.length === 0) {
+          rankingList.innerHTML = "<li>데이터가 없습니다.</li>";
+          return;
+        }
+        rankingList.innerHTML = "";
+        rankings.forEach(user => {
+          const li = document.createElement("li");
+          li.textContent = `${user.nickname} - 레벨 ${user.level}`;
+          rankingList.appendChild(li);
         });
+      } catch (err) {
+        rankingList.innerHTML = "랭킹 불러오기 실패";
+        console.error(err);
+      }
     }
 
     function showTab(name) {
