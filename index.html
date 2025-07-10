@@ -821,70 +821,53 @@
     async function sendMessage() {
       const text = chatInput.value.trim();
       if (!text) return alert("메시지를 입력하세요.");
-    
       if (!userData) return alert("로그인 후 사용하세요.");
-    
       try {
-        // DB 저장
-        await db.collection("chatMessages").add({
-          uid: userData.uid,
-          nickname: userData.nickname,
-          message: text,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        const res = await fetch('/api/chat/send', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            uid: userData.uid,
+            nickname: userData.nickname,
+            message: text,
+          }),
         });
-    
-        // 입력창 비우기
+        if (!res.ok) throw new Error('메시지 전송 실패');
         chatInput.value = "";
-    
-        // 바로 화면에 추가 (timestamp 없이)
-        const now = new Date().toLocaleTimeString();
-        const div = document.createElement("div");
-        div.style.padding = "4px 0";
-        div.innerHTML = `<strong>${userData.nickname}</strong> [${now}]: ${text}`;
-        chatLog.appendChild(div);
-        chatLog.scrollTop = chatLog.scrollHeight;
-    
+        appendChatLog(userData.nickname, text, new Date());
       } catch (err) {
-        console.error("메시지 전송 실패", err);
         alert("메시지 전송에 실패했습니다.");
+        console.error(err);
       }
     }
     
-    // 실시간 메시지 수신 (최신 100개)
-    db.collection("chatMessages")
-      .orderBy("timestamp", "desc")
-      .limit(100)
-      .onSnapshot(snapshot => {
+    async function loadChatMessages() {
+      try {
+        const res = await fetch('/api/chat/list?limit=100');
+        if (!res.ok) throw new Error('채팅 불러오기 실패');
+        const messages = await res.json();
         chatLog.innerHTML = "";
-        const messages = [];
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          messages.push(data);
-        });
-    
-        // 시간 순으로 뒤집기
-        messages.reverse();
-    
         messages.forEach(msg => {
-          const time = msg.timestamp?.seconds
-            ? new Date(msg.timestamp.seconds * 1000).toLocaleTimeString()
-            : "시간없음";
-          const div = document.createElement("div");
-          div.style.padding = "4px 0";
-          div.innerHTML = `<strong>${msg.nickname}</strong> [${time}]: ${msg.message}`;
-          chatLog.appendChild(div);
+          appendChatLog(msg.nickname, msg.message, new Date(msg.timestamp));
         });
-    
         chatLog.scrollTop = chatLog.scrollHeight;
-      });
-        
-        // 버튼 및 Enter 키 이벤트 연결
-        sendBtn.addEventListener("click", sendMessage);
-        chatInput.addEventListener("keydown", e => {
-          if (e.key === "Enter") {
-            sendMessage();
-          }
-        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    
+    // 메시지 추가 UI 함수
+    function appendChatLog(nickname, message, date) {
+      const div = document.createElement("div");
+      div.style.padding = "4px 0";
+      div.innerHTML = `<strong>${nickname}</strong> [${date.toLocaleTimeString()}]: ${message}`;
+      chatLog.appendChild(div);
+    }
+    
+    // 1초마다 채팅 불러오기
+    setInterval(() => {
+      if (userData) loadChatMessages();
+    }, 1000);
   </script>
 </body>
 </html>
