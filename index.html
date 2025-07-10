@@ -646,6 +646,7 @@
       }
     }
 
+    //유저가 누른거에 맞춰서 표시해주는 함수
     function showTab(name) {
       if ((name === "home" || name === "shop" || name === "donate" || name === "ranking" || name === "arena") && inDungeon) {
         exitDungeon();
@@ -662,16 +663,16 @@
       if (name === "ranking") loadRanking();
       if (name === "arena") loadPvpTargets(); // 🔹 대상 유저 불러오기
     }
-    
-    // 🔹 닉네임 중복 검사 함수 (signUp 위에 위치할 것)
+
+    //낙내암 중복 검사 함수
     async function isNicknameTaken(nickname) {
-      const snapshot = await db.collection("users")
-        .where("nickname", "==", nickname)
-        .get();
-    
-      return !snapshot.empty;  // true면 이미 존재함
+      const res = await fetch(`/api/checkNickname?nickname=${encodeURIComponent(nickname)}`);
+      const data = await res.json();
+      // { taken: true/false } 같은 응답 구조를 예상
+      return data.taken;
     }
 
+    //회원가입 함수
     async function signUp() {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
