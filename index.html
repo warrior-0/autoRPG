@@ -542,12 +542,12 @@
     
     async function startPvpBattle() {
       const targetUid = document.getElementById("pvpTargetSelect").value;
-      const targetDoc = await db.collection("users").doc(targetUid).get();
-      if (!targetDoc.exists) {
+      const res = await fetch(`/api/userdata?uid=${encodeURIComponent(targetUid)}`);
+      if (!res.ok) {
         logPvp("상대 유저 정보를 찾을 수 없습니다.");
         return;
       }
-      const enemy = targetDoc.data();
+      const enemy = await res.json();
       logPvp(`▶️ ${enemy.nickname}님과의 대전을 시작합니다.`);
     
       // 1. 스탯 보정 (1.07배)
@@ -693,7 +693,7 @@
         // 이메일로 회원 생성
         const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
     
-        // Firestore에 사용자 데이터 저장
+        // MySQL에 사용자 데이터 저장
         await fetch('/api/createUser', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
