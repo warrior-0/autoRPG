@@ -510,7 +510,7 @@
       const select = document.getElementById("pvpTargetSelect");
       select.innerHTML = "";
       try {
-        const res = await fetch('/api/pvpTargets?excludeUid=' + encodeURIComponent(userData.uid));
+        const res = await fetch('https://autorpg.onrender.com/api/pvpTargets?excludeUid=' + encodeURIComponent(userData.uid));
         if (!res.ok) throw new Error('대상자 불러오기 실패');
         const users = await res.json();
         users.forEach(user => {
@@ -542,7 +542,7 @@
     
     async function startPvpBattle() {
       const targetUid = document.getElementById("pvpTargetSelect").value;
-      const res = await fetch(`/api/userdata?uid=${encodeURIComponent(targetUid)}`);
+      const res = await fetch(`https://autorpg.onrender.com/api/userdata?uid=${encodeURIComponent(targetUid)}`);
       if (!res.ok) {
         logPvp("상대 유저 정보를 찾을 수 없습니다.");
         return;
@@ -700,7 +700,7 @@
         const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
     
         // MySQL에 사용자 데이터 저장
-        await fetch('/api/createUser', {
+        await fetch('https://autorpg.onrender.com/api/createUser', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
@@ -741,7 +741,7 @@
         const uid = userCredential.user.uid;
         
         // MySQL API에서 유저 데이터 요청
-        const res = await fetch(`/api/userdata?uid=${uid}`);
+        const res = await fetch(`https://autorpg.onrender.com/api/userdata?uid=${uid}`);
         if (!res.ok) {
           alert("사용자 데이터를 불러오는 데 실패했습니다.");
           return;
