@@ -700,7 +700,7 @@
         const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
     
         // MySQL에 사용자 데이터 저장
-        await fetch('http://192.168.10.100:3000/proxy-api/createUser', {
+        await fetch('https://d7bbee2e3689.ngrok-free.app/api/createUser', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
