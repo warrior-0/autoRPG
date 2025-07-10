@@ -509,16 +509,20 @@
     async function loadPvpTargets() {
       const select = document.getElementById("pvpTargetSelect");
       select.innerHTML = "";
-      const snapshot = await db.collection("users").get();
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        if (data.uid !== userData.uid && data.nickname) {
+      try {
+        const res = await fetch('/api/pvpTargets?excludeUid=' + encodeURIComponent(userData.uid));
+        if (!res.ok) throw new Error('대상자 불러오기 실패');
+        const users = await res.json();
+        users.forEach(user => {
           const option = document.createElement("option");
-          option.value = doc.id;
-          option.textContent = data.nickname;
+          option.value = user.uid;
+          option.textContent = user.nickname;
           select.appendChild(option);
-        }
-      });
+        });
+      } catch (error) {
+        logPvp("대상자 불러오기 실패");
+        console.error(error);
+      }
     }
     function logPvp(message) {
       const pvpLog = document.getElementById("pvpLog");
