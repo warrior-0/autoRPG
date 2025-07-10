@@ -163,6 +163,8 @@
       <button onclick="showTab('donate')">후원</button>
       <button onclick="showTab('ranking')">랭킹</button>
       <button onclick="showTab('arena')">아레나</button>
+      <!-- 운영자 기능 버튼 -->
+      <button id="adminPanelBtn" style="display:none;" onclick="toggleAdminPanel()">운영자 기능</button>
     </div>
     
     <div id="homeTab">
@@ -213,6 +215,17 @@
         <button onclick="startPvpBattle()">대전 시작</button>
       </p>
       <div id="pvpLog" style="text-align:left; max-width:400px; margin:0 auto; background:#fff; padding:10px; border:1px solid #ccc; height:200px; overflow-y:auto;"></div>
+    </div>
+    
+    <!-- 운영자 스탯 조정 패널 -->
+    <div id="adminPanel" style="display:none; border: 1px solid gray; padding: 10px; margin-top: 10px;">
+      <h2>운영자 스탯 조정 패널</h2>
+      <input type="text" id="targetUid" placeholder="유저 UID 입력"><br>
+      <input type="number" id="newStr" placeholder="STR"><br>
+      <input type="number" id="newCon" placeholder="CON"><br>
+      <input type="number" id="newDex" placeholder="DEX"><br>
+      <button onclick="updateUserStats()">스탯 업데이트</button>
+      <div id="result"></div>
     </div>
     
     <p><strong>현재 유저:</strong> <span id="nicknameDisplay"></span></p>
@@ -869,14 +882,70 @@
     
         chatLog.scrollTop = chatLog.scrollHeight;
       });
+        
+        // 버튼 및 Enter 키 이벤트 연결
+        sendBtn.addEventListener("click", sendMessage);
+        chatInput.addEventListener("keydown", e => {
+          if (e.key === "Enter") {
+            sendMessage();
+          }
+        });
+        / 관리자 여부 체크 및 버튼/패널 표시 제어
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (user) {
+        const adminRef = firebase.firestore().doc(`admins/${user.uid}`);
+        const adminSnap = await adminRef.get();
     
-    // 버튼 및 Enter 키 이벤트 연결
-    sendBtn.addEventListener("click", sendMessage);
-    chatInput.addEventListener("keydown", e => {
-      if (e.key === "Enter") {
-        sendMessage();
+        if (adminSnap.exists) {
+          // 운영자라면 버튼을 보이게
+          document.getElementById("adminPanelBtn").style.display = "block";
+        }
       }
     });
+    
+    // 버튼 클릭 시 패널 토글
+    function toggleAdminPanel() {
+      const panel = document.getElementById("adminPanel");
+      panel.style.display = panel.style.display === "none" ? "block" : "none";
+    }
+    
+    // 스탯 업데이트 로직
+    async function updateUserStats() {
+      const currentUser = firebase.auth().currentUser;
+      const resultDiv = document.getElementById("result");
+    
+      if (!currentUser) {
+        resultDiv.innerText = "로그인된 사용자 없음.";
+        return;
+      }
+    
+      const adminRef = firebase.firestore().doc(`admins/${currentUser.uid}`);
+      const adminSnap = await adminRef.get();
+    
+      if (!adminSnap.exists) {
+        resultDiv.innerText = "운영자가 아닙니다. 접근 불가.";
+        return;
+      }
+    
+      const uid = document.getElementById("targetUid").value;
+      const str = parseInt(document.getElementById("newStr").value);
+      const con = parseInt(document.getElementById("newCon").value);
+      const dex = parseInt(document.getElementById("newDex").value);
+    
+      if (!uid) {
+        resultDiv.innerText = "유저 UID를 입력하세요.";
+        return;
+      }
+    
+      try {
+        const targetRef = firebase.firestore().doc(`users/${uid}`);
+        await targetRef.update({ str, con, dex });
+        resultDiv.innerText = "✅ 스탯 업데이트 완료!";
+      } catch (err) {
+        console.error(err);
+        resultDiv.innerText = "❌ 에러 발생: " + err.message;
+      }
+    }
   </script>
 </body>
 </html>
