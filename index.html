@@ -754,7 +754,12 @@
     async function saveData() {
       if (!userData) return;
       try {
-        await db.collection("users").doc(userData.uid).set(userData);
+        const res = await fetch('/api/save', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(userData),
+        });
+        if (!res.ok) throw new Error('저장 실패');
       } catch (error) {
         console.error("저장 실패", error);
       }
