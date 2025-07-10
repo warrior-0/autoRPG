@@ -666,10 +666,15 @@
 
     //낙내암 중복 검사 함수
     async function isNicknameTaken(nickname) {
-      const res = await fetch(`/api/checkNickname?nickname=${encodeURIComponent(nickname)}`);
-      const data = await res.json();
-      // { taken: true/false } 같은 응답 구조를 예상
-      return data.taken;
+      try {
+        const res = await fetch(`/api/checkNickname?nickname=${encodeURIComponent(nickname)}`);
+        if (!res.ok) throw new Error('닉네임 체크 실패');
+        const data = await res.json();
+        return data.taken;
+      } catch (error) {
+        console.error(error);
+        return false; // 네트워크 문제 등일 땐 중복 검사 실패로 간주(필요시 수정)
+      }
     }
 
     //회원가입 함수
