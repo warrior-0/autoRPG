@@ -510,7 +510,7 @@
       const select = document.getElementById("pvpTargetSelect");
       select.innerHTML = "";
       try {
-        const res = await fetch('http://192.168.10.100:3000/api/pvpTargets?excludeUid=' + encodeURIComponent(userData.uid));
+        const res = await fetch('https://d7bbee2e3689.ngrok-free.app/api/pvpTargets?excludeUid=' + encodeURIComponent(userData.uid));
         if (!res.ok) throw new Error('대상자 불러오기 실패');
         const users = await res.json();
         users.forEach(user => {
@@ -542,7 +542,7 @@
     
     async function startPvpBattle() {
       const targetUid = document.getElementById("pvpTargetSelect").value;
-      const res = await fetch(`http://192.168.10.100:3000/api/userdata?uid=${encodeURIComponent(targetUid)}`);
+      const res = await fetch(`https://d7bbee2e3689.ngrok-free.app/api/userdata?uid=${encodeURIComponent(targetUid)}`);
       if (!res.ok) {
         logPvp("상대 유저 정보를 찾을 수 없습니다.");
         return;
