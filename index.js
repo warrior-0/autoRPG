@@ -14,8 +14,8 @@ admin.initializeApp({
 
 const app = express();
 app.use(cors({
-  origin: 'https://warrior-0.github.io',  // 요청 허용할 도메인
-  credentials: true // 인증 헤더를 함께 보낼 경우
+  origin: ['https://warrior-0.github.io', 'http://localhost:3000'], 
+  credentials: true
 }));
 app.use(bodyParser.json());
 
