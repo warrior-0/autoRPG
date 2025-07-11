@@ -771,6 +771,8 @@
         const res = await fetch(`https://5198b8946cb8.ngrok-free.app/api/userdata?uid=${uid}`, {
           headers: {
             'Authorization': 'Bearer ' + idToken,
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+            'Accept': 'application/json',
           },
         });
     
