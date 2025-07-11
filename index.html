@@ -672,13 +672,13 @@
     async function isNicknameTaken(nickname) {
       try {
         const res = await fetch(`https://a7dbbb2a23cf.ngrok-free.app/api/checkNickname?nickname=${encodeURIComponent(nickname)}`);
-        if (!res.ok) throw new Error('닉네임 체크 실패');
-        const text = await res.text();
-        const data = JSON.parse(text);
+        const text = await res.text(); // ← 응답을 JSON 대신 텍스트로 받기
+        console.log('서버 응답:', text); // ← HTML인지 JSON인지 확인
+        const data = JSON.parse(text); // JSON 파싱 시도
         return data.taken;
       } catch (error) {
-        console.error(error);
-        return false; // 네트워크 문제 등일 땐 중복 검사 실패로 간주(필요시 수정)
+        console.error('닉네임 중복 검사 에러:', error);
+        return false;
       }
     }
 
