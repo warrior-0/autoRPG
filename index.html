@@ -748,27 +748,26 @@
       try {
         const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
         const uid = userCredential.user.uid;
-        
-        // MySQL API에서 유저 데이터 요청
-        const res = await fetch(`https://5198b8946cb8.ngrok-free.app/api/userdata?uid=${uid}`);
-        const text = await res.text();
-        console.log("서버 응답:", text); // 👈 이걸 추가
-
-        try {
-          userData = JSON.parse(text);
-        } catch (e) {
-          console.error("JSON 파싱 실패:", e);
-          alert("로그인 실패: 서버 응답이 올바르지 않습니다.");
-          return;
-        }
-                
+    
+        // Firebase ID 토큰 받아오기
+        const idToken = await userCredential.user.getIdToken();
+    
+        // MySQL API에서 유저 데이터 요청 (Authorization 헤더 포함)
+        const res = await fetch(`https://5198b8946cb8.ngrok-free.app/api/userdata?uid=${uid}`, {
+          headers: {
+            'Authorization': 'Bearer ' + idToken,
+          },
+        });
+    
         if (!res.ok) {
-          alert("사용자 데이터를 불러오는 데 실패했습니다.");
+          alert("사용자 데이터를 불러오는 데 실패했습니다. 상태 코드: " + res.status);
           return;
         }
-        
+    
+        const userData = await res.json();
+    
         userData.uid = uid;
-        
+    
         document.getElementById("authUI").style.display = "none";
         document.getElementById("gameUI").style.display = "block";
         document.getElementById("nicknameDisplay").innerText = userData.nickname;
@@ -780,6 +779,7 @@
         alert("로그인 실패: " + error.message);
       }
     }
+
 
     async function saveData() {
       if (!userData) return;
