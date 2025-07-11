@@ -925,6 +925,10 @@
       div.innerHTML = `<strong>${nickname}</strong> [${date.toLocaleTimeString()}]: ${message}`;
       chatLog.appendChild(div);
     }
+    
+    setInterval(() => {
+      if (userData) loadChatMessages();
+    }, 1000);
   </script>
 </body>
 </html>
