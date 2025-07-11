@@ -751,6 +751,17 @@
         
         // MySQL API에서 유저 데이터 요청
         const res = await fetch(`https://a7dbbb2a23cf.ngrok-free.app/api/userdata?uid=${uid}`);
+        const text = await res.text();
+        console.log("서버 응답:", text); // 👈 이걸 추가
+
+        try {
+          userData = JSON.parse(text);
+        } catch (e) {
+          console.error("JSON 파싱 실패:", e);
+          alert("로그인 실패: 서버 응답이 올바르지 않습니다.");
+          return;
+        }
+                
         if (!res.ok) {
           alert("사용자 데이터를 불러오는 데 실패했습니다.");
           return;
