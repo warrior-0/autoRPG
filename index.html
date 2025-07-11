@@ -770,9 +770,8 @@
         // MySQL API에서 유저 데이터 요청 (Authorization 헤더 포함)
         const res = await fetch(`https://autorpg.loca.lt/api/userdata?uid=${uid}`, {
           headers: {
+            'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + idToken,
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-            'Accept': 'application/json',
           },
         });
     
@@ -781,7 +780,7 @@
           return;
         }
     
-        const userData = await res.json();
+        userData = await res.json();
     
         userData.uid = uid;
     
