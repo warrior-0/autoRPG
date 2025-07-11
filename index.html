@@ -859,11 +859,6 @@
       document.getElementById("stageDisplay").innerText = currentStage;
     });
 
-    // 자동 저장 5초 간격
-    setInterval(() => {
-      if (userData) saveData();
-    }, 5000);
-
     //채팅 관련 코드
     const chatLog = document.getElementById("chatLog");
     const chatInput = document.getElementById("chatInput");
