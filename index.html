@@ -510,7 +510,7 @@
       const select = document.getElementById("pvpTargetSelect");
       select.innerHTML = "";
       try {
-        const res = await fetch('https://a7dbbb2a23cf.ngrok-free.app/api/pvpTargets?excludeUid=' + encodeURIComponent(userData.uid));
+        const res = await fetch('https://5198b8946cb8.ngrok-free.app/api/pvpTargets?excludeUid=' + encodeURIComponent(userData.uid));
         if (!res.ok) throw new Error('대상자 불러오기 실패');
         const text = await res.text();
         const users = JSON.parse(text);
@@ -543,7 +543,7 @@
     
     async function startPvpBattle() {
       const targetUid = document.getElementById("pvpTargetSelect").value;
-      const res = await fetch(`https://a7dbbb2a23cf.ngrok-free.app/api/userdata?uid=${encodeURIComponent(targetUid)}`);
+      const res = await fetch(`https://5198b8946cb8.ngrok-free.app/api/userdata?uid=${encodeURIComponent(targetUid)}`);
       if (!res.ok) {
         logPvp("상대 유저 정보를 찾을 수 없습니다.");
         return;
@@ -628,7 +628,7 @@
       const rankingList = document.getElementById("rankingList");
       rankingList.innerHTML = "불러오는 중...";
       try {
-        const res = await fetch('https://a7dbbb2a23cf.ngrok-free.app/api/ranking?limit=10');
+        const res = await fetch('https://5198b8946cb8.ngrok-free.app/api/ranking?limit=10');
         if (!res.ok) throw new Error('랭킹 불러오기 실패');
         const text = await res.text();
         const rankings = JSON.parse(text);
@@ -671,7 +671,7 @@
     //닉네임 중복 검사 함수
     async function isNicknameTaken(nickname) {
       try {
-        const res = await fetch(`https://a7dbbb2a23cf.ngrok-free.app/api/checkNickname?nickname=${encodeURIComponent(nickname)}`);
+        const res = await fetch(`https://5198b8946cb8.ngrok-free.app/api/checkNickname?nickname=${encodeURIComponent(nickname)}`);
         const text = await res.text();
         try {
           const data = JSON.parse(text);
@@ -709,7 +709,7 @@
         const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
     
         // MySQL에 사용자 데이터 저장
-        await fetch('https://a7dbbb2a23cf.ngrok-free.app/api/createUser', {
+        await fetch('https://5198b8946cb8.ngrok-free.app/api/createUser', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
@@ -750,7 +750,7 @@
         const uid = userCredential.user.uid;
         
         // MySQL API에서 유저 데이터 요청
-        const res = await fetch(`https://a7dbbb2a23cf.ngrok-free.app/api/userdata?uid=${uid}`);
+        const res = await fetch(`https://5198b8946cb8.ngrok-free.app/api/userdata?uid=${uid}`);
         const text = await res.text();
         console.log("서버 응답:", text); // 👈 이걸 추가
 
@@ -784,7 +784,7 @@
     async function saveData() {
       if (!userData) return;
       try {
-        const res = await fetch('https://a7dbbb2a23cf.ngrok-free.app/api/save', {
+        const res = await fetch('https://5198b8946cb8.ngrok-free.app/api/save', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(userData),
@@ -854,7 +854,7 @@
       if (!text) return alert("메시지를 입력하세요.");
       if (!userData) return alert("로그인 후 사용하세요.");
       try {
-        const res = await fetch('https://a7dbbb2a23cf.ngrok-free.app/api/chat/send', {
+        const res = await fetch('https://5198b8946cb8.ngrok-free.app/api/chat/send', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
@@ -874,7 +874,7 @@
     
     async function loadChatMessages() {
       try {
-        const res = await fetch('https://a7dbbb2a23cf.ngrok-free.app/api/chat/list?limit=100');
+        const res = await fetch('https://5198b8946cb8.ngrok-free.app/api/chat/list?limit=100');
         if (!res.ok) throw new Error('채팅 불러오기 실패');
         const text = await res.text();
         const messages = JSON.parse(text);
