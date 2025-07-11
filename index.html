@@ -881,28 +881,43 @@
         });
         if (!res.ok) throw new Error('메시지 전송 실패');
         chatInput.value = "";
-        appendChatLog(userData.nickname, text, new Date());
+    
+        // 보내자마자 채팅 불러오기 (신규 메시지 포함)
+        await loadChatMessages();
+    
       } catch (err) {
         alert("메시지 전송에 실패했습니다.");
         console.error(err);
       }
     }
+
+    
+    let lastTimestamp = 0;
     
     async function loadChatMessages() {
       try {
-        const res = await fetch('https://autorpg.loca.lt/api/chat/list?limit=100');
+        const res = await fetch(`https://autorpg.loca.lt/api/chat/list?limit=100&afterTimestamp=${lastTimestamp}`);
         if (!res.ok) throw new Error('채팅 불러오기 실패');
         const text = await res.text();
         const messages = JSON.parse(text);
-        chatLog.innerHTML = "";
-        messages.forEach(msg => {
-          appendChatLog(msg.nickname, msg.message, new Date(msg.timestamp));
-        });
+    
+        if (messages.length > 0) {
+          messages.forEach(msg => {
+            appendChatLog(msg.nickname, msg.message, new Date(msg.timestamp));
+          });
+    
+          // 마지막 메시지 타임스탬프 업데이트
+          lastTimestamp = messages[messages.length - 1].timestamp;
+        }
+        
+        // 스크롤 자동 하단 이동 (선택사항)
         chatLog.scrollTop = chatLog.scrollHeight;
+    
       } catch (err) {
         console.error(err);
       }
     }
+
 
     
     // 메시지 추가 UI 함수
@@ -912,11 +927,6 @@
       div.innerHTML = `<strong>${nickname}</strong> [${date.toLocaleTimeString()}]: ${message}`;
       chatLog.appendChild(div);
     }
-    
-    // 1초마다 채팅 불러오기
-    setInterval(() => {
-      if (userData) loadChatMessages();
-    }, 1000);
   </script>
 </body>
 </html>
