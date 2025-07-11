@@ -885,7 +885,6 @@
         if (!res.ok) throw new Error('메시지 전송 실패');
         chatInput.value = "";
     
-        // 메시지 보낸 후 즉시 최신 메시지 불러오기
         await loadChatMessages();
     
       } catch (err) {
@@ -901,14 +900,17 @@
         const messages = await res.json();
     
         if (messages.length > 0) {
-          messages.forEach(msg => {
-            if (!displayedTimestamps.has(msg.timestamp)) {
-              appendChatLog(msg.nickname, msg.message, new Date(msg.timestamp));
-              displayedTimestamps.add(msg.timestamp);
+          // 서버가 내림차순(created_at DESC) 정렬이라 역순으로 출력하면 시간 순서대로 보여짐
+          messages.reverse().forEach(msg => {
+            const timestampStr = String(msg.created_at);
+            if (!displayedTimestamps.has(timestampStr)) {
+              appendChatLog(msg.nickname, msg.message, new Date(msg.created_at));
+              displayedTimestamps.add(timestampStr);
             }
           });
     
-          lastTimestamp = messages[messages.length - 1].timestamp;
+          // 최신 메시지의 created_at 기준으로 lastTimestamp 갱신
+          lastTimestamp = new Date(messages[0].created_at).getTime();
         }
     
         chatLog.scrollTop = chatLog.scrollHeight;
@@ -930,10 +932,10 @@
       if (userData) loadChatMessages();
     }, 1000);
     
-    // 보내기 버튼에 이벤트 연결
+    // 보내기 버튼 이벤트
     sendBtn.addEventListener('click', sendMessage);
     
-    // 엔터키로 보내기
+    // 엔터키 이벤트
     chatInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         sendMessage();
