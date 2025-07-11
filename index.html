@@ -808,14 +808,29 @@
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + idToken,
           },
-          body: JSON.stringify(userData),
+          body: JSON.stringify({
+            uid: userData.uid,
+            chatMessages: userData.chatMessages,
+            userInfo: {
+              nickname: userData.nickname,
+              gold: userData.gold,
+              exp: userData.exp,
+              level: userData.level,
+              hp: userData.hp,
+              maxHp: userData.maxHp,
+              str: userData.str,
+              dex: userData.dex,
+              con: userData.con,
+              statPoints: userData.statPoints,
+            }
+          }),
         });
         if (!res.ok) throw new Error('저장 실패');
       } catch (error) {
         console.error("저장 실패", error);
       }
     }
-
+    
     async function signOut() {
       if (inDungeon) exitDungeon();
       await firebase.auth().signOut();
