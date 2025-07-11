@@ -801,9 +801,13 @@
     async function saveData() {
       if (!userData) return;
       try {
+        const idToken = await firebase.auth().currentUser.getIdToken(true);
         const res = await fetch('https://autorpg.loca.lt/api/save', {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + idToken,
+          },
           body: JSON.stringify(userData),
         });
         if (!res.ok) throw new Error('저장 실패');
