@@ -668,11 +668,18 @@
     }
     
 
-    //닉네임 중복 검사 함수
+    // 닉네임 중복 검사 함수 (오류 체크 및 응답 상태 체크 포함)
     async function isNicknameTaken(nickname) {
       try {
         const res = await fetch(`https://5198b8946cb8.ngrok-free.app/api/checkNickname?nickname=${encodeURIComponent(nickname)}`);
+    
+        if (!res.ok) {
+          console.error(`닉네임 중복 검사 실패. 상태 코드: ${res.status}`);
+          return false; // 서버 오류여도 닉네임 사용 가능하다고 처리 (원하는 경우 true로 변경 가능)
+        }
+    
         const text = await res.text();
+    
         try {
           const data = JSON.parse(text);
           return data.taken;
@@ -685,8 +692,8 @@
         return false;
       }
     }
-
-    //회원가입 함수
+    
+    // 회원가입 함수 (오류 체크 강화)
     async function signUp() {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
@@ -698,20 +705,22 @@
       }
     
       try {
-        // 닉네임 중복 검사
         const nicknameExists = await isNicknameTaken(nickname);
         if (nicknameExists) {
           alert("이미 사용 중인 닉네임입니다.");
           return;
         }
     
-        // 이메일로 회원 생성
         const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
     
-        // MySQL에 사용자 데이터 저장
-        await fetch('https://5198b8946cb8.ngrok-free.app/api/createUser', {
+        const idToken = await userCredential.user.getIdToken();
+    
+        const res = await fetch('https://5198b8946cb8.ngrok-free.app/api/createUser', {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + idToken,
+          },
           body: JSON.stringify({
             uid: userCredential.user.uid,
             nickname: nickname,
@@ -727,6 +736,12 @@
             statPoints: 0
           })
         });
+    
+        if (!res.ok) {
+          const errorText = await res.text();
+          alert("회원가입 실패: 서버 오류\n" + errorText);
+          return;
+        }
     
         alert("회원가입 성공! 로그인 해주세요.");
       } catch (error) {
