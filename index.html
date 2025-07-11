@@ -510,7 +510,7 @@
       const select = document.getElementById("pvpTargetSelect");
       select.innerHTML = "";
       try {
-        const res = await fetch('https://autorpg.loca.lt/api/pvpTargets?excludeUid=' + encodeURIComponent(userData.uid));
+        const res = await fetch('https://tall-cups-joke.loca.lt/api/pvpTargets?excludeUid=' + encodeURIComponent(userData.uid));
         if (!res.ok) throw new Error('대상자 불러오기 실패');
         const text = await res.text();
         const users = JSON.parse(text);
@@ -543,7 +543,7 @@
     
     async function startPvpBattle() {
       const targetUid = document.getElementById("pvpTargetSelect").value;
-      const res = await fetch(`https://autorpg.loca.lt/api/userdata?uid=${encodeURIComponent(targetUid)}`);
+      const res = await fetch(`https://tall-cups-joke.loca.lt/api/userdata?uid=${encodeURIComponent(targetUid)}`);
       if (!res.ok) {
         logPvp("상대 유저 정보를 찾을 수 없습니다.");
         return;
@@ -628,7 +628,7 @@
       const rankingList = document.getElementById("rankingList");
       rankingList.innerHTML = "불러오는 중...";
       try {
-        const res = await fetch('https://autorpg.loca.lt/api/ranking?limit=10');
+        const res = await fetch('https://tall-cups-joke.loca.lt/api/ranking?limit=10');
         if (!res.ok) throw new Error('랭킹 불러오기 실패');
         const text = await res.text();
         const rankings = JSON.parse(text);
@@ -671,7 +671,7 @@
     // 닉네임 중복 검사 함수 (오류 체크 및 응답 상태 체크 포함)
     async function isNicknameTaken(nickname) {
       try {
-        const res = await fetch(`https://autorpg.loca.lt/api/checkNickname?nickname=${encodeURIComponent(nickname)}`);
+        const res = await fetch(`https://tall-cups-joke.loca.lt/api/checkNickname?nickname=${encodeURIComponent(nickname)}`);
     
         if (!res.ok) {
           console.error(`닉네임 중복 검사 실패. 상태 코드: ${res.status}`);
@@ -715,7 +715,7 @@
     
         const idToken = await userCredential.user.getIdToken();
     
-        const res = await fetch('https://autorpg.loca.lt/api/createUser', {
+        const res = await fetch('https://tall-cups-joke.loca.lt/api/createUser', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -768,7 +768,7 @@
         const idToken = await userCredential.user.getIdToken();
     
         // MySQL API에서 유저 데이터 요청 (Authorization 헤더 포함)
-        const res = await fetch(`https://autorpg.loca.lt/api/userdata?uid=${uid}`, {
+        const res = await fetch(`https://tall-cups-joke.loca.lt/api/userdata?uid=${uid}`, {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + idToken,
@@ -802,7 +802,7 @@
       if (!userData) return;
       try {
         const idToken = await firebase.auth().currentUser.getIdToken(true);
-        const res = await fetch('https://autorpg.loca.lt/api/save', {
+        const res = await fetch('https://tall-cups-joke.loca.lt/api/save', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -888,7 +888,7 @@
       if (!userData) return alert("로그인 후 사용하세요.");
     
       try {
-        const res = await fetch('https://autorpg.loca.lt/api/chat/send', {
+        const res = await fetch('https://tall-cups-joke.loca.lt/api/chat/send', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
@@ -910,7 +910,7 @@
     
     async function loadChatMessages() {
       try {
-        const res = await fetch(`https://autorpg.loca.lt/api/chat/list?limit=100&afterTimestamp=${lastTimestamp}`);
+        const res = await fetch(`https://tall-cups-joke.loca.lt/api/chat/list?limit=100&afterTimestamp=${lastTimestamp}`);
         if (!res.ok) throw new Error('채팅 불러오기 실패');
         const messages = await res.json();
     
