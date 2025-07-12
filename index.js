@@ -4,15 +4,6 @@ const admin = require('firebase-admin');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
-const firebaseServiceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-if (!firebaseServiceAccount) {
-  console.error('❌ 환경변수 FIREBASE_SERVICE_ACCOUNT_JSON 누락됨');
-  process.exit(1);
-}
-admin.initializeApp({
-  credential: admin.credential.cert(JSON.parse(firebaseServiceAccount)),
-});
-
 const app = express();
 app.use(cors({ origin: '*' }));
 app.use(bodyParser.json());
@@ -21,10 +12,11 @@ const nicknameCheckRouter = require('./nicknamecheck');
 app.use('/api', nicknameCheckRouter);
 
 const dbConfig = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  host: 'sql12.freesqldatabase.com',
+  user: 'sql12789622',
+  password: 'PahTpg3Adw',
+  database: 'sql12789622',
+  port: 3306,
   charset: 'euckr',
 };
 
