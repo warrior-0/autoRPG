@@ -296,8 +296,8 @@
     }
 
     function buyPotion(type) {
-      const costMap = { small: 10, medium: 100, large: 1000, extralarge: 10000};
-      const labelMap = { small: "소형", medium: "중형", large: "대형", extralarge: "초대형"};
+      const costMap = { small: 10, medium: 100, large: 1000, extralarge: 10000 };
+      const labelMap = { small: "소형", medium: "중형", large: "대형", extralarge: "초대형" };
       const cost = costMap[type];
     
       let count = parseInt(document.getElementById("buyCount").value);
@@ -313,7 +313,11 @@
       }
     
       userData.gold -= totalCost;
-      userData.potions["potion_" + type] += count;
+    
+      // ✅ 수정된 포션 필드 접근 방식 (중첩 객체 X)
+      const potionField = "potions_" + type;
+      userData[potionField] = (userData[potionField] || 0) + count;
+    
       log(`${labelMap[type]} 물약 ${count}개를 구매했습니다! (총 ${totalCost}골드)`);
       updateUI();
       saveData();
