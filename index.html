@@ -313,7 +313,7 @@
       }
     
       userData.gold -= totalCost;
-      userData.potions[type] += count;
+      userData.potions["potion_" + type] += count;
       log(`${labelMap[type]} 물약 ${count}개를 구매했습니다! (총 ${totalCost}골드)`);
       updateUI();
       saveData();
