@@ -377,6 +377,6 @@ app.post('/api/chat/send', async (req, res) => {
   }
 });
 
-app.listen(3000, () => {
+app.listen(3000, '0.0.0.0', () => {
   console.log('서버 3000번 포트에서 실행 중');
 });
