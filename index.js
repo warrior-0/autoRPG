@@ -4,29 +4,27 @@ const admin = require('firebase-admin');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
-const serviceAccount = require('./serviceAccountKey.json');
+const firebaseServiceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+if (!firebaseServiceAccount) {
+  console.error('❌ 환경변수 FIREBASE_SERVICE_ACCOUNT_JSON 누락됨');
+  process.exit(1);
+}
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert(JSON.parse(firebaseServiceAccount)),
 });
 
 const app = express();
-app.use(
-  cors({
-    origin: '*',
-  })
-);
-
+app.use(cors({ origin: '*' }));
 app.use(bodyParser.json());
 
 const nicknameCheckRouter = require('./nicknamecheck');
-
 app.use('/api', nicknameCheckRouter);
 
 const dbConfig = {
-  host: 'localhost',
-  user: 'root',
-  password: 'qhemfqhemf2!',
-  database: 'test',
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   charset: 'euckr',
 };
 
@@ -377,6 +375,7 @@ app.post('/api/chat/send', async (req, res) => {
   }
 });
 
-app.listen(3000, '0.0.0.0', () => {
-  console.log('서버 3000번 포트에서 실행 중');
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`서버 ${PORT}번 포트에서 실행 중`);
 });
