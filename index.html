@@ -895,8 +895,8 @@
       }
     });
     
-    // stageJumpPrev: 클릭 한 번으로 -10
-    document.getElementById("stageJumpPrev").addEventListener("click", () => {
+    // 이전 스테이지 10씩 감소 (꾹 누르면 반복)
+    setupHoldButton("stageJumpPrev", () => {
       if (currentStage > 10) {
         currentStage -= 10;
       } else {
@@ -905,14 +905,11 @@
       updateStageDisplay();
     });
 
-    
-    document.getElementById("stageJumpNext").addEventListener("click", () => {
-      if (currentStage <= maxStage - 10) {
+    setupHoldButton("stageJumpNext", () => {
+      if (currentStage < maxStage) {
         currentStage += 10;
-      } else {
-        currentStage = maxStage;
+        updateStageDisplay();
       }
-      document.getElementById("stageDisplay").innerText = currentStage;
     });
 
     //채팅 관련 코드
