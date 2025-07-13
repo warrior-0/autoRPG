@@ -952,8 +952,12 @@
         if (!res.ok) throw new Error('채팅 불러오기 실패');
         const messages = await res.json();
     
+        // ⬇ 스크롤이 거의 맨 아래인지 확인 (오차 허용)
+        const shouldAutoScroll =
+          chatLog.scrollTop + chatLog.clientHeight >= chatLog.scrollHeight - 10;
+    
         if (messages.length > 0) {
-          // 서버가 내림차순(created_at DESC) 정렬이라 역순으로 출력하면 시간 순서대로 보여짐
+          // 서버는 최신순 정렬이라 출력은 역순으로
           messages.reverse().forEach(msg => {
             const timestampStr = String(msg.created_at);
             if (!displayedTimestamps.has(timestampStr)) {
@@ -962,8 +966,13 @@
             }
           });
     
-          // 최신 메시지의 created_at 기준으로 lastTimestamp 갱신
+          // 최신 메시지 시간 갱신
           lastTimestamp = new Date(messages[0].created_at).getTime();
+        }
+    
+        // ⬇ 스크롤이 맨 아래에 있던 경우에만 자동 스크롤 유지
+        if (shouldAutoScroll) {
+          chatLog.scrollTop = chatLog.scrollHeight;
         }
     
       } catch (err) {
