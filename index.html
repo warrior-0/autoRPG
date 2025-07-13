@@ -851,29 +851,60 @@
       log("로그아웃 되었습니다.");
     }
 
-    // 스테이지 변경 버튼 이벤트
-    document.getElementById("stagePrev").addEventListener("click", () => {
+    let intervalId = null;
+    
+    // 스테이지 표시 함수
+    function updateStageDisplay() {
+      document.getElementById("stageDisplay").innerText = currentStage;
+    }
+    
+    // 버튼 눌렀을 때 반복 실행 설정 함수
+    function setupHoldButton(buttonId, onHold) {
+      const button = document.getElementById(buttonId);
+    
+      button.addEventListener("mousedown", () => {
+        onHold(); // 즉시 1회 실행
+        intervalId = setInterval(onHold, 100); // 계속 실행
+      });
+    
+      button.addEventListener("mouseup", () => clearInterval(intervalId));
+      button.addEventListener("mouseleave", () => clearInterval(intervalId));
+    
+      // 모바일 대응
+      button.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        onHold();
+        intervalId = setInterval(onHold, 100);
+      });
+      button.addEventListener("touchend", () => clearInterval(intervalId));
+    }
+    
+    // stagePrev: 꾹 누르면 감소
+    setupHoldButton("stagePrev", () => {
       if (currentStage > 1) {
         currentStage--;
-        document.getElementById("stageDisplay").innerText = currentStage;
+        updateStageDisplay();
       }
     });
     
-    document.getElementById("stageNext").addEventListener("click", () => {
+    // stageNext: 꾹 누르면 증가
+    setupHoldButton("stageNext", () => {
       if (currentStage < maxStage) {
         currentStage++;
-        document.getElementById("stageDisplay").innerText = currentStage;
+        updateStageDisplay();
       }
     });
     
+    // stageJumpPrev: 클릭 한 번으로 -10
     document.getElementById("stageJumpPrev").addEventListener("click", () => {
       if (currentStage > 10) {
         currentStage -= 10;
       } else {
         currentStage = 1;
       }
-      document.getElementById("stageDisplay").innerText = currentStage;
+      updateStageDisplay();
     });
+
     
     document.getElementById("stageJumpNext").addEventListener("click", () => {
       if (currentStage <= maxStage - 10) {
