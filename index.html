@@ -301,6 +301,11 @@
       }
     }
 
+    window.addEventListener("load", () => {
+      const tabs = document.getElementById("tabs");
+      if (tabs) tabs.scrollLeft = 0;
+    });
+
     function updateUI() {
       if (!userData) return;
       document.getElementById("gold").innerText = userData.gold;
