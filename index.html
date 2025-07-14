@@ -285,7 +285,9 @@
       boots: null
     };
     let inDungeon = false;
+    let inBossDungeon = false;
     let dungeonInterval;
+    let bossdungeonInterval;
     let currentStage = 1;
     const maxStage = 10000000;
 
@@ -534,8 +536,17 @@
       document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
       log("던전에서 나왔습니다.");
     }
+
+    function exitBossDungeon() {
+      if (!inBossDungeon) return;
+      clearInterval(bossdungeuonInterval);
+      inBossDungeon = false;
+      document.getElementById("fightBossBtn").innerText = "보스랑 싸우기";
+      log("보스 전투를 중지했습니다")
+    }
+    
     function enterBossBattle() {
-      if (inDungeon) {
+      if (inBossDungeon) {
         exitDungeon();
         return;
       }
