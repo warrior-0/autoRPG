@@ -1037,17 +1037,31 @@ function appendChatLog(nickname, message, date) {
         sendMessage();
       }
     });
-  function renderInventory() {
-    const container = document.getElementById("inventoryContainer");
-    container.innerHTML = "";
-    inventory.forEach((item, index) => {
-      const div = document.createElement("div");
-      div.className = "item";
-      div.innerText = item.name;
-      div.onclick = () => handleItemClick(index);
-      container.appendChild(div);
-    });
+function renderInventory() {
+  const container = document.getElementById("inventoryContainer");
+  container.innerHTML = "";
+  inventory.forEach((item, index) => {
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerText = item.name;
+    div.onclick = () => handleItemClick(index);
+    container.appendChild(div);
+  });
+}
+function renderEquipment() {
+  for (let slot in equipped) {
+    const el = document.getElementById(`slot-${slot}`);
+    el.innerText = `${slotNames[slot]}: ${equipped[slot]?.name || "없음"}`;
   }
+}
+  
+  const slotNames = {
+    weapon: "무기",
+    helmet: "헬멧",
+    armor: "갑옷",
+    shield: "방패",
+    boots: "신발"
+  };
     
   </script>
 </body>
