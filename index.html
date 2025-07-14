@@ -265,6 +265,14 @@
 
   <script>
     let userData = null;
+    let inventory = [];
+    let equipped = {
+      weapon: null,
+      helmet: null,
+      armor: null,
+      shield: null,
+      boots: null
+    };
     let inDungeon = false;
     let dungeonInterval;
     let currentStage = 1;
@@ -541,6 +549,7 @@
         console.error(error);
       }
     }
+    
     function logPvp(message) {
       const pvpLog = document.getElementById("pvpLog");
       const p = document.createElement("p");
@@ -1028,7 +1037,17 @@ function appendChatLog(nickname, message, date) {
         sendMessage();
       }
     });
-
+  function renderInventory() {
+    const container = document.getElementById("inventoryContainer");
+    container.innerHTML = "";
+    inventory.forEach((item, index) => {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerText = item.name;
+      div.onclick = () => handleItemClick(index);
+      container.appendChild(div);
+    });
+  }
     
   </script>
 </body>
