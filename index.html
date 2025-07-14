@@ -163,6 +163,7 @@
       <button onclick="showTab('donate')">후원</button>
       <button onclick="showTab('ranking')">랭킹</button>
       <button onclick="showTab('arena')">아레나</button>
+      <button onclick="showTab('inventory')">인벤토리</button>
     </div>
     
     <div id="homeTab">
@@ -213,6 +214,18 @@
         <button onclick="startPvpBattle()">대전 시작</button>
       </p>
       <div id="pvpLog" style="text-align:left; max-width:400px; margin:0 auto; background:#fff; padding:10px; border:1px solid #ccc; height:200px; overflow-y:auto;"></div>
+    </div>
+
+    <div id="inventtoryTab" style="display:none">
+      <h2>🎒 인벤토리</h2>
+      <div id="equipmentSlots" style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <div id="slot-weapon">무기: 없음</div>
+        <div id="slot-helmet">헬멧: 없음</div>
+        <div id="slot-armor">갑옷: 없음</div>
+        <div id="slot-shield">방패: 없음</div>
+        <div id="slot-boots">신발: 없음</div>
+      </div>
+      <div id="inventoryContainer" style="display: flex; gap: 10px; flex-wrap: wrap; border: 1px solid #ccc; padding: 10px;"></div>
     </div>
     
     <p><strong>현재 유저:</strong> <span id="nicknameDisplay"></span></p>
@@ -664,11 +677,14 @@
       document.getElementById("donateTab").style.display = name === "donate" ? "block" : "none";
       document.getElementById("rankingTab").style.display = name === "ranking" ? "block" : "none";
       document.getElementById("arenaTab").style.display = name === "arena" ? "block" : "none";
+      document.getElementById("inventoryTab").style.display = name === "inventory" ? "block" : "none";
     
       if (name === "shop") document.getElementById("goldShop").innerText = userData.gold;
       if (name === "ranking") loadRanking();
       if (name === "arena") loadPvpTargets(); // 🔹 대상 유저 불러오기
     }
+
+    
     
 
     // 닉네임 중복 검사 함수 (오류 체크 및 응답 상태 체크 포함)
