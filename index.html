@@ -534,6 +534,130 @@
       document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
       log("던전에서 나왔습니다.");
     }
+    function enterBossBattle() {
+      if (inDungeon) {
+        exitDungeon();
+        return;
+      }
+    
+      if (userData.hp <= 0) {
+        alert("체력이 부족합니다.");
+        return;
+      }
+    
+      inDungeon = true;
+      document.getElementById("bossToggleBtn").innerText = "보스 나가기";
+      log("⚔️ 보스와의 전투가 시작됩니다!");
+    
+      // 보스 스탯 계산 (스테이지 기반)
+      let bossStage = currentStage; // 보스 스테이지도 currentStage 기준 사용
+      let bossHp = Math.floor((bossStage / 5 + 2) * bossStage * 10);
+      let bossCrit = bossStage * 2;
+      let bossHit = bossStage * 10;
+      let bossDef = (bossStage / 15 + 1.2) * bossStage;
+      let bossAtk = Math.floor((bossStage / 3 + 2) * bossStage);
+      let bossReward = bossStage * 2;
+    
+      dungeonInterval = setInterval(() => {
+        // 플레이어 회피
+        const evasionRatePlayer = userData.dex / (userData.dex + bossHit);
+        if (Math.random() < evasionRatePlayer) {
+          log("플레이어가 보스 공격을 회피했습니다.");
+        } else {
+          let isCrit = Math.random() * 100 < bossCrit;
+          let playerDef = userData.con;
+          let dmgReduction = 1 - (playerDef / (userData.level * 2 + playerDef));
+          let dmg = bossAtk;
+    
+          if (isCrit) {
+            dmg = Math.floor(bossAtk * (bossCrit / 2000 + 1.1));
+            dmg = Math.floor(dmg * dmgReduction);
+            dmg = applyRandomVariance(dmg);
+            dmg = Math.max(1, dmg);
+            userData.hp -= dmg;
+            log(`💥 보스의 치명타! 플레이어가 ${dmg} 피해를 받았습니다.`);
+          } else {
+            dmg = Math.floor(dmg * dmgReduction);
+            dmg = applyRandomVariance(dmg);
+            dmg = Math.max(1, dmg);
+            userData.hp -= dmg;
+            log(`플레이어가 ${dmg} 피해를 받았습니다.`);
+          }
+        }
+    
+        // 플레이어 공격
+        const bossEvasion = bossStage * 1.5;
+        const evasionRateBoss = bossEvasion / (bossEvasion + userData.dex * 5 + 1);
+    
+        if (Math.random() < evasionRateBoss) {
+          log("보스가 플레이어 공격을 회피했습니다.");
+        } else {
+          const playerAtk = 1 + ((userData.level / 2) + 1) * userData.str * 1.5;
+          const critStat = userData.dex * 5;
+          const critChance = (critStat / (critStat + 150)) * 100;
+          let isCrit = Math.random() * 100 < critChance;
+    
+          let dmgReductionPlayer = 1 - (bossDef / (userData.level * 2 + bossDef));
+          let dmg;
+          if (isCrit) {
+            const critDamage = playerAtk * (critStat / 2000 + 1.1);
+            dmg = Math.floor(critDamage * dmgReductionPlayer);
+            dmg = applyRandomVariance(dmg);
+            dmg = Math.max(1, dmg);
+            bossHp -= dmg;
+            log(`🎯 치명타! 보스가 ${dmg} 피해를 입었습니다.`);
+          } else {
+            dmg = Math.floor(playerAtk * dmgReductionPlayer);
+            dmg = applyRandomVariance(dmg);
+            dmg = Math.max(1, dmg);
+            bossHp -= dmg;
+            log(`보스가 ${dmg} 피해를 입었습니다.`);
+          }
+        }
+    
+        log(`🧟‍♂️ 보스 남은 체력: ${Math.max(0, bossHp)}`);
+    
+        // 보스 처치
+        if (bossHp <= 0) {
+          userData.gold += bossReward * 50;
+          userData.exp += bossReward * 30;
+          log(`🏆 보스를 처치했습니다! 골드 +${bossReward * 50}, 경험치 +${bossReward * 30}`);
+    
+          // 장비 획득 예시
+          if (Math.random() < 0.5) {
+            const loot = getRandomBossLoot(); // 함수는 아래 예시
+            userData.inventory.push(loot);
+            log(`🎁 보스 전리품 획득: ${loot.name}`);
+          }
+    
+          stopBossBattle(); // 자동전투 중지
+          checkLevelUp();
+        }
+    
+        autoUsePotion();
+        updateUI();
+        saveData();
+    
+        // 플레이어 사망
+        if (userData.hp <= 0) {
+          stopBossBattle();
+          log("💀 보스에게 패배했습니다. 체력이 100%회복되고 보유 경험치의 30%를 잃습니다.");
+          userData.exp = Math.floor(userData.exp * 0.7);
+          userData.hp = userData.maxHp;
+          updateUI();
+          saveData();
+          showTab("home");
+          alert("보스에게 패배했습니다. 체력이 100%회복되고 보유 경험치의 30%를 잃습니다.");
+        }
+      }, 1000);
+    }
+    
+    function stopBossBattle() {
+      clearInterval(dungeonInterval);
+      inDungeon = false;
+      document.getElementById("bossToggleBtn").innerText = "보스 전투 시작";
+    }
+
 
     //공격 데미지 랜덤 함수 (0.95배 ~ 1.05배)
     function applyRandomVariance(baseDamage) {
