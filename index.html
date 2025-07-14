@@ -34,6 +34,10 @@
     #gameUI {
       display: none;
     }
+
+    #mobileOnlyButton {
+      display: none;
+    }
     
     #bottomStatus {
       position: fixed;
@@ -94,6 +98,11 @@
       body {
         padding: 10px;
         font-size: 16px;
+      }
+      
+      #mobileOnlyButton {
+          display: inline-block;
+        }
       }
     
       #tabs {
@@ -162,7 +171,7 @@
 
   <div id="gameUI">
     <div id="tabs" style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px;">
-      <button onclick="showTab('newTab')">새 탭</button>
+      <button id="mobileOnlyButton">모바일 전용 화면 맞</button>
       <button onclick="showTab('home')">홈</button>
       <button onclick="showTab('dungeon')">던전</button>
       <button onclick="showTab('boss')">보스</button>
