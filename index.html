@@ -1005,24 +1005,22 @@
       }
     }
     
-function appendChatLog(nickname, message, date) {
-  const div = document.createElement("div");
-  div.style.padding = "4px 0";
-
-  const strong = document.createElement("strong");
-  strong.textContent = nickname;
-
-  const timeText = document.createTextNode(` [${date.toLocaleTimeString()}]: `);
-  const messageText = document.createTextNode(message);
-
-  div.appendChild(strong);
-  div.appendChild(timeText);
-  div.appendChild(messageText);
-
-  chatLog.appendChild(div);
-}
-
+    function appendChatLog(nickname, message, date) {
+      const div = document.createElement("div");
+      div.style.padding = "4px 0";
     
+      const strong = document.createElement("strong");
+      strong.textContent = nickname;
+    
+      const timeText = document.createTextNode(` [${date.toLocaleTimeString()}]: `);
+      const messageText = document.createTextNode(message);
+    
+      div.appendChild(strong);
+      div.appendChild(timeText);
+      div.appendChild(messageText);
+    
+      chatLog.appendChild(div);
+    }
     // 1초마다 신규 메시지 불러오기
     setInterval(() => {
       if (userData) loadChatMessages();
@@ -1037,31 +1035,45 @@ function appendChatLog(nickname, message, date) {
         sendMessage();
       }
     });
-function renderInventory() {
-  const container = document.getElementById("inventoryContainer");
-  container.innerHTML = "";
-  inventory.forEach((item, index) => {
-    const div = document.createElement("div");
-    div.className = "item";
-    div.innerText = item.name;
-    div.onclick = () => handleItemClick(index);
-    container.appendChild(div);
-  });
-}
-function renderEquipment() {
-  for (let slot in equipped) {
-    const el = document.getElementById(`slot-${slot}`);
-    el.innerText = `${slotNames[slot]}: ${equipped[slot]?.name || "없음"}`;
-  }
-}
-  
-  const slotNames = {
-    weapon: "무기",
-    helmet: "헬멧",
-    armor: "갑옷",
-    shield: "방패",
-    boots: "신발"
-  };
+    
+    function renderInventory() {
+      const container = document.getElementById("inventoryContainer");
+      container.innerHTML = "";
+      inventory.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerText = item.name;
+        div.onclick = () => handleItemClick(index);
+        container.appendChild(div);
+      });
+    }
+    function renderEquipment() {
+      for (let slot in equipped) {
+        const el = document.getElementById(`slot-${slot}`);
+        el.innerText = `${slotNames[slot]}: ${equipped[slot]?.name || "없음"}`;
+      }
+    }
+    const slotNames = {
+      weapon: "무기",
+      helmet: "헬멧",
+      armor: "갑옷",
+      shield: "방패",
+      boots: "신발"
+    };
+        
+    function handleItemClick(index) {
+      const item = inventory[index];
+      const slot = item.type;
+      if (equipped[slot]?.name === item.name) {
+        equipped[slot] = null;
+        alert(`${item.name} 해제됨`);
+      } else {
+        equipped[slot] = item;
+        alert(`${item.name} 장착됨`);
+      }
+      renderEquipment();
+    }
+
     
   </script>
 </body>
