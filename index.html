@@ -162,6 +162,7 @@
 
   <div id="gameUI">
     <div id="tabs" style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px;">
+      <button onclick="showTab('newTab')">새 탭</button>
       <button onclick="showTab('home')">홈</button>
       <button onclick="showTab('dungeon')">던전</button>
       <button onclick="showTab('boss')">보스</button>
@@ -170,6 +171,11 @@
       <button onclick="showTab('ranking')">랭킹</button>
       <button onclick="showTab('arena')">아레나</button>
       <button onclick="showTab('inventory')">인벤토리</button>
+    </div>
+
+    <div id="newTab" style="display:none;">
+      <h2>화면 맞춤형 탭</h2>
+      <p>그저 화면 맞춤용</p>
     </div>
     
     <div id="homeTab">
