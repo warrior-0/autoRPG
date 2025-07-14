@@ -159,6 +159,7 @@
     <div id="tabs" style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px;">
       <button onclick="showTab('home')">홈</button>
       <button onclick="showTab('dungeon')">던전</button>
+      <button onclick="showTab('boss')">보스</button>
       <button onclick="showTab('shop')">상점</button>
       <button onclick="showTab('donate')">후원</button>
       <button onclick="showTab('ranking')">랭킹</button>
@@ -178,6 +179,16 @@
         <button id="stageJumpNext">⏩ +10</button>
       </div>
       <button onclick="enterDungeon()" id="dungeonToggleBtn">던전 입장</button>
+    </div>
+
+    <div id="bossTab" style="display:none; padding:10px;">
+      <h2>⚔️ 보스 전투</h2>
+      <div id="bossInfo">
+        <p id="bossName">보스 이름: 드래곤</p>
+        <p id="bossHp">HP: <span id="bossHpValue">1000</span></p>
+      </div>
+      <button id="fightBossBtn">보스와 싸우기</button>
+      <div id="bossFightResult"></div>
     </div>
     
     <div id="shopTab" style="display:none;">
