@@ -1066,7 +1066,12 @@
     }
 
     function dungeonTpButton() {
-      currentStage = 
+      let count = parseInt(document.getElementById("dungeonUp").value);
+      if (isNaN(count) || count <= 0) {
+        alert("스테이지를 1 이상 올바르게 입력해주세요.");
+        return;
+      }
+      currentStage = count
     }
     
     // 버튼 눌렀을 때 반복 실행 설정 함수
