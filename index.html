@@ -469,9 +469,9 @@
       let monsterDef = (currentStage / 20 + 1) * currentStage;
       let monsterAtk = Math.floor((currentStage / 4 + 1) * currentStage);
       let reward = currentStage;
-      const evasionRatePlayer = userData.dex / (userData.dex + monsterHit);
-      const monsterEvasion = currentStage - 1;
-      const evasionRateMonster = monsterEvasion / (monsterEvasion + userData.dex * 5 + 1);
+      let evasionRatePlayer = userData.dex / (userData.dex + monsterHit);
+      let monsterEvasion = currentStage - 1;
+      let evasionRateMonster = monsterEvasion / (monsterEvasion + userData.dex * 5 + 1);
       
       dungeonInterval = setInterval(() => {
         if (Math.random() < evasionRatePlayer) {
@@ -554,7 +554,6 @@
           document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
           log("던전에서 사망했습니다. 체력이 100%회복되고 보유 경험치의 30%를 잃습니다");
           userData.exp = Math.floor(userData.exp * 0.7);
-          userData.gold = Math.floor(userData.gold * 0.5);
           userData.hp = userData.maxHp;
           updateUI();
           saveData();
