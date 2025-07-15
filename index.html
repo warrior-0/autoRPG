@@ -469,11 +469,11 @@
       let monsterDef = (currentStage / 20 + 1) * currentStage;
       let monsterAtk = Math.floor((currentStage / 4 + 1) * currentStage);
       let reward = currentStage;
-    
+      const evasionRatePlayer = userData.dex / (userData.dex + monsterHit);
+      const monsterEvasion = currentStage - 1;
+      const evasionRateMonster = monsterEvasion / (monsterEvasion + userData.dex * 5 + 1);
+      
       dungeonInterval = setInterval(() => {
-        // 플레이어 회피
-        const evasionRatePlayer = userData.dex / (userData.dex + monsterHit);
-    
         if (Math.random() < evasionRatePlayer) {
           log("플레이어가 몬스터 공격을 회피했습니다.");
         } else {
@@ -497,10 +497,6 @@
             log(`플레이어가 ${dmg} 피해를 받았습니다.`);
           }
         }
-    
-        // 플레이어 공격
-        const monsterEvasion = currentStage - 1;
-        const evasionRateMonster = monsterEvasion / (monsterEvasion + userData.dex * 5 + 1);
     
         if (Math.random() < evasionRateMonster) {
           log("몬스터가 플레이어 공격을 회피했습니다.");
@@ -542,6 +538,9 @@
           monsterHit = currentStage * 7;
           monsterDef = (currentStage / 20 + 1) * currentStage;
           monsterAtk = Math.floor((currentStage / 4 + 1) * currentStage);
+          evasionRatePlayer = userData.dex / (userData.dex + monsterHit);
+          monsterEvasion = currentStage - 1;
+          evasionRateMonster = monsterEvasion / (monsterEvasion + userData.dex * 5 + 1);
           checkLevelUp();
         }
     
