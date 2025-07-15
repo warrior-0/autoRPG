@@ -1058,9 +1058,7 @@
       document.getElementById("bottomStatus").style.display = "none";
       log("로그아웃 되었습니다.");
     }
-
-    let intervalId = null;
-    
+   
     // 스테이지 표시 함수
     function updateStageDisplay() {
       document.getElementById("stageDisplay").innerText = currentStage;
@@ -1071,6 +1069,7 @@
       const button = document.getElementById(buttonId);
       button.addEventListener("click", callback);
     }
+    
     // stagePrev
     setupHoldButton("stagePrev", () => {
       if (currentStage > 1) {
@@ -1215,12 +1214,14 @@
         container.appendChild(div);
       });
     }
+    
     function renderEquipment() {
       for (let slot in equipped) {
         const el = document.getElementById(`slot-${slot}`);
         el.innerText = `${slotNames[slot]}: ${equipped[slot]?.name || "없음"}`;
       }
     }
+    
     const slotNames = {
       weapon: "무기",
       helmet: "헬멧",
