@@ -191,8 +191,9 @@
       <p>어서오세요! 던전에 입장하여 전투를 시작하세요.</p>
     </div>
     <div id="dungeonTab" style="display:none;">
-      <label for="dungeonUp">이동할 던전 스테이지를 입력해주세요: </label>
+      <label for="dungeonUp">순간이동할 던전 스테이지를 입력해주세요: </label>
       <input type="number" id="dungeonUp" min="1" value="1" style="width: 80px;" />
+      <button onclick="dungeonTp">던전 순간이동하기</button>
       <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;">
         <button id="stageJumpPrev">-10 ⏪</button>
         <button id="stagePrev">⬅</button>
