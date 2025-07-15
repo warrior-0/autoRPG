@@ -353,7 +353,8 @@ app.post('/api/chat/send', async (req, res) => {
 
   try {
     await pool.query(
-      'INSERT INTO chat_messages (uid, nickname, message, created_at) VALUES (?, ?, ?, NOW())',
+      `INSERT INTO chat_messages (uid, nickname, message, created_at) 
+       VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL '7:36:52' HOUR_SECOND))`,
       [uid, nickname, message]
     );
     res.json({ success: true });
