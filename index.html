@@ -604,10 +604,12 @@
       let bossDef = (bossStage / 15 + 1.2) * bossStage;
       let bossAtk = Math.floor((bossStage / 3 + 2) * bossStage);
       let bossReward = bossStage * 2;
+      const evasionRatePlayer = userData.dex / (userData.dex + bossHit);
+      const bossEvasion = bossStage * 1.5;
+      const evasionRateBoss = bossEvasion / (bossEvasion + userData.dex * 5 + 1);
     
       dungeonInterval = setInterval(() => {
-        // 플레이어 회피
-        const evasionRatePlayer = userData.dex / (userData.dex + bossHit);
+        
         if (Math.random() < evasionRatePlayer) {
           log("플레이어가 보스 공격을 회피했습니다.");
         } else {
@@ -631,10 +633,6 @@
             log(`플레이어가 ${dmg} 피해를 받았습니다.`);
           }
         }
-    
-        // 플레이어 공격
-        const bossEvasion = bossStage * 1.5;
-        const evasionRateBoss = bossEvasion / (bossEvasion + userData.dex * 5 + 1);
     
         if (Math.random() < evasionRateBoss) {
           log("보스가 플레이어 공격을 회피했습니다.");
