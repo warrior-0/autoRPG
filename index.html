@@ -1065,25 +1065,8 @@
     }
     
     // 버튼 눌렀을 때 반복 실행 설정 함수
-    function setupHoldButton(buttonId, onHold) {
+    function setupHoldButton(buttonId) {
       const button = document.getElementById(buttonId);
-    
-      button.addEventListener("mousedown", () => {
-        onHold(); // 즉시 1회 실행
-        intervalId = setInterval(onHold, 100); // 계속 실행
-      });
-    
-      button.addEventListener("mouseup", () => clearInterval(intervalId));
-      button.addEventListener("mouseleave", () => clearInterval(intervalId));
-    
-      // 모바일 대응
-      button.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        onHold();
-        intervalId = setInterval(onHold, 100);
-      });
-      button.addEventListener("touchend", () => clearInterval(intervalId));
-    }
     
     // stagePrev: 꾹 누르면 감소
     setupHoldButton("stagePrev", () => {
