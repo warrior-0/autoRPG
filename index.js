@@ -287,11 +287,18 @@ app.post('/api/save', async (req, res) => {
 // 채팅 메시지 목록 조회 API
 app.get('/api/chat/list', async (req, res) => {
   const limit = parseInt(req.query.limit) || 100;
+  const afterTimestamp = parseInt(req.query.afterTimestamp) || 0;
 
   try {
     const [rows] = await pool.query(
-      'SELECT uid, nickname, message, created_at FROM chat_messages ORDER BY created_at DESC LIMIT ?',
-      [limit]
+      `
+      SELECT uid, nickname, message, UNIX_TIMESTAMP(created_at) * 1000 AS created_at 
+      FROM chat_messages 
+      WHERE UNIX_TIMESTAMP(created_at) * 1000 > ? 
+      ORDER BY created_at DESC 
+      LIMIT ?
+      `,
+      [afterTimestamp, limit]
     );
     res.json(rows);
   } catch (err) {
