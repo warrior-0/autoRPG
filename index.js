@@ -287,6 +287,8 @@ app.post('/api/save', async (req, res) => {
 // 채팅 메시지 목록 조회 API
 app.get('/api/chat/list', async (req, res) => {
   const limit = parseInt(req.query.limit) || 100;
+  const offsetMs = (7 * 3600 + 36 * 60 + 52) * 1000; // 밀리초 단위
+  const createdAt = new Date(Date.now() + offsetMs);
 
   try {
     const [rows] = await pool.query(
