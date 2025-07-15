@@ -267,9 +267,11 @@
     <p>물약: 소형: <span id="potionSmall">3</span> 중형: <span id="potionMedium">1</span> 대형: <span id="potionLarge">0</span> 초대형: <span id="potionExtralarge">0</span></p>
     <div style="margin-top: 10px;">
       <p>스탯 포인트: <span id="statPointDisplay">0</span></p>
-      <button onclick="addStat('str')">str +1</button>
-      <button onclick="addStat('dex')">dex +1</button>
-      <button onclick="addStat('con')">con +1</button>
+      <label for="statUp">증가시킬 스탯 포인트: </label>
+      <input type="number" id="statUp" min="1" value="1" style="width: 80px;" />
+      <button onclick="addStat('str')">str</button>
+      <button onclick="addStat('dex')">dex</button>
+      <button onclick="addStat('con')">con</button>
     </div>
     <button onclick="signOut()">로그아웃</button>
     <!-- 채팅 UI -->
