@@ -417,7 +417,7 @@
             userData.con = 0;
             userData.str = 0;
             userData.dex = 0;
-            let addstats = stats > stats2 ? stats : stats2;
+            let addstats = (stats > stats2 ? stats : stats2) - userData.statPoints;
             userData.statPoints += addstats;
             updateUI();
             saveData();
