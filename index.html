@@ -275,6 +275,7 @@
       <button onclick="addStat('str')">str</button>
       <button onclick="addStat('dex')">dex</button>
       <button onclick="addStat('con')">con</button>
+      <button onclick="resetStat()")>스탯초기화</button>
     </div>
     <button onclick="signOut()">로그아웃</button>
     <!-- 채팅 UI -->
@@ -407,6 +408,20 @@
         log("소형 물약 사용! 체력 "+Math.floor(10 + userData.maxHp*0.01)+" 회복");
       }
       userData.hp = Math.min(userData.hp, userData.maxHp);
+    }
+
+    function resetStat() {
+        let stats = userData.con + userData.str + userData.dex;
+        let stats2 = userData.level * 3;
+        if(stats > 0) {
+            userData.con = 0;
+            userData.str = 0;
+            userData.dex = 0;
+            let addstats = stats > stats2 ? stats : stats2;
+            userData.statPoints += addstats;
+            updateUI();
+            saveData();
+        }
     }
 
     function addStat(type) {
