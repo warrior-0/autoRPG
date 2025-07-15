@@ -1070,7 +1070,7 @@
     function setupHoldButton(buttonId) {
       const button = document.getElementById(buttonId);
     
-    // stagePrev: 꾹 누르면 감소
+    // stagePrev
     setupHoldButton("stagePrev", () => {
       if (currentStage > 1) {
         currentStage--;
@@ -1078,7 +1078,7 @@
       }
     });
     
-    // stageNext: 꾹 누르면 증가
+    // stageNext
     setupHoldButton("stageNext", () => {
       if (currentStage < maxStage) {
         currentStage++;
@@ -1086,7 +1086,7 @@
       }
     });
     
-    // 이전 스테이지 10씩 감소 (꾹 누르면 반복)
+    // 이전 스테이지 10씩 감소
     setupHoldButton("stageJumpPrev", () => {
       if (currentStage > 10) {
         currentStage -= 10;
