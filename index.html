@@ -1069,7 +1069,7 @@
     // 버튼 눌렀을 때 반복 실행 설정 함수
     function setupHoldButton(buttonId) {
       const button = document.getElementById(buttonId);
-    
+    }
     // stagePrev
     setupHoldButton("stagePrev", () => {
       if (currentStage > 1) {
@@ -1102,6 +1102,7 @@
         updateStageDisplay();
       }
     });
+    
 
     //채팅 관련 코드
     const chatLog = document.getElementById("chatLog");
