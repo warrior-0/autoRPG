@@ -1158,7 +1158,7 @@
         if (messages.length > 0) {
           // 서버는 최신순 정렬이라 출력은 역순으로
           messages.reverse().forEach(msg => {
-            const timestampStr = String(msg.created_at + 27412000);
+            const timestampStr = String(msg.created_at);
             if (!displayedTimestamps.has(timestampStr)) {
               appendChatLog(msg.nickname, msg.message, new Date(msg.created_at));
               displayedTimestamps.add(timestampStr);
