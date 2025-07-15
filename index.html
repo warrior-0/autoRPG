@@ -1067,8 +1067,9 @@
     }
     
     // 버튼 눌렀을 때 반복 실행 설정 함수
-    function setupHoldButton(buttonId) {
+    function setupHoldButton(buttonId, callback) {
       const button = document.getElementById(buttonId);
+      button.addEventListener("click", callback);
     }
     // stagePrev
     setupHoldButton("stagePrev", () => {
