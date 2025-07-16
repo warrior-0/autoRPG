@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2/promise');
 const admin = require('firebase-admin');
@@ -12,11 +13,11 @@ const nicknameCheckRouter = require('./nicknamecheck');
 app.use('/api', nicknameCheckRouter);
 
 const dbConfig = {
-  host: 'sql12.freesqldatabase.com',
-  user: 'sql12789622',
-  password: 'PahTpg3Adw',
-  database: 'sql12789622',
-  port: 3306,
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306,
   charset: 'euckr',
 };
 
