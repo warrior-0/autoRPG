@@ -631,7 +631,7 @@
       const bossEvasion = bossStage * 1.5;
       const evasionRateBoss = bossEvasion / (bossEvasion + userData.dex * 5 + 1);
     
-      dungeonInterval = setInterval(async () => {
+      bossdungeonInterval = setInterval(async () => {
 
         if (isProcessingBossTick) return; // 이미 처리 중이면 skip
         isProcessingBossTick = true;
