@@ -499,7 +499,7 @@
       let evasionRateMonster = monsterEvasion / (monsterEvasion + userData.dex * 5 + 1);
       
       dungeonInterval = setInterval(() => {
-        if (Math.random() < evasionRateMonster) {
+        if (Math.random() < evasionRatePlayer) {
           log("플레이어가 몬스터 공격을 회피했습니다.");
         } else {
           let isCrit = Math.random() * 100 < monsterCrit;
@@ -523,7 +523,7 @@
           }
         }
     
-        if (Math.random() < evasionRatePlayer) {
+        if (Math.random() < evasionRateMonster) {
           log("몬스터가 플레이어 공격을 회피했습니다.");
         } else {
           const playerAtk = 1 + ((userData.level / 2) + 1) * userData.str * 1.5;
