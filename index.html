@@ -406,7 +406,6 @@
         userData.potion_quarter--;
         userData.hp += Math.floor(100000 + userData.maxHp*0.25);
         log("슈퍼 물약 사용! 체력 "+Math.floor(100000 + userData.maxHp*0.25)+" 회복");
-      }
       } else if (userData.potion_extralarge > 0 && missingHp >= 10000 + userData.maxHp*0.15) {
         userData.potion_extralarge--;
         userData.hp += Math.floor(10000 + userData.maxHp*0.15)
