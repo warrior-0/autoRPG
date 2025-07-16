@@ -700,7 +700,21 @@
           bossdungeonInterval && clearInterval(bossdungeonInterval);
           inBossDungeon = false;
           document.getElementById("fightBossBtn").innerText = "보스와 싸우기";
+
+          try {
+            const firebaseToken = await firebase.auth().currentUser.getIdToken();
+            const result = await reportBossDefeat(bossStage, firebaseToken);
     
+            if (result.success && result.droppedItem) {
+              userData.inventory.push(result.droppedItem);
+              log(`🎁 보스 전리품 획득: ${result.droppedItem.name}`);
+              document.getElementById('bossFightResult').innerHTML = `🎁 보스 전리품 획득: ${result.droppedItem.name}`;
+            }
+          } catch (error) {
+            console.error(error);
+            document.getElementById('bossFightResult').innerHTML = '서버 통신 실패';
+          }
+          
           stopBossBattle(); // 자동전투 중지
           checkLevelUp();
         }
