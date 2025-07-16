@@ -1238,9 +1238,11 @@
     }
     
     function renderEquipment() {
-      for (let slot in equipped) {
+      for (let slot in slotNames) {
         const el = document.getElementById(`slot-${slot}`);
-        el.innerText = `${slotNames[slot]}: ${equipped[slot]?.name || "없음"}`;
+        if (el) {
+          el.innerText = `${slotNames[slot]}: ${equipped[slot]?.name || "없음"}`;
+        }
       }
     }
     
@@ -1255,13 +1257,22 @@
     function handleItemClick(index) {
       const item = inventory[index];
       const slot = item.type;
+    
+      // 이미 장착된 상태면 해제
       if (equipped[slot]?.name === item.name) {
+        inventory.push(equipped[slot]); // 장비를 다시 인벤토리에 추가
         equipped[slot] = null;
         alert(`${item.name} 해제됨`);
       } else {
+        // 기존 장비 있으면 인벤토리로 되돌림
+        if (equipped[slot]) inventory.push(equipped[slot]);
+    
         equipped[slot] = item;
         alert(`${item.name} 장착됨`);
+        inventory.splice(index, 1); // 인벤토리에서 제거
       }
+    
+      renderInventory();
       renderEquipment();
     }
   </script>
