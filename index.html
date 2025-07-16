@@ -1382,22 +1382,23 @@
       }
     }
 
-    function calculateEquippedBonusStats(inventory) {
+    function calculateEquippedBonusStats(equipped) {
       const bonusStats = { str: 0, dex: 0, con: 0 };
     
-      inventory.forEach(item => {
-        if (item.equipped && item.bonus) {
+      for (let slot in equipped) {
+        const item = equipped[slot];
+        if (item && item.bonus) {
           if (item.bonus.str) bonusStats.str += item.bonus.str;
           if (item.bonus.dex) bonusStats.dex += item.bonus.dex;
           if (item.bonus.con) bonusStats.con += item.bonus.con;
         }
-      });
+      }
     
       return bonusStats;
     }
 
-    function getFinalStats(userData, inventory) {
-      const bonus = calculateEquippedBonusStats(inventory);
+    function getFinalStats(userData, equipped) {
+      const bonus = calculateEquippedBonusStats(equipped);
     
       return {
         str: userData.str + bonus.str,
@@ -1406,6 +1407,7 @@
         bonus
       };
     }
+
 
     function updateStatDisplay(userData, inventory) {
       const { str, dex, con, bonus } = getFinalStats(userData, inventory);
