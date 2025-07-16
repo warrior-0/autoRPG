@@ -383,20 +383,23 @@ async function handleBossDefeat(uid, bossStage) {
   try {
     await conn.beginTransaction();
 
-    // 1/보스스테이지 확률로 드랍 결정
     const dropChance = 1 / bossStage;
+    let droppedItem = null;
+
     if (Math.random() < dropChance) {
-      // 아이템 랜덤 선택
       const item = await getRandomStageItem(bossStage, conn);
       if (item) {
-        // user_inventory 테이블에 아이템 추가
         await conn.query(
           'INSERT INTO user_inventory (uid, item_name, item_type, equipped) VALUES (?, ?, ?, ?)',
           [uid, item.name, item.type, false]
         );
+        droppedItem = item; // 드랍된 아이템 저장
       }
     }
+
     await conn.commit();
+
+    return droppedItem; // 드랍된 아이템 반환 (없으면 null)
   } catch (error) {
     await conn.rollback();
     throw error;
@@ -404,6 +407,7 @@ async function handleBossDefeat(uid, bossStage) {
     conn.release();
   }
 }
+
 
 app.post('/api/boss/defeat', verifyFirebaseToken, async (req, res) => {
   const uid = req.uid;
@@ -414,8 +418,8 @@ app.post('/api/boss/defeat', verifyFirebaseToken, async (req, res) => {
   }
 
   try {
-    await handleBossDefeat(uid, bossStage);
-    res.json({ success: true });
+    const droppedItem = await handleBossDefeat(uid, bossStage);
+    res.json({ success: true, droppedItem }); // droppedItem 포함해서 반환
   } catch (err) {
     console.error('Boss defeat error:', err);
     res.status(500).json({ success: false, error: err.message });
