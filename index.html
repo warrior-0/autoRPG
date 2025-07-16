@@ -210,6 +210,13 @@
         <p id="bossName">보스</p>
         <p id="bossHp">HP: <span id="bossHpValue">0</span></p>
       </div>
+      <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;">
+        <button id="bossStageJumpPrev">-10 ⏪</button>
+        <button id="bossStagePrev">⬅</button>
+        <div><strong>보스 스테이지:</strong> <span id="bossStageDisplay">1</span></div>
+        <button id="bossStageNext">➡</button>
+        <button id="bossStageJumpNext">⏩ +10</button>
+      </div>
       <button id="fightBossBtn" onclick="enterBossBattle()">보스와 싸우기</button>
       <div id="bossFightResult"></div>
     </div>
@@ -1089,7 +1096,7 @@
       updateStageDisplay();
     }
     
-    // 버튼 눌렀을 때 반복 실행 설정 함수
+    // 버튼 눌렀을 때 실행 설정 함수
     function setupHoldButton(buttonId, callback) {
       const button = document.getElementById(buttonId);
       button.addEventListener("click", callback);
