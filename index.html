@@ -699,7 +699,7 @@
           // 서버에 보스 처치 사실 알리고 아이템 드랍 처리 요청
           bossdungeonInterval && clearInterval(bossdungeonInterval);
           inBossDungeon = false;
-          document.getElementById("fightBossBtn").innerText = "던전 입장";
+          document.getElementById("fightBossBtn").innerText = "보스와 싸우기";
     
           try {
             const firebaseToken = await firebase.auth().currentUser.getIdToken();
