@@ -631,8 +631,12 @@
       const bossEvasion = bossStage * 1.5;
       const evasionRateBoss = bossEvasion / (bossEvasion + userData.dex * 5 + 1);
     
-      dungeonInterval = setInterval(() => {
-        
+      dungeonInterval = setInterval(async () => {
+
+        if (isProcessingBossTick) return; // 이미 처리 중이면 skip
+        isProcessingBossTick = true;
+
+        try {
         if (Math.random() < evasionRatePlayer) {
           log("플레이어가 보스 공격을 회피했습니다.");
         } else {
@@ -730,12 +734,16 @@
           saveData();
           showTab("home");
           alert("보스에게 패배했습니다. 체력이 100%회복되고 보유 경험치의 30%를 잃습니다.");
+          }
+        } finally {
+          isProcessingBossTick = false;
         }
       }, 1000);
     }
     
+    
     function stopBossBattle() {
-      clearInterval(bossdungeuonInterval);
+      clearInterval(bossdungeonInterval);
       inBossDungeon = false;
       document.getElementById("bossToggleBtn").innerText = "보스 전투 시작";
     }
