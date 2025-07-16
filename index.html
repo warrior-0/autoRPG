@@ -1383,12 +1383,12 @@
       }
     }
 
-    function calculateEquippedBonusStats(inventory) {
+    function calculateEquippedBonusStats(equipped) {
       const bonusAdd = { str: 0, dex: 0, con: 0 };
       const bonusMul = { str: 1, dex: 1, con: 1 };
     
-      inventory.forEach(item => {
-        if (item.equipped && item.bonus) {
+      Object.values(equipped).forEach(item => {
+        if (item && item.bonus) {
           if (item.bonus.strAdd) bonusAdd.str += item.bonus.strAdd;
           if (item.bonus.dexAdd) bonusAdd.dex += item.bonus.dexAdd;
           if (item.bonus.conAdd) bonusAdd.con += item.bonus.conAdd;
@@ -1402,8 +1402,9 @@
       return { bonusAdd, bonusMul };
     }
 
-    function getFinalStats(userData, inventory) {
-      const { bonusAdd, bonusMul } = calculateEquippedBonusStats(inventory);
+
+    function getFinalStats(userData, equipped) {
+      const { bonusAdd, bonusMul } = calculateEquippedBonusStats(equipped);
     
       return {
         str: Math.floor((userData.str + bonusAdd.str) * bonusMul.str),
@@ -1413,9 +1414,9 @@
         bonusMul
       };
     }
-
-    function updateStatDisplay(userData, inventory) {
-      const { str, dex, con, bonusAdd, bonusMul } = getFinalStats(userData, inventory);
+    
+    function updateStatDisplay(userData, equipped) {
+      const { str, dex, con, bonusAdd, bonusMul } = getFinalStats(userData, equipped);
     
       document.getElementById("statStr").innerText = `${str} (+${bonusAdd.str}, x${bonusMul.str.toFixed(2)})`;
       document.getElementById("statDex").innerText = `${dex} (+${bonusAdd.dex}, x${bonusMul.dex.toFixed(2)})`;
