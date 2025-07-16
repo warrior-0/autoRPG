@@ -233,6 +233,7 @@
         <button onclick="buyPotion('medium')">중형 물약 구매 (100G)</button>
         <button onclick="buyPotion('large')">대형 물약 구매 (1000G)</button>
         <button onclick="buyPotion('extralarge')">초대형 물약 구매 (10000G)</button>
+        <button onclick="buyPotion('quarter')">슈퍼 물약 구매 (100000G)</button>
       </div>
     </div>
 
@@ -274,7 +275,7 @@
     <p>체력: <span id="hp">100</span> / <span id="maxHp">100</span></p>
     <p>스탯 — STR: <span id="statStr">0</span> | DEX: <span id="statDex">0</span> | CON: <span id="statCon">0</span></p>
     <p>골드: <span id="gold">0</span> | 경험치: <span id="exp">0</span>
-    <p>물약: 소형: <span id="potionSmall">3</span> 중형: <span id="potionMedium">1</span> 대형: <span id="potionLarge">0</span> 초대형: <span id="potionExtralarge">0</span></p>
+    <p>물약: 소형: <span id="potionSmall">3</span> 중형: <span id="potionMedium">1</span> 대형: <span id="potionLarge">0</span> 초대형: <span id="potionExtralarge">0</span> 슈퍼: <span id="potionQuarter">0</span> </p>
     <div style="margin-top: 10px;">
       <p>스탯 포인트: <span id="statPointDisplay">0</span></p>
       <label for="statUp">증가시킬 스탯 포인트: </label>
@@ -351,6 +352,7 @@
       document.getElementById("potionMedium").innerText = userData.potion_medium;
       document.getElementById("potionLarge").innerText = userData.potion_large;
       document.getElementById("potionExtralarge").innerText = userData.potion_extralarge;
+      document.getElementById("potionQuarter").innerText = userData.potion_quarter;
       document.getElementById("stageDisplay").innerText = currentStage;
       document.getElementById("goldShop").innerText = userData.gold;
       document.getElementById("goldDisplay").innerText = ` 골드: ${userData.gold}`;
@@ -370,8 +372,8 @@
     }
 
     function buyPotion(type) {
-      const costMap = { small: 10, medium: 100, large: 1000, extralarge: 10000 };
-      const labelMap = { small: "소형", medium: "중형", large: "대형", extralarge: "초대형" };
+      const costMap = { small: 10, medium: 100, large: 1000, extralarge: 10000, quarter: 100000};
+      const labelMap = { small: "소형", medium: "중형", large: "대형", extralarge: "초대형", quarter: "슈퍼" };
       const cost = costMap[type];
     
       let count = parseInt(document.getElementById("buyCount").value);
@@ -400,7 +402,12 @@
     function autoUsePotion() {
       const missingHp = userData.maxHp - userData.hp;
       if (missingHp <= 0) return;
-      if (userData.potion_extralarge > 0 && missingHp >= 10000 + userData.maxHp*0.15) {
+      if (userData.potion_quarter > 0 && missingHp >= 100000 + userData.maxHp*0.25 {
+        userData.potion_quarter--;
+        userData.hp += Math.floor(100000 + userData.maxHp*0.25);
+        log("슈퍼 물약 사용! 체력 "+Math.floor(100000 + userData.maxHp*0.25)+" 회복");
+      }
+      } else if (userData.potion_extralarge > 0 && missingHp >= 10000 + userData.maxHp*0.15) {
         userData.potion_extralarge--;
         userData.hp += Math.floor(10000 + userData.maxHp*0.15)
         log("초대형 물약 사용! 체력 "+Math.floor(10000 + userData.maxHp*0.15)+" 회복");
@@ -988,6 +995,7 @@
             potion_medium: 1,
             potion_large: 0,
             potion_extralarge: 0,
+            potion_quarter: 0,
             str: 0,
             dex: 0,
             con: 0,
@@ -1080,6 +1088,7 @@
               potion_medium: userData.potion_medium || 0,
               potion_large: userData.potion_large || 0,
               potion_extralarge: userData.potion_extralarge || 0,
+              potion_quarter: userData.potion_quarter || 0,
               str: userData.str,
               dex: userData.dex,
               con: userData.con,
