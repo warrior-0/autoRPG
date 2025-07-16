@@ -496,7 +496,7 @@
       let reward = currentStage;
       let evasionRatePlayer = userData.dex / (userData.dex + monsterHit);
       let monsterEvasion = currentStage - 1;
-      let evasionRateMonster = monsterEvasion / (monsterEvasion + userData.dex * 5 + 1);
+      let evasionRateMonster = monsterEvasion / (monsterEvasion + userData.dex * 5 + userData.str * 5 + 1);
       
       dungeonInterval = setInterval(() => {
         if (Math.random() < evasionRatePlayer) {
@@ -565,7 +565,7 @@
           monsterAtk = Math.floor((currentStage / 4 + 1) * currentStage);
           evasionRatePlayer = userData.dex / (userData.dex + monsterHit);
           monsterEvasion = currentStage - 1;
-          evasionRateMonster = monsterEvasion / (monsterEvasion + userData.dex * 5 + 1);
+          evasionRateMonster = monsterEvasion / (monsterEvasion + userData.dex * 5 + userData.str * 5 + 1);
           checkLevelUp();
         }
     
@@ -630,7 +630,7 @@
       let bossReward = bossStage * 2;
       const evasionRatePlayer = userData.dex / (userData.dex + bossHit);
       const bossEvasion = bossStage * 1.5;
-      const evasionRateBoss = bossEvasion / (bossEvasion + userData.dex * 5 + 1);
+      const evasionRateBoss = bossEvasion / (bossEvasion + userData.dex * 5 + userData.str * 5 + 1);
     
       bossdungeonInterval = setInterval(async () => {
 
@@ -667,8 +667,8 @@
         } else {
           const playerAtk = 1 + ((userData.level / 2) + 1) * userData.str * 1.5;
           const critStat = userData.dex * 5;
-          const critChance = (critStat / (critStat + 150)) * 100;
-          let isCrit = Math.random() * 100 < critChance;
+          const critChance = critStat / (critStat + 150);
+          let isCrit = Math.random() < critChance;
     
           let dmgReductionPlayer = 1 - (bossDef / (userData.level * 2 + bossDef));
           let dmg;
@@ -832,7 +832,7 @@
       let turn = 1;
       while (myHp > 0 && enemyHp > 0 && turn <= 50) {
         // 내가 공격
-        const evadeEnemy = enemyEvasion / (enemyEvasion + myDex * 5 + 1);
+        const evadeEnemy = enemyEvasion / (enemyEvasion + myDex * 5 + myStr * 5 + 1);
         if (Math.random() < evadeEnemy) {
           logPvp("🧑‍💼 상대가 공격을 회피했습니다.");
         } else {
@@ -850,7 +850,7 @@
     
         // 상대가 공격
         if (enemyHp > 0) {
-          const evadeMe = myEvasion / (myEvasion + enemyDex * 5 + 1);
+          const evadeMe = myEvasion / (myEvasion + enemyDex * 5 + enemyStr * 5 + 1);
           if (Math.random() < evadeMe) {
             logPvp("👤 내가 공격을 회피했습니다.");
           } else {
