@@ -1353,13 +1353,14 @@
       renderInventory();
       renderEquipment();
     }
+    
     async function reportBossDefeat(bossStage, firebaseToken) {
       try {
         const response = await fetch('https://autorpg.onrender.com/api/boss/defeat', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + firebaseToken,  // Firebase 토큰 넣기
+            'Authorization': `Bearer ${firebaseToken}`,  // Firebase 토큰 넣기
           },
           body: JSON.stringify({ bossStage }),
         });
