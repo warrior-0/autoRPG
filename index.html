@@ -697,7 +697,7 @@
           log(`🏆 보스를 처치했습니다! 골드 +${bossReward * 50}, 경험치 +${bossReward * 30}`);
     
           // 서버에 보스 처치 사실 알리고 아이템 드랍 처리 요청
-          dungeonInterval && clearInterval(dungeonInterval);
+          bossdungeonInterval && clearInterval(bossdungeonInterval);
           inBossDungeon = false;
           document.getElementById("fightBossBtn").innerText = "던전 입장";
     
