@@ -598,7 +598,7 @@
 
     function exitBossDungeon() {
       if (!inBossDungeon) return;
-      clearInterval(bossdungeuonInterval);
+      clearInterval(bossdungeonInterval);
       inBossDungeon = false;
       document.getElementById("fightBossBtn").innerText = "보스와 싸우기";
       log("보스 전투를 중지했습니다")
