@@ -1329,6 +1329,31 @@
       renderInventory();
       renderEquipment();
     }
+    async function reportBossDefeat(bossStage, firebaseToken) {
+      try {
+        const response = await fetch('/api/boss/defeat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + firebaseToken,  // Firebase 토큰 넣기
+          },
+          body: JSON.stringify({ bossStage }),
+        });
+    
+        const data = await response.json();
+        if (data.success) {
+          // 보상 처리 완료
+          console.log('보스 처치 보상 지급 완료');
+          return true;
+        } else {
+          console.error('보스 처치 보상 지급 실패:', data.error);
+          return false;
+        }
+      } catch (err) {
+        console.error('서버 통신 실패:', err);
+        return false;
+      }
+    }
   </script>
 </body>
 </html>
