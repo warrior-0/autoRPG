@@ -1406,6 +1406,14 @@
         bonus
       };
     }
+
+    function updateStatDisplay(userData, inventory) {
+      const { str, dex, con, bonus } = getFinalStats(userData, inventory);
+    
+      document.getElementById("statStr").innerText = `${str} (+${bonus.str})`;
+      document.getElementById("statDex").innerText = `${dex} (+${bonus.dex})`;
+      document.getElementById("statCon").innerText = `${con} (+${bonus.con})`;
+    }
   </script>
 </body>
 </html>
