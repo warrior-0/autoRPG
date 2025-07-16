@@ -397,8 +397,8 @@ async function handleBossDefeat(uid, bossStage) {
       const item = await getRandomStageItem(bossStage, conn);
       if (item) {
         await conn.query(
-          'INSERT INTO user_inventory (uid, item_name, item_type, equipped) VALUES (?, ?, ?, ?)',
-          [uid, item.name, item.type, false]
+          'INSERT INTO user_inventory (uid, item_id, item_name, item_type, equipped) VALUES (?, ?, ?, ?, ?)',
+          [uid, item.id, item.name, item.type, false]
         );
         droppedItem = item; // 드랍된 아이템 저장
       }
