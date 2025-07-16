@@ -1134,7 +1134,51 @@
         updateStageDisplay();
       }
     });
+
+    // 보스 스테이지 표시 업데이트 함수
+    function updateBossStageDisplay() {
+      document.getElementById("bossStageDisplay").innerText = currentBossStage;
+    }
     
+    // 보스 스테이지 버튼 세팅 함수
+    function setupBossStageButtons() {
+      const btnPrev = document.getElementById("bossStagePrev");
+      const btnNext = document.getElementById("bossStageNext");
+      const btnJumpPrev = document.getElementById("bossStageJumpPrev");
+      const btnJumpNext = document.getElementById("bossStageJumpNext");
+    
+      btnPrev.onclick = () => {
+        if (currentBossStage > 1) {
+          currentBossStage--;
+          updateBossStageDisplay();
+        }
+      };
+    
+      btnNext.onclick = () => {
+        if (currentBossStage < maxBossStage) {
+          currentBossStage++;
+          updateBossStageDisplay();
+        }
+      };
+    
+      btnJumpPrev.onclick = () => {
+        if (currentBossStage > 10) {
+          currentBossStage -= 10;
+        } else {
+          currentBossStage = 1;
+        }
+        updateBossStageDisplay();
+      };
+    
+      btnJumpNext.onclick = () => {
+        if (currentBossStage < maxBossStage) {
+          currentBossStage += 10;
+          if(currentBossStage > maxBossStage) currentBossStage = maxBossStage;
+        }
+        updateBossStageDisplay();
+      };
+    }
+
 
     //채팅 관련 코드
     const chatLog = document.getElementById("chatLog");
