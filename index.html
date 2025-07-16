@@ -496,13 +496,13 @@
       let reward = currentStage;
       let evasionRatePlayer = userData.dex / (userData.dex + monsterHit);
       let monsterEvasion = currentStage - 1;
-      let evasionRateMonster = monsterEvasion / (monsterEvasion + userData.str * 5 + 1);
+      let evasionRateMonster = monsterEvasion / (monsterEvasion + userData.dex * 5 + 1);
       
       dungeonInterval = setInterval(() => {
         if (Math.random() < evasionRatePlayer) {
           log("플레이어가 몬스터 공격을 회피했습니다.");
         } else {
-          let isCrit = Math.random() < monsterCrit/(monsterCrit + userData.dex * 5);
+          let isCrit = Math.random() * 100 < monsterCrit;
           let playerDef = userData.con;
           let dmgReduction = 1 - (playerDef / (userData.level * 2 + playerDef));
           let dmg = monsterAtk;
@@ -528,9 +528,9 @@
         } else {
           const playerAtk = 1 + ((userData.level / 2) + 1) * userData.str * 1.5;
     
-          const critStat = userData.dex;
-          const critChance = (critStat / (critStat + monsterCrit));
-          let isCrit = Math.random() < critChance;
+          const critStat = userData.dex * 5;
+          const critChance = (critStat / (critStat + 150)) * 100;
+          let isCrit = Math.random() * 100 < critChance;
     
           let monsterDefFinal = monsterDef;
           let dmgReductionPlayer = 1 - (monsterDefFinal / (userData.level * 2 + monsterDefFinal));
@@ -621,16 +621,16 @@
       log("⚔️ 보스와의 전투가 시작됩니다!");
     
       // 보스 스탯 계산 (스테이지 기반)
-      let bossStage = currentBossStage;
+      let bossStage = currentBossStage; // 보스 스테이지도 currentStage 기준 사용
       let bossHp = Math.floor((bossStage / 5 + 2) * bossStage * 10);
-      let bossCrit = bossStage * 2 / (bossStage * 2 + userData.dex);
+      let bossCrit = bossStage * 2;
       let bossHit = bossStage * 10;
       let bossDef = (bossStage / 15 + 1.2) * bossStage;
       let bossAtk = Math.floor((bossStage / 3 + 2) * bossStage);
       let bossReward = bossStage * 2;
       const evasionRatePlayer = userData.dex / (userData.dex + bossHit);
       const bossEvasion = bossStage * 1.5;
-      const evasionRateBoss = bossEvasion / (bossEvasion + userData.str * 5 + 1);
+      const evasionRateBoss = bossEvasion / (bossEvasion + userData.dex * 5 + 1);
     
       bossdungeonInterval = setInterval(async () => {
 
@@ -641,7 +641,7 @@
         if (Math.random() < evasionRatePlayer) {
           log("플레이어가 보스 공격을 회피했습니다.");
         } else {
-          let isCrit = Math.random() < bossCrit;
+          let isCrit = Math.random() * 100 < bossCrit;
           let playerDef = userData.con;
           let dmgReduction = 1 - (playerDef / (userData.level * 2 + playerDef));
           let dmg = bossAtk;
@@ -820,8 +820,8 @@
     
       const myCritStat = myDex * 5;
       const enemyCritStat = enemyDex * 5;
-      const myCritChance = myCritStat / (myCritStat + enemyCritStat);
-      const enemyCritChance = enemyCritStat / (enemyCritStat + myCritStat);
+      const myCritChance = myCritStat / (myCritStat + 150);
+      const enemyCritChance = enemyCritStat / (enemyCritStat + 150);
     
       const myDef = myCon;
       const enemyDef = enemyCon;
@@ -832,7 +832,7 @@
       let turn = 1;
       while (myHp > 0 && enemyHp > 0 && turn <= 50) {
         // 내가 공격
-        const evadeEnemy = enemyEvasion / (enemyEvasion + myStr * 5 + 1);
+        const evadeEnemy = enemyEvasion / (enemyEvasion + myDex * 5 + 1);
         if (Math.random() < evadeEnemy) {
           logPvp("🧑‍💼 상대가 공격을 회피했습니다.");
         } else {
@@ -850,7 +850,7 @@
     
         // 상대가 공격
         if (enemyHp > 0) {
-          const evadeMe = myEvasion / (myEvasion + enemyStr * 5 + 1);
+          const evadeMe = myEvasion / (myEvasion + enemyDex * 5 + 1);
           if (Math.random() < evadeMe) {
             logPvp("👤 내가 공격을 회피했습니다.");
           } else {
