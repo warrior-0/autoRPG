@@ -189,6 +189,7 @@
     
     <div id="homeTab">
       <p>어서오세요! 던전에 입장하여 전투를 시작하세요.</p>
+      <button id="fullHealBtn">풀피 회복</button>
     </div>
     <div id="dungeonTab" style="display:none;">
       <label for="dungeonUp">순간이동할 던전 스테이지를 입력해주세요: </label>
@@ -1429,6 +1430,19 @@
       document.getElementById("statCon").innerText = `${con} (+${bonusAdd.con}, x${bonusMul.con.toFixed(2)})`;
     }
 
+    window.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("fullHealBtn").addEventListener("click", () => {
+        if (!userData || !userData.maxHp) {
+          alert("플레이어 정보가 없습니다.");
+          return;
+        }
+    
+        userData.hp = userData.maxHp;
+        log("체력이 모두 회복되었습니다!");
+        updateUI();
+        saveData();
+      });
+    });
     
   </script>
 </body>
