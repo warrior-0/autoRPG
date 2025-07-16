@@ -1383,40 +1383,45 @@
       }
     }
 
-    function calculateEquippedBonusStats(equipped) {
-      const bonusStats = { str: 0, dex: 0, con: 0 };
+    function calculateEquippedBonusStats(inventory) {
+      const bonusAdd = { str: 0, dex: 0, con: 0 };
+      const bonusMul = { str: 1, dex: 1, con: 1 };
     
-      for (let slot in equipped) {
-        const item = equipped[slot];
-        if (item && item.bonus) {
-          if (item.bonus.str) bonusStats.str += item.bonus.str;
-          if (item.bonus.dex) bonusStats.dex += item.bonus.dex;
-          if (item.bonus.con) bonusStats.con += item.bonus.con;
+      inventory.forEach(item => {
+        if (item.equipped && item.bonus) {
+          if (item.bonus.strAdd) bonusAdd.str += item.bonus.strAdd;
+          if (item.bonus.dexAdd) bonusAdd.dex += item.bonus.dexAdd;
+          if (item.bonus.conAdd) bonusAdd.con += item.bonus.conAdd;
+    
+          if (item.bonus.strMul) bonusMul.str *= item.bonus.strMul;
+          if (item.bonus.dexMul) bonusMul.dex *= item.bonus.dexMul;
+          if (item.bonus.conMul) bonusMul.con *= item.bonus.conMul;
         }
-      }
+      });
     
-      return bonusStats;
+      return { bonusAdd, bonusMul };
     }
 
-    function getFinalStats(userData, equipped) {
-      const bonus = calculateEquippedBonusStats(equipped);
+    function getFinalStats(userData, inventory) {
+      const { bonusAdd, bonusMul } = calculateEquippedBonusStats(inventory);
     
       return {
-        str: userData.str + bonus.str,
-        dex: userData.dex + bonus.dex,
-        con: userData.con + bonus.con,
-        bonus
+        str: Math.floor((userData.str + bonusAdd.str) * bonusMul.str),
+        dex: Math.floor((userData.dex + bonusAdd.dex) * bonusMul.dex),
+        con: Math.floor((userData.con + bonusAdd.con) * bonusMul.con),
+        bonusAdd,
+        bonusMul
       };
     }
 
-
     function updateStatDisplay(userData, inventory) {
-      const { str, dex, con, bonus } = getFinalStats(userData, inventory);
+      const { str, dex, con, bonusAdd, bonusMul } = getFinalStats(userData, inventory);
     
-      document.getElementById("statStr").innerText = `${str} (+${bonus.str})`;
-      document.getElementById("statDex").innerText = `${dex} (+${bonus.dex})`;
-      document.getElementById("statCon").innerText = `${con} (+${bonus.con})`;
+      document.getElementById("statStr").innerText = `${str} (+${bonusAdd.str}, x${bonusMul.str.toFixed(2)})`;
+      document.getElementById("statDex").innerText = `${dex} (+${bonusAdd.dex}, x${bonusMul.dex.toFixed(2)})`;
+      document.getElementById("statCon").innerText = `${con} (+${bonusAdd.con}, x${bonusMul.con.toFixed(2)})`;
     }
+
   </script>
 </body>
 </html>
