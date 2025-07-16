@@ -734,13 +734,14 @@
           saveData();
           showTab("home");
           alert("보스에게 패배했습니다. 체력이 100%회복되고 보유 경험치의 30%를 잃습니다.");
-          }
+          } 
+        } catch (error) {
+          console.error(error);
         } finally {
           isProcessingBossTick = false;
         }
       }, 1000);
     }
-    
     
     function stopBossBattle() {
       clearInterval(bossdungeonInterval);
