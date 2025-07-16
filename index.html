@@ -1355,7 +1355,7 @@
     }
     async function reportBossDefeat(bossStage, firebaseToken) {
       try {
-        const response = await fetch('/api/boss/defeat', {
+        const response = await fetch('https://autorpg.onrender.com/api/boss/defeat', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
