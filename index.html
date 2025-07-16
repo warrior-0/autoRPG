@@ -402,7 +402,7 @@
     function autoUsePotion() {
       const missingHp = userData.maxHp - userData.hp;
       if (missingHp <= 0) return;
-      if (userData.potion_quarter > 0 && missingHp >= 100000 + userData.maxHp*0.25 {
+      if (userData.potion_quarter > 0 && missingHp >= 100000 + userData.maxHp*0.25) {
         userData.potion_quarter--;
         userData.hp += Math.floor(100000 + userData.maxHp*0.25);
         log("슈퍼 물약 사용! 체력 "+Math.floor(100000 + userData.maxHp*0.25)+" 회복");
