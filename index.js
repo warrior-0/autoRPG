@@ -364,88 +364,63 @@ app.post('/api/chat/send', async (req, res) => {
   }
 });
 
-  app.get('/api/inventory', async (req, res) => {
-    const { uid } = req.query;
-    if (!uid) return res.status(400).json({ error: 'uid is required' });
+async function getRandomStageItem(stage, conn) {
+  // 해당 스테이지에 등록된 아이템 목록 조회
+  const [items] = await conn.query(
+    'SELECT i.* FROM items i JOIN stage_items si ON i.id = si.item_id WHERE si.stage = ?',
+    [stage]
+  );
   
-    const conn = await pool.getConnection();
-    try {
-      const [rows] = await conn.query(
-        'SELECT item_name, item_type, equipped FROM user_inventory WHERE uid = ?',
-        [uid]
-      );
+  if (items.length === 0) return null; // 아이템 없으면 종료
   
-      const inventory = [];
-      const equipped = {
-        weapon: null, helmet: null, armor: null, shield: null, boots: null
-      };
-  
-      for (const row of rows) {
-        const item = {
-          name: row.item_name,
-          type: row.item_type
-        };
-  
-        if (row.equipped) {
-          equipped[row.item_type] = item;
-        } else {
-          inventory.push(item);
-        }
-      }
-  
-      res.json({ inventory, equipped });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'DB 조회 실패' });
-    } finally {
-      conn.release();
-    }
-  });
+  // 랜덤으로 하나 선택
+  const randomIndex = Math.floor(Math.random() * items.length);
+  return items[randomIndex];
+}
 
-  app.post('/api/inventory/save', async (req, res) => {
-    const { uid, inventory, equipped } = req.body;
-    if (!uid || !Array.isArray(inventory) || typeof equipped !== 'object') {
-      return res.status(400).json({ error: '잘못된 요청 데이터' });
-    }
-  
-    const conn = await pool.getConnection();
-    try {
-      await conn.beginTransaction();
-  
-      // 기존 인벤토리 삭제
-      await conn.query('DELETE FROM user_inventory WHERE uid = ?', [uid]);
-  
-      // 새로 저장할 모든 아이템 정리
-      const allItems = [];
-  
-      for (const item of inventory) {
-        allItems.push([uid, item.name, item.type, false]);
-      }
-  
-      for (const slot in equipped) {
-        const item = equipped[slot];
-        if (item) {
-          allItems.push([uid, item.name, item.type, true]);
-        }
-      }
-  
-      if (allItems.length > 0) {
+async function handleBossDefeat(uid, bossStage) {
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // 1/보스스테이지 확률로 드랍 결정
+    const dropChance = 1 / bossStage;
+    if (Math.random() < dropChance) {
+      // 아이템 랜덤 선택
+      const item = await getRandomStageItem(bossStage, conn);
+      if (item) {
+        // user_inventory 테이블에 아이템 추가
         await conn.query(
-          'INSERT INTO user_inventory (uid, item_name, item_type, equipped) VALUES ?',
-          [allItems]
+          'INSERT INTO user_inventory (uid, item_name, item_type, equipped) VALUES (?, ?, ?, ?)',
+          [uid, item.name, item.type, false]
         );
       }
-  
-      await conn.commit();
-      res.json({ success: true });
-    } catch (err) {
-      await conn.rollback();
-      console.error(err);
-      res.status(500).json({ error: 'DB 저장 실패' });
-    } finally {
-      conn.release();
     }
-  });
+    await conn.commit();
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
+  }
+}
+
+app.post('/api/boss/defeat', verifyFirebaseToken, async (req, res) => {
+  const uid = req.uid;
+  const { bossStage } = req.body;
+
+  if (!bossStage || typeof bossStage !== 'number') {
+    return res.status(400).json({ error: 'bossStage is required and must be a number' });
+  }
+
+  try {
+    await handleBossDefeat(uid, bossStage);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Boss defeat error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
