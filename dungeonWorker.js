@@ -90,12 +90,14 @@ function startCombat() {
         dmg = applyRandomVariance(dmg);
         dmg = Math.max(1, dmg);
         monsterHp -= dmg;
+        monsterHp = Math.max(0, monsterHp);
         logMessages.push(`플레이어의 치명타 공격! 몬스터가 ${dmg} 피해를 받았습니다.`);
       } else {
         dmg = Math.floor(playerAtk * dmgReductionPlayer);
         dmg = applyRandomVariance(dmg);
         dmg = Math.max(1, dmg);
         monsterHp -= dmg;
+        monsterHp = Math.max(0, monsterHp);
         logMessages.push(`몬스터가 ${dmg} 피해를 받았습니다.`);
       }
     }
