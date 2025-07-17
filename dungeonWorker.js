@@ -50,7 +50,7 @@ function startCombat() {
 
     // 몬스터 → 플레이어
     if (Math.random() < evasionRatePlayer) {
-      postMessage({ type: 'debug', message: "플레이어가 몬스터 공격을 회피했습니다."});
+      logMessages.push("플레이어가 몬스터 공격을 회피했습니다.");
     } else {
       let isCrit = Math.random() * 100 < monsterCrit;
       let playerDef = userData.con;
@@ -63,19 +63,19 @@ function startCombat() {
         dmg = applyRandomVariance(dmg);
         dmg = Math.max(1, dmg);
         userData.hp -= dmg;
-        postMessage({ type: 'debug', message: "몬스터의 치명타 공격! 플레이어가 ${dmg} 피해를 받았습니다."});
+        logMessages.push(`몬스터의 치명타 공격! 플레이어가 ${dmg} 피해를 받았습니다.`);
       } else {
         dmg = Math.floor(dmg * dmgReduction);
         dmg = applyRandomVariance(dmg);
         dmg = Math.max(1, dmg);
         userData.hp -= dmg;
-        postMessage({ type: 'debug', message: `플레이어가 ${dmg} 피해를 받았습니다.` });
+        logMessages.push(`플레이어가 ${dmg} 피해를 받았습니다.`);
       }
     }
 
     // 플레이어 → 몬스터
     if (Math.random() < evasionRateMonster) {
-      postMessage({ type: 'debug', message: "몬스터가 플레이어 공격을 회피했습니다."});
+      logMessages.push("몬스터가 플레이어 공격을 회피했습니다.");
     } else {
       const playerAtk = 1 + ((userData.level / 2) + 1) * userData.str * 1.5;
       const critStat = userData.dex * 5;
@@ -92,14 +92,14 @@ function startCombat() {
         dmg = Math.max(1, dmg);
         monsterHp -= dmg;
         monsterHp = Math.max(0, monsterHp);
-        postMessage({ type: 'debug', message: `플레이어의 치명타 공격! 몬스터가 ${dmg} 피해를 받았습니다.` });
+        logMessages.push(`플레이어의 치명타 공격! 몬스터가 ${dmg} 피해를 받았습니다.`);
       } else {
         dmg = Math.floor(playerAtk * dmgReductionPlayer);
         dmg = applyRandomVariance(dmg);
         dmg = Math.max(1, dmg);
         monsterHp -= dmg;
         monsterHp = Math.max(0, monsterHp);
-        postMessage({ type: 'debug', message: `몬스터가 ${dmg} 피해를 받았습니다.` });
+        logMessages.push(`몬스터가 ${dmg} 피해를 받았습니다.`);
       }
     }
 
