@@ -67,6 +67,31 @@ app.post('/api/createUser', async (req, res) => {
   }
 });
 
+app.get('/api/userdata', async (req, res) => {
+  const uid = req.query.uid;
+  if (!uid) return res.status(400).json({ error: 'uid 필요' });
+
+  try {
+    const conn = await pool.getConnection();
+
+    const [users] = await conn.query('SELECT * FROM users WHERE uid = ?', [uid]);
+    if (users.length === 0) {
+      conn.release();
+      return res.status(404).json({ error: '유저 없음' });
+    }
+
+    const user = users[0];
+    const [equippedItems] = await conn.query('SELECT * FROM user_inventory WHERE uid = ? AND equipped = 1', [uid]);
+
+    conn.release();
+
+    res.json({ user, equipped: equippedItems });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: '서버 오류' });
+  }
+});
+
 // 유저 및 물약 저장 API
 app.post('/api/save-user-and-potions', async (req, res) => {
   const {
@@ -289,5 +314,87 @@ app.post('/api/chat/send', async (req, res) => {
   } catch (err) {
     console.error('/api/chat/send error:', err);
     res.status(500).json({ success: false, error: '메시지 저장 실패' });
+  }
+});
+
+app.post('/api/boss/defeat', async (req, res) => {
+  const { uid, bossStage } = req.body;
+  if (!uid || !bossStage) return res.status(400).json({ error: 'uid, bossStage 필요' });
+
+  try {
+    const conn = await pool.getConnection();
+
+    // 1) 보스 스테이지에 해당하는 드랍 아이템 조회 (예시: 여러개 중 랜덤 선택)
+    const [items] = await conn.query('SELECT * FROM items WHERE boss_stage = ?', [bossStage]);
+
+    if (items.length === 0) {
+      conn.release();
+      return res.json({ message: "드랍 아이템 없음", droppedItem: null });
+    }
+
+    // 예: 무작위 아이템 1개 선택
+    const droppedItem = items[Math.floor(Math.random() * items.length)];
+
+    // 2) user_inventory에 추가
+    await conn.query(
+      'INSERT INTO user_inventory (uid, item_id, item_name, item_type, equipped) VALUES (?, ?, ?, ?, 0)',
+      [uid, droppedItem.id, droppedItem.name, droppedItem.type]
+    );
+
+    conn.release();
+
+    res.json({ message: "아이템 획득!", droppedItem });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "서버 오류" });
+  }
+});
+
+app.get('/api/inventory', async (req, res) => {
+  const uid = req.query.uid;
+  if (!uid) return res.status(400).json({ error: 'uid 필요' });
+
+  try {
+    const conn = await pool.getConnection();
+    const [rows] = await conn.query('SELECT * FROM user_inventory WHERE uid = ?', [uid]);
+    conn.release();
+
+    res.json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: '서버 오류' });
+  }
+});
+
+app.post('/api/equipItem', async (req, res) => {
+  const { uid, item_id, equip } = req.body;
+  if (!uid || !item_id || typeof equip !== 'boolean') {
+    return res.status(400).json({ error: 'uid, item_id, equip 필요' });
+  }
+
+  try {
+    const conn = await pool.getConnection();
+
+    // 1) item_id로 아이템 타입 조회
+    const [items] = await conn.query('SELECT type FROM items WHERE id = ?', [item_id]);
+    if (items.length === 0) {
+      conn.release();
+      return res.status(404).json({ error: '아이템 없음' });
+    }
+    const itemType = items[0].type;
+
+    // 2) 같은 타입 아이템 모두 장착 해제
+    await conn.query('UPDATE user_inventory SET equipped = 0 WHERE uid = ? AND item_type = ?', [uid, itemType]);
+
+    // 3) 요청에 따라 해당 아이템 장착 / 해제
+    const equippedValue = equip ? 1 : 0;
+    await conn.query('UPDATE user_inventory SET equipped = ? WHERE uid = ? AND item_id = ?', [equippedValue, uid, item_id]);
+
+    conn.release();
+
+    res.json({ message: '장착 상태 변경 완료' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: '서버 오류' });
   }
 });
