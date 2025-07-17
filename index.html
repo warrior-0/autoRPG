@@ -1396,20 +1396,19 @@
     
       Object.values(equipped).forEach(item => {
         if (item && item.bonus) {
-          if (item.bonus.strAdd) bonusAdd.str += item.bonus.strAdd;
-          if (item.bonus.dexAdd) bonusAdd.dex += item.bonus.dexAdd;
-          if (item.bonus.conAdd) bonusAdd.con += item.bonus.conAdd;
+          bonusAdd.str += item.bonus.strAdd;
+          bonusAdd.dex += item.bonus.dexAdd;
+          bonusAdd.con += item.bonus.conAdd;
     
-          if (item.bonus.strMul) bonusMul.str *= item.bonus.strMul;
-          if (item.bonus.dexMul) bonusMul.dex *= item.bonus.dexMul;
-          if (item.bonus.conMul) bonusMul.con *= item.bonus.conMul;
+          bonusMul.str *= item.bonus.strMul;
+          bonusMul.dex *= item.bonus.dexMul;
+          bonusMul.con *= item.bonus.conMul;
         }
       });
     
       return { bonusAdd, bonusMul };
     }
-
-
+    
     function getFinalStats(userData, equipped) {
       const { bonusAdd, bonusMul } = calculateEquippedBonusStats(equipped);
     
@@ -1419,6 +1418,22 @@
         con: Math.floor((userData.con + bonusAdd.con) * bonusMul.con),
         bonusAdd,
         bonusMul
+      };
+    }
+
+
+    function convertEquipmentRowToItem(row) {
+      return {
+        name: row.name,
+        type: row.type,
+        bonus: {
+          strAdd: row.str_bonus || 0,
+          dexAdd: row.dex_bonus || 0,
+          conAdd: row.con_bonus || 0,
+          strMul: row.str_multiplier || 1,
+          dexMul: row.dex_multiplier || 1,
+          conMul: row.con_multiplier || 1
+        }
       };
     }
     
