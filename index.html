@@ -575,9 +575,8 @@
           console.error("💥 Worker 생성 실패:", err);
           log("⚠️ 던전 워커 시작 중 오류 발생: " + err.message);
         }
-
+      }
     }
-    
     function exitDungeon() {
       inDungeon = false;
       document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
