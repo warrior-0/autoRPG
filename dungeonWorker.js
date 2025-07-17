@@ -119,25 +119,34 @@ function startCombat() {
     if (monsterHp <= 0) {
       userData.gold += reward * 20;
       userData.exp += reward * 10;
-
+    
       postMessage({
         type: 'monsterDefeated',
         gold: reward * 20,
         exp: reward * 10,
         userData
       });
-
+    
       setupMonster();
+      return; // combatTick 보내지 않고 바로 종료
     }
-
-    // 사망 처리
+    
     if (userData.hp <= 0) {
       clearInterval(interval);
       postMessage({
         type: 'playerDead',
         userData
       });
+      return; // 마찬가지로 combatTick 생략
+    }
+    
+    // 그 외의 경우만 combatTick 전송
+    postMessage({
+      type: 'combatTick',
+      userData,
+      monsterHp,
+      logs: logMessages
+    });
     }
   }, 1000);
 }
-
