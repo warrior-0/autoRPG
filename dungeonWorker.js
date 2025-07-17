@@ -147,6 +147,6 @@ function startCombat() {
       monsterHp,
       logs: logMessages
     });
-    }
+    })
   }, 1000);
 }
