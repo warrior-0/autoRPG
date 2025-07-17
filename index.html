@@ -538,14 +538,19 @@
             }
             updateUI();
             autoUsePotion();
-          } else if (e.data.type === 'monsterDefeated') {
+          }
+          
+          if (e.data.type === 'monsterDefeated') {
             userData.gold += e.data.gold;
             userData.exp += e.data.exp;
             updateUI();
             log(`몬스터 처치! 골드 ${e.data.gold}, 경험치 ${e.data.exp} 획득`);
             checkLevelUp();
+            updateUI();
             saveData();
-          } else if (e.data.type === 'playerDead') {
+          } 
+          
+          if (e.data.type === 'playerDead') {
             log("던전에서 사망하였습니다. 체력이 100%회복되고 보유 경험치의 30%를 잃습니다.");
             userData.exp = Math.floor(userData.exp * 0.7);
             userData.hp = userData.maxHp;
