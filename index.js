@@ -27,6 +27,44 @@ const dbConfig = {
   charset: 'euckr',
 };
 
+// 유저 장착 장비 저장 API
+app.post('/api/user/equipment', verifyFirebaseToken, async (req, res) => {
+  const uid = req.uid;
+  const { equippedItems } = req.body; // { weapon: itemId, helmet: itemId, ... }
+
+  if (!equippedItems || typeof equippedItems !== 'object') {
+    return res.status(400).json({ error: 'equippedItems is required and must be an object' });
+  }
+
+  const conn = await pool.getConnection();
+
+  try {
+    await conn.beginTransaction();
+
+    // 1) 먼저 기존에 장착된 아이템 모두 해제 처리 (equipped = 0)
+    await conn.query('UPDATE user_inventory SET equipped = 0 WHERE uid = ?', [uid]);
+
+    // 2) 새로 장착된 아이템이 있으면 equipped = 1로 업데이트
+    const itemIds = Object.values(equippedItems).filter(id => id != null);
+
+    if (itemIds.length > 0) {
+      const placeholders = itemIds.map(() => '?').join(',');
+      const sql = `UPDATE user_inventory SET equipped = 1 WHERE uid = ? AND item_id IN (${placeholders})`;
+      await conn.query(sql, [uid, ...itemIds]);
+    }
+
+    await conn.commit();
+    res.json({ success: true });
+  } catch (err) {
+    await conn.rollback();
+    console.error('Save user equipment error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  } finally {
+    conn.release();
+  }
+});
+
+
 const pool = mysql.createPool(dbConfig);
 
 // Firebase 토큰 검증 미들웨어
