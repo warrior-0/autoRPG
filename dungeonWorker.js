@@ -12,13 +12,22 @@ function applyRandomVariance(value) {
 onmessage = function (e) {
   if (e.data.command === 'start') {
     userData = e.data.userData;
-    currentStage = e.data.currentStage;
+
+    // userData.hp 와 maxHp가 null 또는 undefined면 기본값 넣기
+    userData.maxHp = userData.maxHp ?? 100;
+    userData.hp = userData.hp ?? userData.maxHp;
+
+    currentStage = Number(e.data.currentStage) || 1;
+
     setupMonster();
     startCombat();
   } else if (e.data.command === 'stop') {
     clearInterval(interval);
   } else if (e.data.command === 'updateUserData') {
     userData = e.data.userData;
+
+    userData.maxHp = userData.maxHp ?? 100;
+    userData.hp = userData.hp ?? userData.maxHp;
   }
 };
 
