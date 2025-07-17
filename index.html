@@ -511,8 +511,6 @@
         };
     
         dungeonWorker.onmessage = function (e) {
-          console.log("📩 워커 메시지 수신:", e.data); // 디버그 로그
-    
           if (e.data.type === 'combatTick') {
             log(`몬스터 체력: ${e.data.monsterHp}`);
             updateUI();
@@ -522,10 +520,6 @@
             log(`몬스터 처치! 골드 ${e.data.gold}, 경험치 ${e.data.exp} 획득`);
             checkLevelUp();
             saveData();
-          } else if (e.data.type === 'done') {
-            log("전투 완료");
-          } else {
-            log("📨 알 수 없는 메시지: " + JSON.stringify(e.data));
           }
         };
     
