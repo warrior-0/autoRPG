@@ -525,12 +525,12 @@
         };
     
         dungeonWorker.onmessage = function (e) {
-          const now = Date.now();
 
           if (e.data.type === 'combatTick') {
             userData = e.data.userData;
             updateUI();
             autoUsePotion();
+            saveData();
           }
           
           if (e.data.type === 'monsterDefeated') {
