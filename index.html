@@ -520,6 +520,7 @@
             log("[DungeonWorker DEBUG]:", e.data.message);
           } else if (e.data.type === 'combatTick') {
             log(`몬스터 체력: ${e.data.monsterHp}`);
+            autoUsePotion();
             updateUI();
           } else if (e.data.type === 'monsterDefeated') {
             userData.gold += e.data.gold;
