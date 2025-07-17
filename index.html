@@ -1412,7 +1412,39 @@
       return { str: totalStr, dex: totalDex, con: totalCon };
     }
 
+    function equipItem(itemId) {
+      const item = userInventory.find(i => i.id === itemId);
+      if (!item) return alert("아이템을 찾을 수 없습니다.");
     
+      userData.equipped[item.type] = item;
+    
+      // 서버에 장착 상태 저장 요청 (예시)
+      saveEquipmentToServer();
+    
+      updateUI();
+    }
+    
+    async function saveEquipmentToServer() {
+      if (!userData) return;
+      try {
+        const idToken = await firebase.auth().currentUser.getIdToken(true);
+        const res = await fetch('https://autorpg.onrender.com/api/equipItem', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + idToken,
+          },
+          body: JSON.stringify({
+            uid: userData.uid,
+            equipped: userData.equipped, // 혹은 서버가 요구하는 형태
+          }),
+        });
+        if (!res.ok) throw new Error('장착 저장 실패');
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
   </script>
 </body>
 </html>
