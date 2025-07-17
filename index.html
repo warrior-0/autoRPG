@@ -370,6 +370,8 @@
       const expPercent = (userData.exp / expToNext) * 100;
       document.getElementById("expBar").style.width = expPercent + "%";
       document.getElementById("expText").innerText = `${userData.exp} / ${expToNext}`;
+
+      updateStatDisplay(userData, equipped);
     }
 
     function buyPotion(type) {
