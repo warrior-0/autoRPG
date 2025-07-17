@@ -511,6 +511,12 @@
         };
     
         dungeonWorker.onmessage = function (e) {
+          if (e.data.type === 'combatTick') {
+            e.data.logs.forEach(line => log(line));
+            userData = e.data.userData;  // 워커에서 온 최신 유저 데이터 반영
+            updateUI();                 // UI 갱신
+          }
+          
           if (e.data.type === 'debug') {
           } else if (e.data.type === 'combatTick') {
             autoUsePotion();
