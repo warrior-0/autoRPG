@@ -525,8 +525,7 @@
     
         dungeonWorker.postMessage({
           command: 'start',
-          userData: { ...userData,}
-          currentStage: currentStage
+          userData: { ...userData, currentStage: currentStage }
         });
     
       } catch (err) {
