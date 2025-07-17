@@ -517,7 +517,7 @@
             updateUI();                 // UI 갱신
           }
           if (e.data.type === 'debug') {
-            console.log("[DungeonWorker DEBUG]:", e.data.message);
+            log("[DungeonWorker DEBUG]:", e.data.message);
           } else if (e.data.type === 'combatTick') {
             log(`몬스터 체력: ${e.data.monsterHp}`);
             updateUI();
