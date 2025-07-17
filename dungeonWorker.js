@@ -28,6 +28,8 @@ onmessage = function (e) {
 
     userData.maxHp = userData.maxHp ?? 100;
     userData.hp = userData.hp ?? userData.maxHp;
+  } else if (e.data.command === 'syncUserData') {
+    userData = e.data.userData;
   }
 };
 
