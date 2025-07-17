@@ -1,6 +1,6 @@
 let interval;
 let userData;
-let currentStage;
+let currentStage = 1;
 let monsterHp, monsterCrit, monsterHit, monsterDef, monsterAtk, reward;
 let evasionRatePlayer, monsterEvasion, evasionRateMonster;
 
