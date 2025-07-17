@@ -522,8 +522,13 @@
             checkLevelUp();
             saveData();
           } else if (e.data.type === 'playerDead') {
-            log("플레이어가 사망했습니다.");
-            
+            log("던전에서 사망하였습니다. 체력이 100%회복되고 보유 경험치의 30%를 잃습니다.");
+            userData.exp = Math.floor(userData.exp * 0.7);
+            userData.hp = userData.maxHp;
+            updateUI();
+            saveData();
+            showTab("home");
+            alert("던전에서 사망하였습니다. 체력이 100%회복되고 보유 경험치의 30%를 잃습니다.");
           }
         };
             
