@@ -73,17 +73,30 @@ app.get('/api/userdata', async (req, res) => {
   if (!uid) return res.status(400).json({ error: 'uid is required' });
 
   try {
-    const [rows] = await pool.query('SELECT * FROM users WHERE uid = ?', [uid]);
-    if (rows.length === 0)
-      return res.status(404).json({ error: 'User not found' });
+    const [userRows] = await pool.query('SELECT * FROM users WHERE uid = ?', [uid]);
+    if (userRows.length === 0) return res.status(404).json({ error: 'User not found' });
 
-    const user = rows[0];
-    res.json(user);
+    const [equipRows] = await pool.query(
+      `SELECT ei.*
+       FROM user_inventory ui
+       JOIN equipment ei ON ui.item_id = ei.id
+       WHERE ui.uid = ? AND ui.equipped = 1`,
+      [uid]
+    );
+
+    const [invRows] = await pool.query('SELECT * FROM user_inventory WHERE uid = ?', [uid]);
+
+    res.json({
+      user: userRows[0],
+      equipped: equipRows,  // 장착 중인 장비 배열
+      inventory: invRows,   // 인벤토리 전체
+    });
   } catch (err) {
-    console.error('DB error:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error(err);
+    res.status(500).json({ error: 'DB error' });
   }
 });
+
 
 // 유저 및 물약 저장 API
 app.post('/api/save-user-and-potions', async (req, res) => {
