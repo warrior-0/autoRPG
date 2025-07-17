@@ -429,20 +429,6 @@
       userData.hp = Math.min(userData.hp, userData.maxHp);
     }
 
-    function resetStat() {
-        let stats = userData.con + userData.str + userData.dex;
-        let stats2 = userData.level * 3;
-        if(stats > 0) {
-            userData.con = 0;
-            userData.str = 0;
-            userData.dex = 0;
-            let addstats = (stats > stats2 ? stats : stats2) - userData.statPoints;
-            userData.statPoints += addstats;
-            updateUI();
-            saveData();
-        }
-    }
-
     function addStat(type) {
       if (!['str', 'con', 'dex'].includes(type)) return;
     
@@ -460,27 +446,34 @@
       userData[type] += count;
       userData.statPoints -= count;
     
-      // ✅ 현재 장비 반영하여 최종 스탯 계산
-      const { str, dex, con } = getFinalStats(userData, equipped);
+      const { con } = getFinalStats(userData, equipped);
     
-      // ✅ 스탯 변화에 따른 최대 체력 갱신 (con 반영)
       userData.maxHp = (Math.floor(userData.level / 3) + 1) * con * 5 + 100;
-      userData.hp = Math.min(userData.hp, userData.maxHp);  // 체력 초과 방지
+      userData.hp = Math.min(userData.hp, userData.maxHp);
     
       log(`${type.toUpperCase()} 스탯이 ${count} 증가했습니다.`);
       updateUI();
       saveData();
     }
     
-    function checkLevelUp() {
-      while (userData.exp >= userData.level * 100) {
-        const needExp = userData.level * 100;
-        userData.exp -= needExp;
-        userData.level++;
-        userData.statPoints += 3;
-        userData.maxHp = (Math.floor(userData.level / 3) + 1) * userData.con * 5 + 100;
-        userData.hp = userData.maxHp;
-        log(`레벨업! 현재 레벨: ${userData.level}`);
+    function resetStat() {
+      let totalStats = userData.str + userData.con + userData.dex;
+      let minStats = userData.level * 3;
+    
+      if (totalStats > 0) {
+        userData.str = 0;
+        userData.con = 0;
+        userData.dex = 0;
+    
+        let refund = (totalStats > minStats ? totalStats : minStats) - userData.statPoints;
+        userData.statPoints += refund;
+    
+        const { con } = getFinalStats(userData, equipped);
+        userData.maxHp = (Math.floor(userData.level / 3) + 1) * con * 5 + 100;
+        userData.hp = Math.min(userData.hp, userData.maxHp);
+    
+        updateUI();
+        saveData();
       }
     }
 
