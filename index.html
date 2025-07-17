@@ -425,8 +425,6 @@
         log("소형 물약 사용! 체력 "+Math.floor(10 + userData.maxHp*0.01)+" 회복");
       }
 
-      userData.hp = Math.min(userData.hp, userData.maxHp);
-      
       if (dungeonWorker) {
         dungeonWorker.postMessage({
           command: 'syncUserData',
