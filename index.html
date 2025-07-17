@@ -1510,6 +1510,28 @@
     
       await loadUserData(userData.uid);  // userData, equipped 세팅 + updateUI 호출
     };
+
+    async function loadUserData(uid) {
+      try {
+        const res = await fetch(`https://autorpg.onrender.com/api/userdata?uid=${uid}`);
+        if (!res.ok) throw new Error("유저 데이터 불러오기 실패");
+        const data = await res.json();
+    
+        userData = data.user;
+    
+        // 장비 배열을 slot별 객체로 변환 (weapon, helmet, armor, ... 키로)
+        equipped = {};
+        data.equipped.forEach(item => {
+          equipped[item.type] = convertEquipmentRowToItem(item);
+        });
+    
+        renderInventory();
+        renderEquipment();
+        updateStatDisplay(userData, equipped);
+      } catch (err) {
+        console.error(err);
+      }
+    }
     
   </script>
 </body>
