@@ -1445,6 +1445,38 @@
       }
     }
 
+    async function reportBossDefeat(bossStage) {
+  if (!userData || !userData.uid) {
+    console.error("유저 정보가 없습니다.");
+    return;
+  }
+
+  try {
+    const res = await fetch('https://autorpg.onrender.com/api/boss/defeat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        uid: userData.uid,
+        bossStage: bossStage,
+      }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error('보스 처치 보고 실패:', text);
+      return;
+    }
+
+    const data = await res.json();
+    console.log('보스 처치 보고 성공:', data);
+    // 예: 아이템 드랍 등 후속처리 함수 호출 가능
+  } catch (error) {
+    console.error('보스 처치 보고 에러:', error);
+  }
+}
+
   </script>
 </body>
 </html>
