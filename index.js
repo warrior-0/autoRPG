@@ -551,6 +551,53 @@ app.get('/api/userstats', async (req, res) => {
   }
 });
 
+// 장비 착용 API
+app.post('/api/equip', verifyFirebaseToken, async (req, res) => {
+  const uid = req.uid;
+  const { item_id } = req.body;
+
+  if (!item_id) return res.status(400).json({ error: 'item_id is required' });
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // 1. 해당 아이템 정보 가져오기
+    const [[item]] = await conn.query(
+      'SELECT * FROM items WHERE id = ?',
+      [item_id]
+    );
+    if (!item) {
+      return res.status(404).json({ error: 'Item not found' });
+    }
+
+    const type = item.type;
+
+    // 2. 같은 타입 장비 모두 해제
+    await conn.query(
+      `UPDATE user_inventory SET equipped = FALSE
+       WHERE uid = ? AND item_type = ?`,
+      [uid, type]
+    );
+
+    // 3. 해당 장비 착용 처리
+    const [result] = await conn.query(
+      `UPDATE user_inventory SET equipped = TRUE
+       WHERE uid = ? AND item_id = ?`,
+      [uid, item_id]
+    );
+
+    await conn.commit();
+    res.json({ success: true, equippedType: type });
+  } catch (err) {
+    await conn.rollback();
+    console.error('/api/equip error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  } finally {
+    conn.release();
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`서버 ${PORT}번 포트에서 실행 중`);
