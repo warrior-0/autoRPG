@@ -371,7 +371,39 @@
       document.getElementById("expBar").style.width = expPercent + "%";
       document.getElementById("expText").innerText = `${userData.exp} / ${expToNext}`;
 
-      updateStatDisplay(userData, equipped);
+      const totalStats = calculateTotalStats();
+      if (!totalStats) return;
+    
+      // 기본 스탯 표시
+      document.getElementById("statStr").innerText = userData.str;
+      document.getElementById("statDex").innerText = userData.dex;
+      document.getElementById("statCon").innerText = userData.con;
+    
+      // 추가 스탯 및 배율 표시 (예: 괄호 안에 보너스 표시)
+      // 각 보너스 합계 계산
+      let bonusStr = 0, bonusDex = 0, bonusCon = 0;
+      let multiplierStr = 0, multiplierDex = 0, multiplierCon = 0;
+    
+      for (const key in userData.equipped) {
+        const item = userData.equipped[key];
+        if (!item) continue;
+    
+        bonusStr += (item.str_bonus || 0);
+        bonusDex += (item.dex_bonus || 0);
+        bonusCon += (item.con_bonus || 0);
+    
+        multiplierStr += (item.str_multiplier || 0);
+        multiplierDex += (item.dex_multiplier || 0);
+        multiplierCon += (item.con_multiplier || 0);
+      }
+    
+      // 예시 표시: 기본스탯 + (보너스) + (배율%)
+      document.getElementById("statStr").innerText = 
+        `${userData.str} (+${bonusStr}) ×${(1 + multiplierStr).toFixed(2)}`;
+      document.getElementById("statDex").innerText = 
+        `${userData.dex} (+${bonusDex}) ×${(1 + multiplierDex).toFixed(2)}`;
+      document.getElementById("statCon").innerText = 
+        `${userData.con} (+${bonusCon}) ×${(1 + multiplierCon).toFixed(2)}`;
     }
 
     function buyPotion(type) {
@@ -1346,6 +1378,41 @@
         saveData();
       });
     });
+
+    function calculateTotalStats() {
+      if (!userData) return null;
+    
+      // 기본 스탯
+      let totalStr = userData.str || 0;
+      let totalDex = userData.dex || 0;
+      let totalCon = userData.con || 0;
+    
+      // 장착 아이템에서 보너스 추가 및 배율 적용
+      if (userData.equipped) {
+        for (const key in userData.equipped) {
+          const item = userData.equipped[key];
+          if (!item) continue;
+    
+          totalStr += (item.str_bonus || 0);
+          totalDex += (item.dex_bonus || 0);
+          totalCon += (item.con_bonus || 0);
+    
+          // 배율 적용 (기본 1에 더하는 식으로 처리)
+          totalStr *= (1 + (item.str_multiplier || 0));
+          totalDex *= (1 + (item.dex_multiplier || 0));
+          totalCon *= (1 + (item.con_multiplier || 0));
+        }
+      }
+    
+      // 소수점 버림
+      totalStr = Math.floor(totalStr);
+      totalDex = Math.floor(totalDex);
+      totalCon = Math.floor(totalCon);
+    
+      return { str: totalStr, dex: totalDex, con: totalCon };
+    }
+
+    
   </script>
 </body>
 </html>
