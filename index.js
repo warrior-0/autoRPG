@@ -477,7 +477,7 @@ app.get('/api/userstats', async (req, res) => {
 
     // 3. 장비 상세 정보 가져오기
     const [equipmentRows] = await conn.query(
-      `SELECT * FROM equipment WHERE id IN (${itemIds.map(() => '?').join(',')})`,
+      `SELECT * FROM items WHERE id IN (${itemIds.map(() => '?').join(',')})`,
       itemIds
     );
 
