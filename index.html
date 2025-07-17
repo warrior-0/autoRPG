@@ -523,21 +523,12 @@
           console.error("💥 Web Worker 메시지 오류:", err);
           log("⚠️ 던전 메시지 처리 오류 발생");
         };
-
-        let lastUpdateTime = 0;
     
         dungeonWorker.onmessage = function (e) {
           const now = Date.now();
 
           if (e.data.type === 'combatTick') {
-            // 최근 monsterDefeated 이후 일정 시간 이내면 userData 덮어쓰기 방지
-            if (now - lastUpdateTime > 100) {
-              userData.hp = e.data.userData.hp;
-              userData.maxHp = e.data.userData.maxHp;
-              userData.potion_small = e.data.userData.potion_small;
-              userData.potion_medium = e.data.userData.potion_medium;
-              userData.potion_large = e.data.userData.potion_large;
-            }
+            userData = e.data.userData;
             updateUI();
             autoUsePotion();
           }
