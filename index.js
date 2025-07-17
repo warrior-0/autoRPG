@@ -4,20 +4,17 @@ const admin = require('firebase-admin');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
+// Firebase Admin SDK 초기화
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
-
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
-
 
 const app = express();
 app.use(cors({ origin: '*' }));
 app.use(bodyParser.json());
 
-const nicknameCheckRouter = require('./nicknamecheck');
-app.use('/api', nicknameCheckRouter);
-
+// DB 풀 생성 (pool 은 미들웨어나 라우터보다 위에 선언)
 const dbConfig = {
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -26,45 +23,6 @@ const dbConfig = {
   port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306,
   charset: 'euckr',
 };
-
-// 유저 장착 장비 저장 API
-app.post('/api/user/equipment', verifyFirebaseToken, async (req, res) => {
-  const uid = req.uid;
-  const { equippedItems } = req.body; // { weapon: itemId, helmet: itemId, ... }
-
-  if (!equippedItems || typeof equippedItems !== 'object') {
-    return res.status(400).json({ error: 'equippedItems is required and must be an object' });
-  }
-
-  const conn = await pool.getConnection();
-
-  try {
-    await conn.beginTransaction();
-
-    // 1) 먼저 기존에 장착된 아이템 모두 해제 처리 (equipped = 0)
-    await conn.query('UPDATE user_inventory SET equipped = 0 WHERE uid = ?', [uid]);
-
-    // 2) 새로 장착된 아이템이 있으면 equipped = 1로 업데이트
-    const itemIds = Object.values(equippedItems).filter(id => id != null);
-
-    if (itemIds.length > 0) {
-      const placeholders = itemIds.map(() => '?').join(',');
-      const sql = `UPDATE user_inventory SET equipped = 1 WHERE uid = ? AND item_id IN (${placeholders})`;
-      await conn.query(sql, [uid, ...itemIds]);
-    }
-
-    await conn.commit();
-    res.json({ success: true });
-  } catch (err) {
-    await conn.rollback();
-    console.error('Save user equipment error:', err);
-    res.status(500).json({ success: false, error: err.message });
-  } finally {
-    conn.release();
-  }
-});
-
-
 const pool = mysql.createPool(dbConfig);
 
 // Firebase 토큰 검증 미들웨어
@@ -83,6 +41,46 @@ async function verifyFirebaseToken(req, res, next) {
     return res.status(401).json({ error: 'Invalid token' });
   }
 }
+
+// 닉네임 체크 라우터 (외부 파일로 분리 시)
+const nicknameCheckRouter = require('./nicknamecheck');
+app.use('/api', nicknameCheckRouter);
+
+// 유저 장착 장비 저장 API
+app.post('/api/user/equipment', verifyFirebaseToken, async (req, res) => {
+  const uid = req.uid;
+  const { equippedItems } = req.body; // { weapon: itemId, helmet: itemId, ... }
+
+  if (!equippedItems || typeof equippedItems !== 'object') {
+    return res.status(400).json({ error: 'equippedItems is required and must be an object' });
+  }
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // 1) 기존 장착 해제
+    await conn.query('UPDATE user_inventory SET equipped = 0 WHERE uid = ?', [uid]);
+
+    // 2) 새로 장착된 아이템 equipped=1로 업데이트
+    const itemIds = Object.values(equippedItems).filter(id => id != null);
+
+    if (itemIds.length > 0) {
+      const placeholders = itemIds.map(() => '?').join(',');
+      const sql = `UPDATE user_inventory SET equipped = 1 WHERE uid = ? AND item_id IN (${placeholders})`;
+      await conn.query(sql, [uid, ...itemIds]);
+    }
+
+    await conn.commit();
+    res.json({ success: true });
+  } catch (err) {
+    await conn.rollback();
+    console.error('Save user equipment error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  } finally {
+    conn.release();
+  }
+});
 
 // 사용자 생성 API
 app.post('/api/createUser', async (req, res) => {
@@ -105,18 +103,16 @@ app.post('/api/createUser', async (req, res) => {
   }
 });
 
-// 유저 데이터 조회 API
+// 유저 데이터 조회 API (장착 아이템 포함)
 app.get('/api/userdata', async (req, res) => {
   const uid = req.query.uid;
   if (!uid) return res.status(400).json({ error: 'uid is required' });
 
   try {
-    // 1) 유저 기본 정보 조회
     const [userRows] = await pool.query('SELECT * FROM users WHERE uid = ?', [uid]);
     if (userRows.length === 0) return res.status(404).json({ error: 'User not found' });
     const user = userRows[0];
 
-    // 2) 유저 장착 아이템 조회 (items 테이블과 조인)
     const [equipRows] = await pool.query(
       `SELECT i.* FROM items i
        JOIN user_inventory ui ON ui.item_id = i.id
@@ -124,10 +120,9 @@ app.get('/api/userdata', async (req, res) => {
       [uid]
     );
 
-    // 3) JSON 형태로 유저 정보와 장비 배열 함께 반환
     res.json({
       user,
-      equipped: equipRows  // items 테이블에서 가져온 장비 리스트
+      equipped: equipRows
     });
   } catch (err) {
     console.error('/api/userdata error:', err);
@@ -135,31 +130,15 @@ app.get('/api/userdata', async (req, res) => {
   }
 });
 
-
-
 // 유저 및 물약 저장 API
 app.post('/api/save-user-and-potions', async (req, res) => {
   const {
-    uid,
-    nickname,
-    gold,
-    exp,
-    level,
-    hp,
-    maxHp,
-    str,
-    dex,
-    con,
-    statPoints,
-    potion_small,
-    potion_medium,
-    potion_large,
-    potion_extralarge,
-    potion_quarter,
+    uid, nickname, gold, exp, level,
+    hp, maxHp, str, dex, con, statPoints,
+    potion_small, potion_medium, potion_large, potion_extralarge, potion_quarter,
   } = req.body;
 
   const conn = await pool.getConnection();
-
   try {
     await conn.beginTransaction();
 
@@ -186,22 +165,9 @@ app.post('/api/save-user-and-potions', async (req, res) => {
     `;
 
     await conn.query(sqlUser, [
-      uid,
-      nickname,
-      gold,
-      exp,
-      level,
-      hp,
-      maxHp,
-      str,
-      dex,
-      con,
-      statPoints,
-      potion_small,
-      potion_medium,
-      potion_large,
-      potion_extralarge,
-      potion_quarter,
+      uid, nickname, gold, exp, level, hp, maxHp,
+      str, dex, con, statPoints,
+      potion_small, potion_medium, potion_large, potion_extralarge, potion_quarter
     ]);
 
     await conn.commit();
@@ -218,9 +184,7 @@ app.post('/api/save-user-and-potions', async (req, res) => {
 // 기본 사용자 정보 조회 (Firebase 토큰 필요)
 app.get('/user', verifyFirebaseToken, async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM users WHERE uid = ?', [
-      req.uid,
-    ]);
+    const [rows] = await pool.query('SELECT * FROM users WHERE uid = ?', [req.uid]);
     if (rows.length === 0)
       return res.status(404).json({ error: 'User not found' });
     res.json(rows[0]);
@@ -254,28 +218,15 @@ app.post('/api/save', async (req, res) => {
   }
 
   const conn = await pool.getConnection();
-
   try {
     await conn.beginTransaction();
 
-    // 1) 유저 정보 저장
+    // 유저 정보 저장
     if (userInfo) {
       const {
-        nickname,
-        gold,
-        exp,
-        level,
-        hp,
-        maxHp,
-        str,
-        dex,
-        con,
-        statPoints,
-        potion_small,
-        potion_medium,
-        potion_large,
-        potion_extralarge,
-        potion_quarter,
+        nickname, gold, exp, level, hp, maxHp,
+        str, dex, con, statPoints,
+        potion_small, potion_medium, potion_large, potion_extralarge, potion_quarter,
       } = userInfo;
 
       const sqlUser = `
@@ -301,39 +252,19 @@ app.post('/api/save', async (req, res) => {
       `;
 
       await conn.query(sqlUser, [
-        uid,
-        nickname,
-        gold,
-        exp,
-        level,
-        hp,
-        maxHp,
-        str,
-        dex,
-        con,
-        statPoints,
-        potion_small,
-        potion_medium,
-        potion_large,
-        potion_extralarge,
-        potion_quarter,
+        uid, nickname, gold, exp, level, hp, maxHp,
+        str, dex, con, statPoints,
+        potion_small, potion_medium, potion_large, potion_extralarge, potion_quarter
       ]);
     }
 
-    // 2) 채팅 메시지 저장
+    // 채팅 메시지 저장
     if (Array.isArray(chatMessages) && chatMessages.length > 0) {
-      const chatInsertPromises = chatMessages.map(
-        ({ message, createdAt, nickname }) => {
-          return conn.query(
-            'INSERT INTO chat_messages (uid, nickname, message, created_at) VALUES (?, ?, ?, ?)',
-            [
-              uid,
-              nickname || '',
-              message,
-              createdAt ? new Date(createdAt) : new Date(),
-            ]
-          );
-        }
+      const chatInsertPromises = chatMessages.map(({ message, createdAt, nickname }) =>
+        conn.query(
+          'INSERT INTO chat_messages (uid, nickname, message, created_at) VALUES (?, ?, ?, ?)',
+          [uid, nickname || '', message, createdAt ? new Date(createdAt) : new Date()]
+        )
       );
       await Promise.all(chatInsertPromises);
     }
@@ -365,7 +296,7 @@ app.get('/api/chat/list', async (req, res) => {
   }
 });
 
-// PVP 대상자 조회 API (excludeUid 제외)
+// PVP 대상자 조회 API
 app.get('/api/pvp/targets', async (req, res) => {
   const uid = req.query.uid;
   if (!uid) return res.status(400).json({ error: 'uid is required' });
@@ -382,7 +313,7 @@ app.get('/api/pvp/targets', async (req, res) => {
   }
 });
 
-// PVP 대상자 조회 (excludeUid 파라미터 사용)
+// PVP 대상자 조회 (excludeUid 파라미터)
 app.get('/api/pvpTargets', async (req, res) => {
   const excludeUid = req.query.excludeUid;
   if (!excludeUid)
@@ -391,10 +322,10 @@ app.get('/api/pvpTargets', async (req, res) => {
   try {
     const [rows] = await pool.query(
       `SELECT uid, nickname, level, exp, hp, maxHp
-      FROM users
-      WHERE uid != ?
-      ORDER BY level DESC, exp DESC
-      LIMIT 10`,
+       FROM users
+       WHERE uid != ?
+       ORDER BY level DESC, exp DESC
+       LIMIT 10`,
       [excludeUid]
     );
     res.json(rows);
@@ -407,13 +338,8 @@ app.get('/api/pvpTargets', async (req, res) => {
 // 개별 채팅 메시지 전송 API
 app.post('/api/chat/send', async (req, res) => {
   const { uid, nickname, message } = req.body;
-  console.log('/api/chat/send 요청:', { uid, nickname, message });
-
   if (!uid || !nickname || !message) {
-    console.log('필수 값 누락');
-    return res
-      .status(400)
-      .json({ error: 'uid, nickname, message가 필요합니다.' });
+    return res.status(400).json({ error: 'uid, nickname, message가 필요합니다.' });
   }
 
   try {
@@ -429,16 +355,13 @@ app.post('/api/chat/send', async (req, res) => {
   }
 });
 
+// 보스 처치 처리 (아이템 드랍 포함)
 async function getRandomStageItem(stage, conn) {
-  // 해당 스테이지에 등록된 아이템 목록 조회
   const [items] = await conn.query(
     'SELECT i.* FROM items i JOIN stage_items si ON i.id = si.item_id WHERE si.stage = ?',
     [stage]
   );
-  
-  if (items.length === 0) return null; // 아이템 없으면 종료
-  
-  // 랜덤으로 하나 선택
+  if (items.length === 0) return null;
   const randomIndex = Math.floor(Math.random() * items.length);
   return items[randomIndex];
 }
@@ -458,13 +381,12 @@ async function handleBossDefeat(uid, bossStage) {
           'INSERT INTO user_inventory (uid, item_id, item_name, item_type, equipped) VALUES (?, ?, ?, ?, ?)',
           [uid, item.id, item.name, item.type, false]
         );
-        droppedItem = item; // 드랍된 아이템 저장
+        droppedItem = item;
       }
     }
 
     await conn.commit();
-
-    return droppedItem; // 드랍된 아이템 반환 (없으면 null)
+    return droppedItem;
   } catch (error) {
     await conn.rollback();
     throw error;
@@ -472,7 +394,6 @@ async function handleBossDefeat(uid, bossStage) {
     conn.release();
   }
 }
-
 
 app.post('/api/boss/defeat', verifyFirebaseToken, async (req, res) => {
   const uid = req.uid;
@@ -484,27 +405,23 @@ app.post('/api/boss/defeat', verifyFirebaseToken, async (req, res) => {
 
   try {
     const droppedItem = await handleBossDefeat(uid, bossStage);
-    res.json({ success: true, droppedItem }); // droppedItem 포함해서 반환
+    res.json({ success: true, droppedItem });
   } catch (err) {
     console.error('Boss defeat error:', err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
+// 유저 능력치 계산 API (장비 보너스 포함)
 app.get('/api/userstats', async (req, res) => {
   const uid = req.query.uid;
   if (!uid) return res.status(400).json({ error: 'uid is required' });
 
   const conn = await pool.getConnection();
   try {
-    // 1. 유저 기본 능력치 가져오기
-    const [[user]] = await conn.query(
-      `SELECT str, dex, con FROM users WHERE uid = ?`,
-      [uid]
-    );
+    const [[user]] = await conn.query(`SELECT str, dex, con FROM users WHERE uid = ?`, [uid]);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // 2. 착용 중인 장비 ID들 조회
     const [equippedItems] = await conn.query(
       `SELECT item_id FROM user_inventory WHERE uid = ? AND equipped = TRUE`,
       [uid]
@@ -519,13 +436,11 @@ app.get('/api/userstats', async (req, res) => {
       });
     }
 
-    // 3. 장비 상세 정보 가져오기
     const [equipmentRows] = await conn.query(
       `SELECT * FROM items WHERE id IN (${itemIds.map(() => '?').join(',')})`,
       itemIds
     );
 
-    // 4. 장비를 JS bonus 형태로 변환
     function convertEquipmentRowToItem(row) {
       return {
         name: row.name,
@@ -546,7 +461,6 @@ app.get('/api/userstats', async (req, res) => {
       equipped[row.type] = convertEquipmentRowToItem(row);
     });
 
-    // 5. 장비 보너스 계산
     function calculateEquippedBonusStats(equipped) {
       const bonusAdd = { str: 0, dex: 0, con: 0 };
       const bonusMul = { str: 1, dex: 1, con: 1 };
@@ -556,6 +470,7 @@ app.get('/api/userstats', async (req, res) => {
           bonusAdd.str += item.bonus.strAdd;
           bonusAdd.dex += item.bonus.dexAdd;
           bonusAdd.con += item.bonus.conAdd;
+
           bonusMul.str *= item.bonus.strMul;
           bonusMul.dex *= item.bonus.dexMul;
           bonusMul.con *= item.bonus.conMul;
@@ -577,6 +492,7 @@ app.get('/api/userstats', async (req, res) => {
     }
 
     const final = getFinalStats(user, equipped);
+
     res.json({
       baseStats: user,
       finalStats: {
@@ -593,56 +509,4 @@ app.get('/api/userstats', async (req, res) => {
   } finally {
     conn.release();
   }
-});
-
-// 장비 착용 API
-app.post('/api/equip', verifyFirebaseToken, async (req, res) => {
-  const uid = req.uid;
-  const { item_id } = req.body;
-
-  if (!item_id) return res.status(400).json({ error: 'item_id is required' });
-
-  const conn = await pool.getConnection();
-  try {
-    await conn.beginTransaction();
-
-    // 1. 해당 아이템 정보 가져오기
-    const [[item]] = await conn.query(
-      'SELECT * FROM items WHERE id = ?',
-      [item_id]
-    );
-    if (!item) {
-      return res.status(404).json({ error: 'Item not found' });
-    }
-
-    const type = item.type;
-
-    // 2. 같은 타입 장비 모두 해제
-    await conn.query(
-      `UPDATE user_inventory SET equipped = FALSE
-       WHERE uid = ? AND item_type = ?`,
-      [uid, type]
-    );
-
-    // 3. 해당 장비 착용 처리
-    const [result] = await conn.query(
-      `UPDATE user_inventory SET equipped = TRUE
-       WHERE uid = ? AND item_id = ?`,
-      [uid, item_id]
-    );
-
-    await conn.commit();
-    res.json({ success: true, equippedType: type });
-  } catch (err) {
-    await conn.rollback();
-    console.error('/api/equip error:', err);
-    res.status(500).json({ success: false, error: err.message });
-  } finally {
-    conn.release();
-  }
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`서버 ${PORT}번 포트에서 실행 중`);
 });
