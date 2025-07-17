@@ -1413,6 +1413,29 @@
       }
     }
 
+    async function saveEquipment(uid, firebaseToken) {
+      // equipped 객체를 배열로 변환
+      const equippedItems = Object.values(equipped).filter(i => i !== null);
+      const equippedItemIds = equippedItems.map(i => i.id);
+    
+      // 서버에 유저 인벤토리 상태를 업데이트하는 API 호출 (임시 예시)
+      const response = await fetch('https://autorpg.onrender.com/api/save-equipment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${firebaseToken}`,
+        },
+        body: JSON.stringify({
+          uid,
+          equippedItemIds,
+        }),
+      });
+      const result = await response.json();
+      if (!result.success) {
+        alert('장비 저장 실패: ' + result.error);
+      }
+    }
+
     function calculateEquippedBonusStats(equipped) {
       const bonusAdd = { str: 0, dex: 0, con: 0 };
       const bonusMul = { str: 1, dex: 1, con: 1 };
