@@ -526,34 +526,32 @@
     
         dungeonWorker.onmessage = function (e) {
           if (!userData) return;
-        
+    
           const data = e.data;
-        
+    
           switch (data.type) {
             case 'combatTick':
               userData = data.userData;
               updateUI();
               autoUsePotion();
               updateUI();
-              saveData(); // 매 틱마다 저장 (최소한의 덮어쓰기 보장)
+              saveData();
               break;
-        
+    
             case 'monsterDefeated':
-              // 전투 로그 출력
               if (data.log && Array.isArray(data.log)) {
                 data.log.forEach(line => log(line));
               }
-        
-              // 보상 적용
+    
               userData.gold += data.gold;
               userData.exp += data.exp;
-        
+    
               log(`몬스터 처치! 골드 ${data.gold}, 경험치 ${data.exp} 획득`);
               updateUI();
               checkLevelUp();
-              saveData(); // 즉시 반영
+              saveData();
               break;
-        
+    
             case 'playerDead':
               log("던전에서 사망하였습니다. 체력이 100% 회복되고 보유 경험치의 30%를 잃습니다.");
               userData.exp = Math.floor(userData.exp * 0.7);
@@ -565,18 +563,19 @@
               break;
           }
         };
-        
-        try {
-          dungeonWorker.postMessage({
-            command: 'start',
-            userData: { ...userData, currentStage: currentStage }
-          });
-        } catch (err) {
-          console.error("💥 Worker 생성 실패:", err);
-          log("⚠️ 던전 워커 시작 중 오류 발생: " + err.message);
-        }
+    
+        dungeonWorker.postMessage({
+          command: 'start',
+          userData: { ...userData, currentStage: currentStage }
+        });
+    
+      } catch (err) {
+        console.error("💥 Worker 생성 실패:", err);
+        log("⚠️ 던전 워커 시작 중 오류 발생: " + err.message);
       }
     }
+
+    
     function exitDungeon() {
       inDungeon = false;
       document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
