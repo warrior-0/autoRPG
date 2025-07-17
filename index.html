@@ -370,40 +370,6 @@
       const expPercent = (userData.exp / expToNext) * 100;
       document.getElementById("expBar").style.width = expPercent + "%";
       document.getElementById("expText").innerText = `${userData.exp} / ${expToNext}`;
-
-      const totalStats = calculateTotalStats();
-      if (!totalStats) return;
-    
-      // 기본 스탯 표시
-      document.getElementById("statStr").innerText = userData.str;
-      document.getElementById("statDex").innerText = userData.dex;
-      document.getElementById("statCon").innerText = userData.con;
-    
-      // 추가 스탯 및 배율 표시 (예: 괄호 안에 보너스 표시)
-      // 각 보너스 합계 계산
-      let bonusStr = 0, bonusDex = 0, bonusCon = 0;
-      let multiplierStr = 0, multiplierDex = 0, multiplierCon = 0;
-    
-      for (const key in userData.equipped) {
-        const item = userData.equipped[key];
-        if (!item) continue;
-    
-        bonusStr += (item.str_bonus || 0);
-        bonusDex += (item.dex_bonus || 0);
-        bonusCon += (item.con_bonus || 0);
-    
-        multiplierStr += (item.str_multiplier || 0);
-        multiplierDex += (item.dex_multiplier || 0);
-        multiplierCon += (item.con_multiplier || 0);
-      }
-    
-      // 예시 표시: 기본스탯 + (보너스) + (배율%)
-      document.getElementById("statStr").innerText = 
-        `${userData.str} (+${bonusStr}) ×${(1 + multiplierStr).toFixed(2)}`;
-      document.getElementById("statDex").innerText = 
-        `${userData.dex} (+${bonusDex}) ×${(1 + multiplierDex).toFixed(2)}`;
-      document.getElementById("statCon").innerText = 
-        `${userData.con} (+${bonusCon}) ×${(1 + multiplierCon).toFixed(2)}`;
     }
 
     function buyPotion(type) {
@@ -461,6 +427,20 @@
       userData.hp = Math.min(userData.hp, userData.maxHp);
     }
 
+    function resetStat() {
+        let stats = userData.con + userData.str + userData.dex;
+        let stats2 = userData.level * 3;
+        if(stats > 0) {
+            userData.con = 0;
+            userData.str = 0;
+            userData.dex = 0;
+            let addstats = (stats > stats2 ? stats : stats2) - userData.statPoints;
+            userData.statPoints += addstats;
+            updateUI();
+            saveData();
+        }
+    }
+
     function addStat(type) {
       if (!['str', 'con', 'dex'].includes(type)) return;
     
@@ -469,46 +449,24 @@
         alert("증가시킬 스탯을 1 이상 올바르게 입력해주세요.");
         return;
       }
-    
+      
       if (userData.statPoints < count) {
-        alert(`보유한 스탯포인트가 ${count}보다 적습니다`);
+        alert(`보유한 스탯포인트가 ${count}보다 적습니다`)
         return;
       }
-    
+
       userData[type] += count;
       userData.statPoints -= count;
     
-      const { con } = getFinalStats(userData, equipped);
-    
-      userData.maxHp = (Math.floor(userData.level / 3) + 1) * con * 5 + 100;
-      userData.hp = Math.min(userData.hp, userData.maxHp);
+      // 📌 스탯 변화에 따른 능력치 갱신
+      userData.maxHp = (Math.floor(userData.level / 3) + 1) * userData.con * 5 + 100;
+      userData.hp = Math.min(userData.hp, userData.maxHp);  // 현재 체력이 최대 체력을 넘지 않도록
     
       log(`${type.toUpperCase()} 스탯이 ${count} 증가했습니다.`);
       updateUI();
       saveData();
     }
     
-    function resetStat() {
-      let totalStats = userData.str + userData.con + userData.dex;
-      let minStats = userData.level * 3;
-    
-      if (totalStats >= 0) {
-        userData.str = 0;
-        userData.con = 0;
-        userData.dex = 0;
-    
-        let refund = (totalStats > minStats ? totalStats : minStats) - userData.statPoints;
-        userData.statPoints += refund;
-    
-        const { con } = getFinalStats(userData, equipped);
-        userData.maxHp = (Math.floor(userData.level / 3) + 1) * con * 5 + 100;
-        userData.hp = Math.min(userData.hp, userData.maxHp);
-    
-        updateUI();
-        saveData();
-      }
-    }
-
     function checkLevelUp() {
       while (userData.exp >= userData.level * 100) {
         const needExp = userData.level * 100;
@@ -520,7 +478,8 @@
         log(`레벨업! 현재 레벨: ${userData.level}`);
       }
     }
-    
+
+
     function enterDungeon() {
       if (inDungeon) {
         exitDungeon();
@@ -1087,22 +1046,8 @@
           return;
         }
     
-        const data = await res.json();
+        userData = await res.json();
     
-        // userData와 equipped 분리 저장
-        userData = data.user;
-        equipped = {};
-    
-        // equipped가 배열 형태라면, 타입별로 key 지정
-        if (Array.isArray(data.equipped)) {
-          data.equipped.forEach(itemRow => {
-            const item = convertEquipmentRowToItem(itemRow);
-            equipped[item.type] = item;
-          });
-        }
-
-        userData.equipped = equipped;
-        
         userData.uid = uid;
     
         document.getElementById("authUI").style.display = "none";
@@ -1110,13 +1055,13 @@
         updateUI();
         document.getElementById("nicknameDisplay").innerText = userData.nickname;
         document.getElementById("bottomStatus").style.display = "flex";
+        updateUI();
         showTab("home");
         log("로그인 성공!");
       } catch (error) {
         alert("로그인 실패: " + error.message);
       }
     }
-
 
 
     async function saveData() {
@@ -1364,6 +1309,126 @@
         sendMessage();
       }
     });
+    
+    function renderInventory() {
+      const container = document.getElementById("inventoryContainer");
+      container.innerHTML = "";
+      inventory.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerText = item.name;
+        div.onclick = () => handleItemClick(index);
+        container.appendChild(div);
+      });
+    }
+    
+    function renderEquipment() {
+      for (let slot in slotNames) {
+        const el = document.getElementById(`slot-${slot}`);
+        if (el) {
+          el.innerText = `${slotNames[slot]}: ${equipped[slot]?.name || "없음"}`;
+        }
+      }
+    }
+    
+    const slotNames = {
+      weapon: "무기",
+      helmet: "헬멧",
+      armor: "갑옷",
+      shield: "방패",
+      boots: "신발"
+    };
+        
+    function handleItemClick(index) {
+      const item = inventory[index];
+      const slot = item.type;
+    
+      // 이미 장착된 상태면 해제
+      if (equipped[slot]?.name === item.name) {
+        inventory.push(equipped[slot]); // 장비를 다시 인벤토리에 추가
+        equipped[slot] = null;
+        alert(`${item.name} 해제됨`);
+      } else {
+        // 기존 장비 있으면 인벤토리로 되돌림
+        if (equipped[slot]) inventory.push(equipped[slot]);
+    
+        equipped[slot] = item;
+        alert(`${item.name} 장착됨`);
+        inventory.splice(index, 1); // 인벤토리에서 제거
+      }
+    
+      renderInventory();
+      renderEquipment();
+      updateStatDisplay(userData, equipped);
+    }
+    
+    async function reportBossDefeat(bossStage, firebaseToken) {
+      try {
+        const response = await fetch('https://autorpg.onrender.com/api/boss/defeat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${firebaseToken}`,  // Firebase 토큰 넣기
+          },
+          body: JSON.stringify({ bossStage }),
+        });
+    
+        const data = await response.json();
+        if (data.success && data.droppedItem) {
+          // 보상 처리 완료
+          log(`보스 처치 후 ${data.droppedItem.name} 아이템을 획득했습니다!`);
+          inventory.push(data.droppedItem); // 임시
+          renderInventory();
+          return true;
+        } else {
+          console.error('보스 처치 보상 지급 실패:', data.error);
+          return false;
+        }
+      } catch (err) {
+        console.error('서버 통신 실패:', err);
+        return false;
+      }
+    }
+
+    function calculateEquippedBonusStats(equipped) {
+      const bonusAdd = { str: 0, dex: 0, con: 0 };
+      const bonusMul = { str: 1, dex: 1, con: 1 };
+    
+      Object.values(equipped).forEach(item => {
+        if (item && item.bonus) {
+          if (item.bonus.strAdd) bonusAdd.str += item.bonus.strAdd;
+          if (item.bonus.dexAdd) bonusAdd.dex += item.bonus.dexAdd;
+          if (item.bonus.conAdd) bonusAdd.con += item.bonus.conAdd;
+    
+          if (item.bonus.strMul) bonusMul.str *= item.bonus.strMul;
+          if (item.bonus.dexMul) bonusMul.dex *= item.bonus.dexMul;
+          if (item.bonus.conMul) bonusMul.con *= item.bonus.conMul;
+        }
+      });
+    
+      return { bonusAdd, bonusMul };
+    }
+
+
+    function getFinalStats(userData, equipped) {
+      const { bonusAdd, bonusMul } = calculateEquippedBonusStats(equipped);
+    
+      return {
+        str: Math.floor((userData.str + bonusAdd.str) * bonusMul.str),
+        dex: Math.floor((userData.dex + bonusAdd.dex) * bonusMul.dex),
+        con: Math.floor((userData.con + bonusAdd.con) * bonusMul.con),
+        bonusAdd,
+        bonusMul
+      };
+    }
+    
+    function updateStatDisplay(userData, equipped) {
+      const { str, dex, con, bonusAdd, bonusMul } = getFinalStats(userData, equipped);
+    
+      document.getElementById("statStr").innerText = `${str} (+${bonusAdd.str}, x${bonusMul.str.toFixed(2)})`;
+      document.getElementById("statDex").innerText = `${dex} (+${bonusAdd.dex}, x${bonusMul.dex.toFixed(2)})`;
+      document.getElementById("statCon").innerText = `${con} (+${bonusAdd.con}, x${bonusMul.con.toFixed(2)})`;
+    }
 
     window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("fullHealBtn").addEventListener("click", () => {
@@ -1378,128 +1443,7 @@
         saveData();
       });
     });
-
-    function calculateTotalStats() {
-      if (!userData) return null;
     
-      // 기본 스탯
-      let totalStr = userData.str || 0;
-      let totalDex = userData.dex || 0;
-      let totalCon = userData.con || 0;
-    
-      // 장착 아이템에서 보너스 추가 및 배율 적용
-      if (userData.equipped) {
-        for (const key in userData.equipped) {
-          const item = userData.equipped[key];
-          if (!item) continue;
-    
-          totalStr += (item.str_bonus || 0);
-          totalDex += (item.dex_bonus || 0);
-          totalCon += (item.con_bonus || 0);
-    
-          // 배율 적용 (기본 1에 더하는 식으로 처리)
-          totalStr *= (1 + (item.str_multiplier || 0));
-          totalDex *= (1 + (item.dex_multiplier || 0));
-          totalCon *= (1 + (item.con_multiplier || 0));
-        }
-      }
-    
-      // 소수점 버림
-      totalStr = Math.floor(totalStr);
-      totalDex = Math.floor(totalDex);
-      totalCon = Math.floor(totalCon);
-    
-      return { str: totalStr, dex: totalDex, con: totalCon };
-    }
-
-    function equipItem(itemId) {
-      const item = userInventory.find(i => i.id === itemId);
-      if (!item) return alert("아이템을 찾을 수 없습니다.");
-    
-      userData.equipped[item.type] = item;
-    
-      // 서버에 장착 상태 저장 요청 (예시)
-      saveEquipmentToServer();
-    
-      updateUI();
-    }
-    
-    async function saveEquipmentToServer() {
-      if (!userData) return;
-      try {
-        const idToken = await firebase.auth().currentUser.getIdToken(true);
-        const res = await fetch('https://autorpg.onrender.com/api/equipItem', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + idToken,
-          },
-          body: JSON.stringify({
-            uid: userData.uid,
-            equipped: userData.equipped, // 혹은 서버가 요구하는 형태
-          }),
-        });
-        if (!res.ok) throw new Error('장착 저장 실패');
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
-    async function reportBossDefeat(bossStage) {
-      if (!userData || !userData.uid) {
-        console.error("유저 정보가 없습니다.");
-        return;
-      }
-    
-      try {
-        const res = await fetch('https://autorpg.onrender.com/api/boss/defeat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            uid: userData.uid,
-            bossStage: bossStage,
-          }),
-        });
-    
-        if (!res.ok) {
-          const text = await res.text();
-          console.error('보스 처치 보고 실패:', text);
-          return;
-        }
-    
-        const data = await res.json();
-        console.log('보스 처치 보고 성공:', data);
-        // 예: 아이템 드랍 등 후속처리 함수 호출 가능
-      } catch (error) {
-        console.error('보스 처치 보고 에러:', error);
-      }
-    }
-
-    function getFinalStats(userData, inventory) {
-      let bonus = { str: 0, con: 0, dex: 0 };
-      let multiplier = { str: 1, con: 1, dex: 1 };
-    
-      inventory.forEach(item => {
-        if (item.equipped) {
-          bonus.str += item.str_bonus || 0;
-          bonus.con += item.con_bonus || 0;
-          bonus.dex += item.dex_bonus || 0;
-          multiplier.str *= (item.str_multiplier || 1);
-          multiplier.con *= (item.con_multiplier || 1);
-          multiplier.dex *= (item.dex_multiplier || 1);
-        }
-      });
-    
-      return {
-        str: Math.floor((userData.str + bonus.str) * multiplier.str),
-        con: Math.floor((userData.con + bonus.con) * multiplier.con),
-        dex: Math.floor((userData.dex + bonus.dex) * multiplier.dex),
-        bonus,
-        multiplier
-      };
-    }
   </script>
 </body>
 </html>
