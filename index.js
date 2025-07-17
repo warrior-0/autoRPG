@@ -129,7 +129,7 @@ app.post('/api/save-user-and-potions', async (req, res) => {
         potion_small = VALUES(potion_small),
         potion_medium = VALUES(potion_medium),
         potion_large = VALUES(potion_large),
-        potion_extralarge = VALUES(potion_extralarge)
+        potion_extralarge = VALUES(potion_extralarge),
         potion_quarter = VALUES(potion_quarter)
     `;
 
@@ -244,7 +244,7 @@ app.post('/api/save', async (req, res) => {
           potion_small = VALUES(potion_small),
           potion_medium = VALUES(potion_medium),
           potion_large = VALUES(potion_large),
-          potion_extralarge = VALUES(potion_extralarge)
+          potion_extralarge = VALUES(potion_extralarge),
           potion_quarter = VALUES(potion_quarter)
       `;
 
