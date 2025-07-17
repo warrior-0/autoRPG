@@ -541,7 +541,7 @@
           } else if (e.data.type === 'monsterDefeated') {
             userData.gold += e.data.gold;
             userData.exp += e.data.exp;
-            updateUI()
+            updateUI();
             log(`몬스터 처치! 골드 ${e.data.gold}, 경험치 ${e.data.exp} 획득`);
             checkLevelUp();
             saveData();
