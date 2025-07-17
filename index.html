@@ -523,6 +523,8 @@
           console.error("💥 Web Worker 메시지 오류:", err);
           log("⚠️ 던전 메시지 처리 오류 발생");
         };
+
+        let lastUpdateTime = 0;
     
         dungeonWorker.onmessage = function (e) {
           const now = Date.now();
