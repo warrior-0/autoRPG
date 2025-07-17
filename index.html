@@ -460,7 +460,7 @@
       let totalStats = userData.str + userData.con + userData.dex;
       let minStats = userData.level * 3;
     
-      if (totalStats > 0) {
+      if (totalStats >= 0) {
         userData.str = 0;
         userData.con = 0;
         userData.dex = 0;
