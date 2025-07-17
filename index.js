@@ -510,3 +510,31 @@ app.get('/api/userstats', async (req, res) => {
     conn.release();
   }
 });
+
+async function reportBossDefeat(bossStage, firebaseToken) {
+  try {
+    const response = await fetch('https://autorpg.onrender.com/api/boss/defeat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${firebaseToken}`,
+      },
+      body: JSON.stringify({ bossStage }),
+    });
+
+    const data = await response.json();
+    if (data.success && data.droppedItem) {
+      alert(`보스 처치! 아이템 ${data.droppedItem.name} 획득!`);
+      inventory.push(data.droppedItem);
+      renderInventory();
+      return true;
+    } else {
+      alert('보스 처치 보상 없음');
+      return false;
+    }
+  } catch (err) {
+    console.error('보스 처치 에러:', err);
+    alert('서버 에러로 보스 처치 처리 실패');
+    return false;
+  }
+}
