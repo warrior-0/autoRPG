@@ -56,8 +56,8 @@ app.post('/api/createUser', async (req, res) => {
   try {
     await pool.query(
       `INSERT INTO users 
-      (uid, nickname, gold, exp, level, hp, maxHp, str, dex, con, statPoints, potion_small, potion_medium, potion_large, potion_extralarge)
-      VALUES (?, ?, 0, 0, 1, 100, 100, 0, 0, 0, 0, 3, 1, 0, 0)`,
+      (uid, nickname, gold, exp, level, hp, maxHp, str, dex, con, statPoints, potion_small, potion_medium, potion_large, potion_extralarge, potion_quarter)
+      VALUES (?, ?, 0, 0, 1, 100, 100, 0, 0, 0, 0, 3, 1, 0, 0, 0)`,
       [uid, nickname]
     );
     res.json({ success: true });
@@ -103,6 +103,7 @@ app.post('/api/save-user-and-potions', async (req, res) => {
     potion_medium,
     potion_large,
     potion_extralarge,
+    potion_quarter,
   } = req.body;
 
   const conn = await pool.getConnection();
@@ -112,8 +113,8 @@ app.post('/api/save-user-and-potions', async (req, res) => {
 
     const sqlUser = `
       INSERT INTO users
-        (uid, nickname, gold, exp, level, hp, maxHp, str, dex, con, statPoints, potion_small, potion_medium, potion_large, potion_extralarge)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (uid, nickname, gold, exp, level, hp, maxHp, str, dex, con, statPoints, potion_small, potion_medium, potion_large, potion_extralarge, potion_quarter)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE
         nickname = VALUES(nickname),
         gold = VALUES(gold),
@@ -129,6 +130,7 @@ app.post('/api/save-user-and-potions', async (req, res) => {
         potion_medium = VALUES(potion_medium),
         potion_large = VALUES(potion_large),
         potion_extralarge = VALUES(potion_extralarge)
+        potion_quarter = VALUES(potion_quarter)
     `;
 
     await conn.query(sqlUser, [
@@ -147,6 +149,7 @@ app.post('/api/save-user-and-potions', async (req, res) => {
       potion_medium,
       potion_large,
       potion_extralarge,
+      potion_quarter,
     ]);
 
     await conn.commit();
@@ -220,11 +223,12 @@ app.post('/api/save', async (req, res) => {
         potion_medium,
         potion_large,
         potion_extralarge,
+        potion_quarter,
       } = userInfo;
 
       const sqlUser = `
         INSERT INTO users
-          (uid, nickname, gold, exp, level, hp, maxHp, str, dex, con, statPoints, potion_small, potion_medium, potion_large, potion_extralarge)
+          (uid, nickname, gold, exp, level, hp, maxHp, str, dex, con, statPoints, potion_small, potion_medium, potion_large, potion_extralarge, potion_quarter)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
           nickname = VALUES(nickname),
@@ -241,6 +245,7 @@ app.post('/api/save', async (req, res) => {
           potion_medium = VALUES(potion_medium),
           potion_large = VALUES(potion_large),
           potion_extralarge = VALUES(potion_extralarge)
+          potion_quarter = VALUES(potion_quarter)
       `;
 
       await conn.query(sqlUser, [
@@ -259,6 +264,7 @@ app.post('/api/save', async (req, res) => {
         potion_medium,
         potion_large,
         potion_extralarge,
+        potion_quarter,
       ]);
     }
 
