@@ -548,7 +548,6 @@
         try {
           dungeonWorker.postMessage({ command: 'stop' });
           dungeonWorker.terminate();
-          log("💤 던전 워커 종료");
         } catch (err) {
           console.error("💥 워커 종료 실패:", err);
           log("⚠️ 워커 종료 중 오류: " + err.message);
