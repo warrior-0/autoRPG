@@ -529,6 +529,7 @@
           } else if (e.data.type === 'monsterDefeated') {
             userData.gold += e.data.gold;
             userData.exp += e.data.exp;
+            updateUI()
             log(`몬스터 처치! 골드 ${e.data.gold}, 경험치 ${e.data.exp} 획득`);
             checkLevelUp();
             saveData();
@@ -540,13 +541,6 @@
             saveData();
             showTab("home");
             alert("던전에서 사망하였습니다. 체력이 100%회복되고 보유 경험치의 30%를 잃습니다.");
-          }
-          if (e.data.type === 'battleEnd') {
-            userData.exp += e.data.exp;
-            userData.gold += e.data.gold;
-            log(`전투 승리! 경험치 ${e.data.exp} 획득, 골드 ${e.data.gold} 획득!`);
-            updateUI();  // UI 반영
-            saveData();  // 서버 반영
           }
         };
             
