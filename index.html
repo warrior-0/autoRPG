@@ -478,6 +478,7 @@
     }
     
     function checkLevelUp() {
+      let leveledUp = false;
       while (userData.exp >= userData.level * 100) {
         const needExp = userData.level * 100;
         userData.exp -= needExp;
@@ -486,9 +487,12 @@
         userData.maxHp = (Math.floor(userData.level / 3) + 1) * userData.con * 5 + 100;
         userData.hp = userData.maxHp;
         log(`레벨업! 현재 레벨: ${userData.level}`);
+        leveledUp = true;
+      }
+      if (leveledUp) {
+        updateUI();  // 레벨업 후 UI 갱신
       }
     }
-
 
     let dungeonWorker;
     
