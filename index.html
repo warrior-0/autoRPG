@@ -1443,7 +1443,129 @@
         saveData();
       });
     });
+
+    async function loadInventory() {
+      if (!userData || !userData.uid) return;
     
+      try {
+        const res = await fetch(`/api/inventory?uid=${encodeURIComponent(userData.uid)}`);
+        if (!res.ok) throw new Error('인벤토리 불러오기 실패');
+    
+        const data = await res.json();
+        inventory = data.inventory || [];
+    
+        renderInventoryUI();
+        applyFinalStats();
+      } catch (e) {
+        console.error(e);
+        log('인벤토리 불러오기에 실패했습니다.');
+      }
+    }
+
+    function renderInventoryUI() {
+      const container = document.getElementById('inventoryContainer');
+      container.innerHTML = ''; // 초기화
+    
+      if (inventory.length === 0) {
+        container.innerText = '인벤토리가 비어 있습니다.';
+        return;
+      }
+    
+      inventory.forEach((item) => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.textContent = `${item.item_name} [${item.equipped ? '장착됨' : '미장착'}]`;
+        div.style.cursor = 'pointer';
+    
+        div.onclick = () => {
+          if (item.equipped) {
+            unequipItem(item.item_id);
+          } else {
+            equipItem(item.item_id);
+          }
+        };
+    
+        container.appendChild(div);
+      });
+    }
+
+    async function equipItem(itemId) {
+      try {
+        const res = await fetch('/api/equip', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uid: userData.uid, item_id: itemId }),
+        });
+        const result = await res.json();
+        if (res.ok) {
+          log(result.message || '아이템 장착 완료');
+          await loadInventory(); // 다시 불러와서 UI 갱신 및 스탯 재적용
+        } else {
+          alert(result.error || '아이템 장착 실패');
+        }
+      } catch (e) {
+        console.error(e);
+        alert('서버 오류로 아이템 장착에 실패했습니다.');
+      }
+    }
+
+    async function unequipItem(itemId) {
+      try {
+        // 서버에 미장착 처리하는 별도 API가 없으면 equip 상태 false로 하는 API 재활용하거나 따로 만들기
+        // 여기서는 장착 취소용 API 가정 (POST /api/unequip)
+        const res = await fetch('/api/unequip', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uid: userData.uid, item_id: itemId }),
+        });
+        const result = await res.json();
+        if (res.ok) {
+          log(result.message || '아이템 해제 완료');
+          await loadInventory();
+        } else {
+          alert(result.error || '아이템 해제 실패');
+        }
+      } catch (e) {
+        console.error(e);
+        alert('서버 오류로 아이템 해제에 실패했습니다.');
+      }
+    }
+
+    function applyFinalStats() {
+      if (!userData) return;
+    
+      const equippedItems = inventory.filter(item => item.equipped);
+    
+      let totalStr = userData.str;
+      let totalDex = userData.dex;
+      let totalCon = userData.con;
+    
+      equippedItems.forEach(item => {
+        totalStr += item.str_bonus || 0;
+        totalDex += item.dex_bonus || 0;
+        totalCon += item.con_bonus || 0;
+    
+        totalStr *= item.str_multiplier || 1;
+        totalDex *= item.dex_multiplier || 1;
+        totalCon *= item.con_multiplier || 1;
+      });
+    
+      totalStr = Math.floor(totalStr);
+      totalDex = Math.floor(totalDex);
+      totalCon = Math.floor(totalCon);
+    
+      // UI에 반영 (예: 스탯 표시하는 엘리먼트에 출력)
+      document.getElementById('strStat').textContent = totalStr;
+      document.getElementById('dexStat').textContent = totalDex;
+      document.getElementById('conStat').textContent = totalCon;
+    
+      // 최대체력 재계산 및 적용
+      const maxHp = (Math.floor(userData.level / 3) + 1) * totalCon * 5 + 100;
+      userData.maxHp = maxHp;
+      if (userData.hp > maxHp) userData.hp = maxHp;
+    
+      document.getElementById('hpStat').textContent = `${userData.hp} / ${userData.maxHp}`;
+    }
   </script>
 </body>
 </html>
