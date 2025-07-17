@@ -117,8 +117,8 @@ function startCombat() {
 
       postMessage({
         type: 'monsterDefeated',
-        rewardGold: reward * 20,
-        rewardExp: reward * 10,
+        gold: reward * 20,
+        exp: reward * 10,
         userData
       });
 
