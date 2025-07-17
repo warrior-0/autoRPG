@@ -433,6 +433,110 @@ app.post('/api/boss/defeat', verifyFirebaseToken, async (req, res) => {
   }
 });
 
+app.get('/api/userstats', async (req, res) => {
+  const uid = req.query.uid;
+  if (!uid) return res.status(400).json({ error: 'uid is required' });
+
+  const conn = await pool.getConnection();
+  try {
+    // 1. 유저 기본 능력치 가져오기
+    const [[user]] = await conn.query(
+      `SELECT str, dex, con FROM users WHERE uid = ?`,
+      [uid]
+    );
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // 2. 착용 중인 장비 ID들 조회
+    const [equippedItems] = await conn.query(
+      `SELECT item_id FROM user_inventory WHERE uid = ? AND equipped = TRUE`,
+      [uid]
+    );
+    const itemIds = equippedItems.map(row => row.item_id);
+    if (itemIds.length === 0) {
+      return res.json({
+        baseStats: user,
+        finalStats: user,
+        bonusAdd: { str: 0, dex: 0, con: 0 },
+        bonusMul: { str: 1, dex: 1, con: 1 }
+      });
+    }
+
+    // 3. 장비 상세 정보 가져오기
+    const [equipmentRows] = await conn.query(
+      `SELECT * FROM equipment WHERE id IN (${itemIds.map(() => '?').join(',')})`,
+      itemIds
+    );
+
+    // 4. 장비를 JS bonus 형태로 변환
+    function convertEquipmentRowToItem(row) {
+      return {
+        name: row.name,
+        type: row.type,
+        bonus: {
+          strAdd: row.str_bonus || 0,
+          dexAdd: row.dex_bonus || 0,
+          conAdd: row.con_bonus || 0,
+          strMul: row.str_multiplier || 1,
+          dexMul: row.dex_multiplier || 1,
+          conMul: row.con_multiplier || 1,
+        }
+      };
+    }
+
+    const equipped = {};
+    equipmentRows.forEach(row => {
+      equipped[row.type] = convertEquipmentRowToItem(row);
+    });
+
+    // 5. 장비 보너스 계산
+    function calculateEquippedBonusStats(equipped) {
+      const bonusAdd = { str: 0, dex: 0, con: 0 };
+      const bonusMul = { str: 1, dex: 1, con: 1 };
+
+      Object.values(equipped).forEach(item => {
+        if (item && item.bonus) {
+          bonusAdd.str += item.bonus.strAdd;
+          bonusAdd.dex += item.bonus.dexAdd;
+          bonusAdd.con += item.bonus.conAdd;
+          bonusMul.str *= item.bonus.strMul;
+          bonusMul.dex *= item.bonus.dexMul;
+          bonusMul.con *= item.bonus.conMul;
+        }
+      });
+
+      return { bonusAdd, bonusMul };
+    }
+
+    function getFinalStats(userData, equipped) {
+      const { bonusAdd, bonusMul } = calculateEquippedBonusStats(equipped);
+      return {
+        str: Math.floor((userData.str + bonusAdd.str) * bonusMul.str),
+        dex: Math.floor((userData.dex + bonusAdd.dex) * bonusMul.dex),
+        con: Math.floor((userData.con + bonusAdd.con) * bonusMul.con),
+        bonusAdd,
+        bonusMul
+      };
+    }
+
+    const final = getFinalStats(user, equipped);
+    res.json({
+      baseStats: user,
+      finalStats: {
+        str: final.str,
+        dex: final.dex,
+        con: final.con
+      },
+      bonusAdd: final.bonusAdd,
+      bonusMul: final.bonusMul
+    });
+  } catch (err) {
+    console.error('/api/userstats error:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  } finally {
+    conn.release();
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`서버 ${PORT}번 포트에서 실행 중`);
