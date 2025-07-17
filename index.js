@@ -77,9 +77,8 @@ app.get('/api/userdata', async (req, res) => {
     if (userRows.length === 0) return res.status(404).json({ error: 'User not found' });
 
     const [equipRows] = await pool.query(
-      `SELECT ei.*
-       FROM user_inventory ui
-       JOIN equipment ei ON ui.item_id = ei.id
+      `SELECT i.* FROM items i
+       JOIN user_inventory ui ON ui.item_id = i.id
        WHERE ui.uid = ? AND ui.equipped = 1`,
       [uid]
     );
