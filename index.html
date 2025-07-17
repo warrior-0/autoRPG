@@ -481,7 +481,7 @@
 
 
     let dungeonWorker;
-
+    
     function enterDungeon() {
       if (inDungeon) {
         exitDungeon();
@@ -497,34 +497,68 @@
       document.getElementById("dungeonToggleBtn").innerText = "던전 나가기";
       log("던전에 입장합니다!");
     
-      // Web Worker 시작
-      dungeonWorker = new Worker("dungeonWorker.js");
-      dungeonWorker.postMessage({ command: 'start', userData: { ...userData, currentStage } });
+      try {
+        dungeonWorker = new Worker("dungeonWorker.js");
     
-      dungeonWorker.onmessage = function (e) {
-        if (e.data.type === 'tick') {
-          log(`몬스터 체력: ${e.data.monsterHp}`);
-          updateUI();
-        } else if (e.data.type === 'monsterDefeated') {
-          userData.gold += e.data.gold;
-          userData.exp += e.data.exp;
-          log(`몬스터 처치! 골드 ${e.data.gold}, 경험치 ${e.data.exp} 획득`);
-          checkLevelUp();
-          saveData();
-        }
-      };
+        dungeonWorker.onerror = function (err) {
+          console.error("💥 Web Worker 오류:", err);
+          log("⚠️ 던전 작업 중 오류가 발생했습니다: " + err.message);
+        };
+    
+        dungeonWorker.onmessageerror = function (err) {
+          console.error("💥 Web Worker 메시지 오류:", err);
+          log("⚠️ 던전 메시지 처리 오류 발생");
+        };
+    
+        dungeonWorker.onmessage = function (e) {
+          console.log("📩 워커 메시지 수신:", e.data); // 디버그 로그
+    
+          if (e.data.type === 'tick') {
+            log(`몬스터 체력: ${e.data.monsterHp}`);
+            updateUI();
+          } else if (e.data.type === 'monsterDefeated') {
+            userData.gold += e.data.gold;
+            userData.exp += e.data.exp;
+            log(`몬스터 처치! 골드 ${e.data.gold}, 경험치 ${e.data.exp} 획득`);
+            checkLevelUp();
+            saveData();
+          } else if (e.data.type === 'done') {
+            log("전투 완료");
+          } else {
+            log("📨 알 수 없는 메시지: " + JSON.stringify(e.data));
+          }
+        };
+    
+        dungeonWorker.postMessage({
+          command: 'start',
+          userData: { ...userData, currentStage }
+        });
+    
+      } catch (err) {
+        console.error("💥 Worker 생성 실패:", err);
+        log("⚠️ 던전 워커 시작 중 오류 발생: " + err.message);
+      }
     }
     
     function exitDungeon() {
       inDungeon = false;
       document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
+    
       if (dungeonWorker) {
-        dungeonWorker.postMessage({ command: 'stop' });
-        dungeonWorker.terminate();
+        try {
+          dungeonWorker.postMessage({ command: 'stop' });
+          dungeonWorker.terminate();
+          log("💤 던전 워커 종료");
+        } catch (err) {
+          console.error("💥 워커 종료 실패:", err);
+          log("⚠️ 워커 종료 중 오류: " + err.message);
+        }
         dungeonWorker = null;
       }
+    
       log("던전에서 나왔습니다.");
     }
+
 
     function exitBossDungeon() {
       if (!inBossDungeon) return;
