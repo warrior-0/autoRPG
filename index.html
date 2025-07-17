@@ -1532,6 +1532,58 @@
         console.error(err);
       }
     }
+
+    async function saveEquipment() {
+      if (!userData || !userData.uid) return;
+    
+      // equipped 객체에서 item_id만 뽑아내기
+      const equippedItemIds = Object.values(equipped)
+        .filter(item => item != null)
+        .map(item => item.id);  // id는 DB items 테이블 PK
+    
+      try {
+        const res = await fetch('https://autorpg.onrender.com/api/user/equipment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${firebaseToken}`, // 로그인 토큰
+          },
+          body: JSON.stringify({
+            equippedItems: equippedItemIds.reduce((acc, itemId) => {
+              // item_id를 키로 하는 객체가 아니라, 타입별 장착 정보를 보내야 함
+              // 서버가 item_id 목록을 받도록 되어 있으니 그냥 배열로 보내도 됨
+              // 서버 코드를 조금 수정해도 됨
+              acc.push(itemId);
+              return acc;
+            }, []),
+          }),
+        });
+        const data = await res.json();
+        if (!data.success) alert('장비 저장 실패: ' + data.error);
+      } catch (err) {
+        console.error('장비 저장 에러:', err);
+        alert('서버 통신 실패로 장비 저장 실패');
+      }
+    }
+
+    async function updateStatsFromServer() {
+      if (!userData || !userData.uid) return;
+    
+      try {
+        const res = await fetch(`https://autorpg.onrender.com/api/userstats?uid=${userData.uid}`);
+        if (!res.ok) throw new Error('스탯 조회 실패');
+        const data = await res.json();
+    
+        // 화면에 최종 스탯 반영
+        document.getElementById("statStr").innerText = `${data.finalStats.str} (+${data.bonusAdd.str}, x${data.bonusMul.str.toFixed(2)})`;
+        document.getElementById("statDex").innerText = `${data.finalStats.dex} (+${data.bonusAdd.dex}, x${data.bonusMul.dex.toFixed(2)})`;
+        document.getElementById("statCon").innerText = `${data.finalStats.con} (+${data.bonusAdd.con}, x${data.bonusMul.con.toFixed(2)})`;
+    
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
     
   </script>
 </body>
