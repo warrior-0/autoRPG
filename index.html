@@ -513,7 +513,7 @@
         dungeonWorker.onmessage = function (e) {
           console.log("📩 워커 메시지 수신:", e.data); // 디버그 로그
     
-          if (e.data.type === 'tick') {
+          if (e.data.type === 'combatTick') {
             log(`몬스터 체력: ${e.data.monsterHp}`);
             updateUI();
           } else if (e.data.type === 'monsterDefeated') {
