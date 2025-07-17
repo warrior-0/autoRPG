@@ -1057,7 +1057,9 @@
             equipped[item.type] = item;
           });
         }
-    
+
+        userData.equipped = equipped;
+        
         userData.uid = uid;
     
         document.getElementById("authUI").style.display = "none";
