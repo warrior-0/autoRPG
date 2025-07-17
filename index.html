@@ -1477,6 +1477,29 @@
       }
     }
 
+    function getFinalStats(userData, inventory) {
+      let bonus = { str: 0, con: 0, dex: 0 };
+      let multiplier = { str: 1, con: 1, dex: 1 };
+    
+      inventory.forEach(item => {
+        if (item.equipped) {
+          bonus.str += item.str_bonus || 0;
+          bonus.con += item.con_bonus || 0;
+          bonus.dex += item.dex_bonus || 0;
+          multiplier.str *= (item.str_multiplier || 1);
+          multiplier.con *= (item.con_multiplier || 1);
+          multiplier.dex *= (item.dex_multiplier || 1);
+        }
+      });
+    
+      return {
+        str: Math.floor((userData.str + bonus.str) * multiplier.str),
+        con: Math.floor((userData.con + bonus.con) * multiplier.con),
+        dex: Math.floor((userData.dex + bonus.dex) * multiplier.dex),
+        bonus,
+        multiplier
+      };
+    }
   </script>
 </body>
 </html>
