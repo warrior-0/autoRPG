@@ -80,11 +80,12 @@ app.get('/api/userdata', async (req, res) => {
 
     // 2) 유저 장착 아이템 조회 (items 테이블과 조인)
     const [equipRows] = await pool.query(
-      `SELECT i.* FROM items i
-       JOIN user_inventory ui ON ui.item_id = i.id
+      `SELECT e.* FROM equipment e
+       JOIN user_inventory ui ON ui.item_id = e.id
        WHERE ui.uid = ? AND ui.equipped = 1`,
       [uid]
     );
+
 
     // 3) JSON 형태로 유저 정보와 장비 배열 함께 반환
     res.json({
