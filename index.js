@@ -73,9 +73,12 @@ app.get('/api/userdata', async (req, res) => {
   if (!uid) return res.status(400).json({ error: 'uid is required' });
 
   try {
+    // 1) 유저 기본 정보 조회
     const [userRows] = await pool.query('SELECT * FROM users WHERE uid = ?', [uid]);
     if (userRows.length === 0) return res.status(404).json({ error: 'User not found' });
+    const user = userRows[0];
 
+    // 2) 유저 장착 아이템 조회 (items 테이블과 조인)
     const [equipRows] = await pool.query(
       `SELECT i.* FROM items i
        JOIN user_inventory ui ON ui.item_id = i.id
@@ -83,18 +86,17 @@ app.get('/api/userdata', async (req, res) => {
       [uid]
     );
 
-    const [invRows] = await pool.query('SELECT * FROM user_inventory WHERE uid = ?', [uid]);
-
+    // 3) JSON 형태로 유저 정보와 장비 배열 함께 반환
     res.json({
-      user: userRows[0],
-      equipped: equipRows,  // 장착 중인 장비 배열
-      inventory: invRows,   // 인벤토리 전체
+      user,
+      equipped: equipRows  // items 테이블에서 가져온 장비 리스트
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'DB error' });
+    console.error('/api/userdata error:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 
 
 // 유저 및 물약 저장 API
