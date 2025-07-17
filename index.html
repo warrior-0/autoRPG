@@ -526,14 +526,6 @@
       log("던전에서 나왔습니다.");
     }
 
-    function exitDungeon() {
-      if (!inDungeon) return;
-      clearInterval(dungeonInterval);
-      inDungeon = false;
-      document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
-      log("던전에서 나왔습니다.");
-    }
-
     function exitBossDungeon() {
       if (!inBossDungeon) return;
       clearInterval(bossdungeonInterval);
