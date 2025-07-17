@@ -1456,6 +1456,12 @@
         saveData();
       });
     });
+
+    window.onload = async () => {
+      if (!userData || !userData.uid) return;
+    
+      await loadUserData(userData.uid);  // userData, equipped 세팅 + updateUI 호출
+    };
     
   </script>
 </body>
