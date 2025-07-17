@@ -1044,7 +1044,19 @@
           return;
         }
     
-        userData = await res.json();
+        const data = await res.json();
+    
+        // userData와 equipped 분리 저장
+        userData = data.user;
+        equipped = {};
+    
+        // equipped가 배열 형태라면, 타입별로 key 지정
+        if (Array.isArray(data.equipped)) {
+          data.equipped.forEach(itemRow => {
+            const item = convertEquipmentRowToItem(itemRow);
+            equipped[item.type] = item;
+          });
+        }
     
         userData.uid = uid;
     
@@ -1053,13 +1065,13 @@
         updateUI();
         document.getElementById("nicknameDisplay").innerText = userData.nickname;
         document.getElementById("bottomStatus").style.display = "flex";
-        updateUI();
         showTab("home");
         log("로그인 성공!");
       } catch (error) {
         alert("로그인 실패: " + error.message);
       }
     }
+
 
 
     async function saveData() {
