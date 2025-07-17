@@ -1391,24 +1391,24 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${firebaseToken}`,  // Firebase 토큰 넣기
+            'Authorization': `Bearer ${firebaseToken}`,
           },
           body: JSON.stringify({ bossStage }),
         });
     
         const data = await response.json();
         if (data.success && data.droppedItem) {
-          // 보상 처리 완료
-          log(`보스 처치 후 ${data.droppedItem.name} 아이템을 획득했습니다!`);
-          inventory.push(data.droppedItem); // 임시
+          alert(`보스 처치! 아이템 ${data.droppedItem.name} 획득!`);
+          inventory.push(data.droppedItem);
           renderInventory();
           return true;
         } else {
-          console.error('보스 처치 보상 지급 실패:', data.error);
+          alert('보스 처치 보상 없음');
           return false;
         }
       } catch (err) {
-        console.error('서버 통신 실패:', err);
+        console.error('보스 처치 에러:', err);
+        alert('서버 에러로 보스 처치 처리 실패');
         return false;
       }
     }
