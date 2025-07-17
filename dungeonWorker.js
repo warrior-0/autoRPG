@@ -17,7 +17,8 @@ onmessage = function (e) {
     userData.maxHp = userData.maxHp ?? 100;
     userData.hp = userData.hp ?? userData.maxHp;
 
-    currentStage = Number(e.data.currentStage) || 1;
+    // 수정: currentStage는 e.data.userData에 있음
+    currentStage = Number(userData.currentStage) || 1;
 
     setupMonster();
     startCombat();
