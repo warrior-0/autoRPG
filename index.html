@@ -449,18 +449,21 @@
         alert("증가시킬 스탯을 1 이상 올바르게 입력해주세요.");
         return;
       }
-      
+    
       if (userData.statPoints < count) {
-        alert(`보유한 스탯포인트가 ${count}보다 적습니다`)
+        alert(`보유한 스탯포인트가 ${count}보다 적습니다`);
         return;
       }
-
+    
       userData[type] += count;
       userData.statPoints -= count;
     
-      // 📌 스탯 변화에 따른 능력치 갱신
-      userData.maxHp = (Math.floor(userData.level / 3) + 1) * userData.con * 5 + 100;
-      userData.hp = Math.min(userData.hp, userData.maxHp);  // 현재 체력이 최대 체력을 넘지 않도록
+      // ✅ 현재 장비 반영하여 최종 스탯 계산
+      const { str, dex, con } = getFinalStats(userData, equipped);
+    
+      // ✅ 스탯 변화에 따른 최대 체력 갱신 (con 반영)
+      userData.maxHp = (Math.floor(userData.level / 3) + 1) * con * 5 + 100;
+      userData.hp = Math.min(userData.hp, userData.maxHp);  // 체력 초과 방지
     
       log(`${type.toUpperCase()} 스탯이 ${count} 증가했습니다.`);
       updateUI();
