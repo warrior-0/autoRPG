@@ -424,16 +424,6 @@
         userData.hp += Math.floor(10 + userData.maxHp*0.01);
         log("소형 물약 사용! 체력 "+Math.floor(10 + userData.maxHp*0.01)+" 회복");
       }
-
-      if (dungeonWorker) {
-        dungeonWorker.postMessage({
-          command: 'syncUserData',
-          userData: userData,
-        });
-      }
-
-      updateUI();
-      saveData();
       userData.hp = Math.min(userData.hp, userData.maxHp);
     }
 
@@ -478,7 +468,6 @@
     }
     
     function checkLevelUp() {
-      let leveledUp = false;
       while (userData.exp >= userData.level * 100) {
         const needExp = userData.level * 100;
         userData.exp -= needExp;
@@ -487,15 +476,10 @@
         userData.maxHp = (Math.floor(userData.level / 3) + 1) * userData.con * 5 + 100;
         userData.hp = userData.maxHp;
         log(`레벨업! 현재 레벨: ${userData.level}`);
-        leveledUp = true;
-      }
-      if (leveledUp) {
-        updateUI();  // 레벨업 후 UI 갱신
       }
     }
 
-    let dungeonWorker;
-    
+
     function enterDungeon() {
       if (inDungeon) {
         exitDungeon();
@@ -511,89 +495,114 @@
       document.getElementById("dungeonToggleBtn").innerText = "던전 나가기";
       log("던전에 입장합니다!");
     
-      try {
-        dungeonWorker = new Worker("dungeonWorker.js");
+      let monsterHp = Math.floor((currentStage / 7 + 1) * currentStage * 2);
+      let monsterCrit = currentStage;
+      let monsterHit = currentStage * 7;
+      let monsterDef = (currentStage / 20 + 1) * currentStage;
+      let monsterAtk = Math.floor((currentStage / 4 + 1) * currentStage);
+      let reward = currentStage;
+      let evasionRatePlayer = userData.dex / (userData.dex + monsterHit);
+      let monsterEvasion = currentStage - 1;
+      let evasionRateMonster = monsterEvasion / (monsterEvasion + userData.dex * 5 + userData.str * 5 + 1);
+      
+      dungeonInterval = setInterval(() => {
+        if (Math.random() < evasionRatePlayer) {
+          log("플레이어가 몬스터 공격을 회피했습니다.");
+        } else {
+          let isCrit = Math.random() * 100 < monsterCrit;
+          let playerDef = userData.con;
+          let dmgReduction = 1 - (playerDef / (userData.level * 2 + playerDef));
+          let dmg = monsterAtk;
     
-        dungeonWorker.onerror = function (err) {
-          console.error("💥 Web Worker 오류:", err);
-          log("⚠️ 던전 작업 중 오류가 발생했습니다: " + err.message);
-        };
-    
-        dungeonWorker.onmessageerror = function (err) {
-          console.error("💥 Web Worker 메시지 오류:", err);
-          log("⚠️ 던전 메시지 처리 오류 발생");
-        };
-    
-        dungeonWorker.onmessage = function (e) {
-          if (!userData) return;
-    
-          const data = e.data;
-    
-          switch (data.type) {
-            case 'combatTick':
-              userData = data.userData;
-              updateUI();
-              autoUsePotion();
-              updateUI();
-              saveData();
-              break;
-    
-            case 'monsterDefeated':
-              if (data.log && Array.isArray(data.log)) {
-                data.log.forEach(line => log(line));
-              }
-    
-              userData.gold += data.gold;
-              userData.exp += data.exp;
-    
-              log(`몬스터 처치! 골드 ${data.gold}, 경험치 ${data.exp} 획득`);
-              updateUI();
-              checkLevelUp();
-              saveData();
-              break;
-    
-            case 'playerDead':
-              log("던전에서 사망하였습니다. 체력이 100% 회복되고 보유 경험치의 30%를 잃습니다.");
-              userData.exp = Math.floor(userData.exp * 0.7);
-              userData.hp = userData.maxHp;
-              updateUI();
-              saveData();
-              showTab("home");
-              alert("던전에서 사망하였습니다. 체력이 100% 회복되고 보유 경험치의 30%를 잃습니다.");
-              break;
+          if (isCrit) {
+            dmg = Math.floor(monsterAtk * (monsterCrit / 2000 + 1.1));
+            dmg = Math.floor(dmg * dmgReduction);
+            dmg = applyRandomVariance(dmg)
+            dmg = Math.max(1, dmg);
+            userData.hp -= dmg;
+            log(`몬스터의 치명타 공격! 플레이어가 ${dmg} 피해를 받았습니다.`);
+          } else {
+            dmg = Math.floor(dmg * dmgReduction);
+            dmg = applyRandomVariance(dmg)
+            dmg = Math.max(1, dmg);
+            userData.hp -= dmg;
+            log(`플레이어가 ${dmg} 피해를 받았습니다.`);
           }
-        };
+        }
     
-        dungeonWorker.postMessage({
-          command: 'start',
-          userData: { ...userData, currentStage: currentStage }
-        });
+        if (Math.random() < evasionRateMonster) {
+          log("몬스터가 플레이어 공격을 회피했습니다.");
+        } else {
+          const playerAtk = 1 + ((userData.level / 2) + 1) * userData.str * 1.5;
     
-      } catch (err) {
-        console.error("💥 Worker 생성 실패:", err);
-        log("⚠️ 던전 워커 시작 중 오류 발생: " + err.message);
-      }
+          const critStat = userData.dex * 5;
+          const critChance = (critStat / (critStat + 150)) * 100;
+          let isCrit = Math.random() * 100 < critChance;
+    
+          let monsterDefFinal = monsterDef;
+          let dmgReductionPlayer = 1 - (monsterDefFinal / (userData.level * 2 + monsterDefFinal));
+          let dmg;
+          if (isCrit) {
+            const critDamage = playerAtk * (critStat / 2000 + 1.1);
+            dmg = Math.floor(critDamage * dmgReductionPlayer);
+            dmg = applyRandomVariance(dmg)
+            dmg = Math.max(1, dmg);
+            monsterHp -= dmg;
+            log(`플레이어의 치명타 공격! 몬스터가 ${dmg} 피해를 받았습니다.`);
+          } else {
+            dmg = Math.floor(playerAtk * dmgReductionPlayer);
+            dmg = applyRandomVariance(dmg)
+            dmg = Math.max(1,dmg);
+            monsterHp -= dmg;
+            log(`몬스터가 ${dmg} 피해를 받았습니다.`);
+          }
+        }
+    
+        log(`몬스터 남은 체력: ${Math.max(0, monsterHp)}`);
+    
+        if (monsterHp <= 0) {
+          userData.gold += reward * 20;
+          userData.exp += reward * 10;
+          log(`몬스터 처치 보상 획득! 골드: ${reward * 20} 경험치: ${reward * 10}`);
+          reward = currentStage;
+          monsterHp = Math.floor((currentStage / 7 + 1) * currentStage * 2);
+          monsterCrit = currentStage;
+          monsterHit = currentStage * 7;
+          monsterDef = (currentStage / 20 + 1) * currentStage;
+          monsterAtk = Math.floor((currentStage / 4 + 1) * currentStage);
+          evasionRatePlayer = userData.dex / (userData.dex + monsterHit);
+          monsterEvasion = currentStage - 1;
+          evasionRateMonster = monsterEvasion / (monsterEvasion + userData.dex * 5 + userData.str * 5 + 1);
+          checkLevelUp();
+        }
+    
+        autoUsePotion();
+        updateUI();
+        saveData();
+    
+        if (userData.hp <= 0) {
+          clearInterval(dungeonInterval);
+          inDungeon = false;
+          document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
+          log("던전에서 사망했습니다. 체력이 100%회복되고 보유 경험치의 30%를 잃습니다");
+          userData.exp = Math.floor(userData.exp * 0.7);
+          userData.hp = userData.maxHp;
+          updateUI();
+          saveData();
+          showTab("home");
+          alert("던전에서 사망했습니다. 체력이 100%회복되고 보유 경험치의 30%를 잃습니다");
+        }
+      }, 1000);
     }
 
-    
+
     function exitDungeon() {
+      if (!inDungeon) return;
+      clearInterval(dungeonInterval);
       inDungeon = false;
       document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
-    
-      if (dungeonWorker) {
-        try {
-          dungeonWorker.postMessage({ command: 'stop' });
-          dungeonWorker.terminate();
-        } catch (err) {
-          console.error("💥 워커 종료 실패:", err);
-          log("⚠️ 워커 종료 중 오류: " + err.message);
-        }
-        dungeonWorker = null;
-      }
-    
       log("던전에서 나왔습니다.");
     }
-
 
     function exitBossDungeon() {
       if (!inBossDungeon) return;
@@ -1557,8 +1566,6 @@
     
       document.getElementById('hpStat').textContent = `${userData.hp} / ${userData.maxHp}`;
     }
-
-    
   </script>
 </body>
 </html>
