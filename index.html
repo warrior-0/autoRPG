@@ -1585,8 +1585,6 @@
       const maxHp = (Math.floor(userData.level / 3) + 1) * totalCon * 5 + 100;
       userData.maxHp = maxHp;
       if (userData.hp > maxHp) userData.hp = maxHp;
-    
-      document.getElementById('hpBar').textContent = `${userData.hp} / ${userData.maxHp}`;
     }
   </script>
 </body>
