@@ -198,7 +198,7 @@ app.get('/api/ranking', async (req, res) => {
 
 // 데이터 저장 API (유저 정보 + 채팅 메시지 저장)
 app.post('/api/save', async (req, res) => {
-  const { uid, chatMessages, pvpInfo, userInfo } = req.body;
+  const { uid, chatMessages, pvpInfo, userInfo, equippedItems } = req.body;
 
   if (!uid) {
     return res.status(400).json({ error: 'uid is required' });
@@ -289,6 +289,23 @@ app.post('/api/save', async (req, res) => {
       await Promise.all(chatInsertPromises);
     }
 
+    // 3) 장착 장비 저장
+    if (Array.isArray(equippedItems)) {
+      // 먼저 해당 유저의 모든 장비를 장착 해제
+      await conn.query(
+        'UPDATE user_inventory SET equipped = false WHERE uid = ?',
+        [uid]
+      );
+    
+      // 장착된 장비만 다시 equipped = true로 업데이트
+      for (const item of equippedItems) {
+        await conn.query(
+          'UPDATE user_inventory SET equipped = true WHERE uid = ? AND item_id = ?',
+          [uid, item.item_id]
+        );
+      }
+    }
+    
     await conn.commit();
     res.json({ success: true });
   } catch (err) {
