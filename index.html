@@ -1465,7 +1465,7 @@
       try {
         const token = await firebase.auth().currentUser.getIdToken();
     
-        const res = await fetch('/api/inventory', {
+        const res = await fetch('https://autorpg.onrender.com/api/inventory', {
           headers: { Authorization: `Bearer ${token}` }
         });
     
@@ -1512,7 +1512,7 @@
 
     async function equipItem(itemId) {
       try {
-        const res = await fetch('/api/equip', {
+        const res = await fetch('https://autorpg.onrender.com/api/equip', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ uid: userData.uid, item_id: itemId }),
@@ -1534,7 +1534,7 @@
       try {
         // 서버에 미장착 처리하는 별도 API가 없으면 equip 상태 false로 하는 API 재활용하거나 따로 만들기
         // 여기서는 장착 취소용 API 가정 (POST /api/unequip)
-        const res = await fetch('/api/unequip', {
+        const res = await fetch('https://autorpg.onrender.com/api/unequip', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ uid: userData.uid, item_id: itemId }),
