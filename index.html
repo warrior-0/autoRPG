@@ -1050,7 +1050,7 @@
         userData.uid = uid;
     
         // 여기서 인벤토리도 불러오기
-        const resInv = await fetch(`https://autorpg.onrender.com/api/inventory`, {
+        const resInv = await fetch(`https://autorpg.onrender.com/api/inventory?uid=${uid}`, {
           headers: {
             'Authorization': 'Bearer ' + idToken,
           },
