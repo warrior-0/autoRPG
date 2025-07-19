@@ -1576,9 +1576,9 @@
       totalCon = Math.floor(totalCon);
     
       // UI에 반영 (예: 스탯 표시하는 엘리먼트에 출력)
-      document.getElementById('strStat').textContent = totalStr;
-      document.getElementById('dexStat').textContent = totalDex;
-      document.getElementById('conStat').textContent = totalCon;
+      document.getElementById('Statstr').textContent = totalStr;
+      document.getElementById('Statdex').textContent = totalDex;
+      document.getElementById('Statcon').textContent = totalCon;
     
       // 최대체력 재계산 및 적용
       const maxHp = (Math.floor(userData.level / 3) + 1) * totalCon * 5 + 100;
