@@ -1447,7 +1447,15 @@
       if (!userData || !userData.uid) return;
     
       try {
-        const res = await fetch(`/api/inventory?uid=${encodeURIComponent(userData.uid)}`);
+        // Firebase 토큰 얻기
+        const token = await firebase.auth().currentUser.getIdToken();
+    
+        const res = await fetch('/api/inventory', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          }
+        });
+    
         if (!res.ok) throw new Error('인벤토리 불러오기 실패');
     
         const data = await res.json();
