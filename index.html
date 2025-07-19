@@ -1546,6 +1546,7 @@
         if (res.ok) {
           log(result.message || '아이템 해제 완료');
           await loadInventory();
+          saveData();
         } else {
           alert(result.error || '아이템 해제 실패');
         }
