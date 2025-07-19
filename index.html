@@ -1333,7 +1333,7 @@
     
     const slotNames = {
       weapon: "무기",
-      helmet: "헬멧",
+      helmet: "투구",
       armor: "갑옷",
       shield: "방패",
       boots: "신발"
@@ -1377,7 +1377,6 @@
         if (data.success && data.droppedItem) {
           // 보상 처리 완료
           log(`보스 처치 후 ${data.droppedItem.name} 아이템을 획득했습니다!`);
-          inventory.push(data.droppedItem); // 임시
           renderInventory();
           return true;
         } else {
