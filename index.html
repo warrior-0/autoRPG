@@ -1088,6 +1088,14 @@
       if (!userData) return;
       try {
         const idToken = await firebase.auth().currentUser.getIdToken(true);
+    
+        // 장착된 장비 필터링
+        const equippedItems = (Array.isArray(inventory) ? inventory : []).filter(item => item.equipped).map(item => ({
+          item_id: item.item_id,
+          item_name: item.item_name,
+          item_type: item.item_type,
+        }));
+    
         const res = await fetch('https://autorpg.onrender.com/api/save', {
           method: 'POST',
           headers: {
@@ -1113,9 +1121,11 @@
               dex: userData.dex,
               con: userData.con,
               statPoints: userData.statPoints,
-            }
+            },
+            equippedItems // ✅ 장착된 장비 목록 추가
           }),
         });
+    
         if (!res.ok) throw new Error('저장 실패');
       } catch (error) {
         console.error("저장 실패", error);
