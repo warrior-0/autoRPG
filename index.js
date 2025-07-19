@@ -439,6 +439,27 @@ app.post('/api/boss/defeat', verifyFirebaseToken, async (req, res) => {
   }
 });
 
+// 유저 인벤토리 조회 API (Firebase 인증 필요)
+app.get('/api/inventory', verifyFirebaseToken, async (req, res) => {
+  const uid = req.uid; // Firebase 토큰 검증 후 넣어진 uid
+
+  try {
+    // 유저 인벤토리 조회
+    const [items] = await pool.query(
+      'SELECT * FROM user_inventory WHERE uid = ?',
+      [uid]
+    );
+
+    res.json({
+      success: true,
+      inventory: items
+    });
+  } catch (err) {
+    console.error('/api/inventory error:', err);
+    res.status(500).json({ success: false, error: '인벤토리 조회 실패' });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`서버 ${PORT}번 포트에서 실행 중`);
