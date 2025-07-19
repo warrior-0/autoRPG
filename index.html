@@ -1523,6 +1523,7 @@
         if (res.ok) {
           log(result.message || '아이템 장착 완료');
           await loadInventory(); // 다시 불러와서 UI 갱신 및 스탯 재적용
+          saveData();
         } else {
           alert(result.error || '아이템 장착 실패');
         }
