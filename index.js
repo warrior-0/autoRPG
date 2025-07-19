@@ -383,7 +383,7 @@ app.post('/api/chat/send', async (req, res) => {
 async function getRandomStageItem(stage, conn) {
   // 해당 스테이지에 등록된 아이템 목록 조회
   const [items] = await conn.query(
-    'SELECT i.* FROM items i JOIN stage_items si ON i.id = si.item_id WHERE si.stage = ?',
+    'SELECT i.* FROM items i JOIN stage_items si ON i.item_id = si.item_id WHERE si.stage = ?',
     [stage]
   );
   
