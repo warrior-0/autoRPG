@@ -1329,14 +1329,23 @@
     function renderInventory() {
       const container = document.getElementById("inventoryContainer");
       container.innerHTML = "";
-      userData.inventory.forEach((item, index) => {
-        const div = document.createElement("div");
-        div.className = "item";
-        div.innerText = item.item_name;
-        div.onclick = () => handleItemClick(index);
-        container.appendChild(div);
-      });
+    
+      if (!userData || !Array.isArray(userData.inventory)) {
+        console.error("인벤토리 데이터가 잘못되었습니다.");
+        return;
+      }
+    
+      userData.inventory
+        .filter(item => item && item.item_name) // null/undefined 및 이름 없는 항목 제거
+        .forEach((item, index) => {
+          const div = document.createElement("div");
+          div.className = "item";
+          div.innerText = item.item_name;
+          div.onclick = () => handleItemClick(index);
+          container.appendChild(div);
+        });
     }
+
     
     function renderEquipment() {
       for (let slot in slotNames) {
