@@ -1333,7 +1333,7 @@
       inventory.forEach((item, index) => {
         const div = document.createElement("div");
         div.className = "item";
-        div.innerText = item_name;
+        div.innerText = item.item_name;
         div.onclick = () => handleItemClick(index);
         container.appendChild(div);
       });
