@@ -2,13 +2,13 @@
   "name": "autoRPG",
   "version": "1.0.0",
   "description": "자동사냥 RPG Node.js 서버",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
   },
   "keywords": ["RPG", "nodejs", "mysql", "firebase"],
-  "author": "작성자 이름",
+  "author": "Warrior",
   "license": "ISC",
   "dependencies": {
     "express": "^5.1.0",

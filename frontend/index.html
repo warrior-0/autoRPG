@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:;" />
+  <title>자동사냥 RPG</title>
+  <link rel="stylesheet" href="dist/main.css" integrity="" crossorigin="" />
+</head>
+<body>
+  <header>
+    <h1>자동사냥 RPG</h1>
+    <button id="authBtn" hidden>로그인</button>
+  </header>
+
+  <section id="nav" aria-live="polite" role="region"></section>
+  <section id="stats" aria-live="polite" role="region"></section>
+  <section id="equipment" aria-live="polite" role="region"></section>
+  <section id="inventory" aria-live="polite" role="region"></section>
+  <section id="chat" aria-live="polite" role="region"></section>
+  <script type="module" src="dist/bundle.js" defer></script>
+</body>
+</html>
