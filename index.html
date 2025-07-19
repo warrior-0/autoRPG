@@ -311,7 +311,6 @@
 
   <script>
     let userData = null;
-    let inventory = [];
     let equipped = {
       weapon: null,
       helmet: null,
@@ -1330,7 +1329,7 @@
     function renderInventory() {
       const container = document.getElementById("inventoryContainer");
       container.innerHTML = "";
-      inventory.forEach((item, index) => {
+      userData.inventory.forEach((item, index) => {
         const div = document.createElement("div");
         div.className = "item";
         div.innerText = item.item_name;
@@ -1357,21 +1356,21 @@
     };
         
     function handleItemClick(index) {
-      const item = inventory[index];
+      const item = userData.inventory[index];
       const slot = item.type;
     
       // 이미 장착된 상태면 해제
       if (equipped[slot]?.name === item.name) {
-        inventory.push(equipped[slot]); // 장비를 다시 인벤토리에 추가
+        userData.inventory.push(equipped[slot]); // 장비를 다시 인벤토리에 추가
         equipped[slot] = null;
         alert(`${item.name} 해제됨`);
       } else {
         // 기존 장비 있으면 인벤토리로 되돌림
-        if (equipped[slot]) inventory.push(equipped[slot]);
+        if (equipped[slot]) userData.inventory.push(equipped[slot]);
     
         equipped[slot] = item;
         alert(`${item.name} 장착됨`);
-        inventory.splice(index, 1); // 인벤토리에서 제거
+        userData.inventory.splice(index, 1); // 인벤토리에서 제거
       }
     
       renderInventory();
@@ -1488,12 +1487,12 @@
       const container = document.getElementById('inventoryContainer');
       container.innerHTML = ''; // 초기화
     
-      if (inventory.length === 0) {
+      if (userData.inventory.length === 0) {
         container.innerText = '인벤토리가 비어 있습니다.';
         return;
       }
     
-      inventory.forEach((item) => {
+      userData.inventory.forEach((item) => {
         const div = document.createElement('div');
         div.className = 'item';
         div.textContent = `${item.item_name} [${item.equipped ? '장착됨' : '미장착'}]`;
@@ -1556,7 +1555,7 @@
     function applyFinalStats() {
       if (!userData) return;
     
-      const equippedItems = inventory.filter(item => item.equipped);
+      const equippedItems = userData.inventory.filter(item => item.equipped);
     
       let totalStr = userData.str;
       let totalDex = userData.dex;
