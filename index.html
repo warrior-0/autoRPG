@@ -1034,34 +1034,50 @@
         const idToken = await userCredential.user.getIdToken();
     
         // MySQL API에서 유저 데이터 요청 (Authorization 헤더 포함)
-        const res = await fetch(`https://autorpg.onrender.com/api/userdata?uid=${uid}`, {
+        const resUser = await fetch(`https://autorpg.onrender.com/api/userdata?uid=${uid}`, {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + idToken,
           },
         });
     
-        if (!res.ok) {
-          alert("사용자 데이터를 불러오는 데 실패했습니다. 상태 코드: " + res.status);
+        if (!resUser.ok) {
+          alert("사용자 데이터를 불러오는 데 실패했습니다. 상태 코드: " + resUser.status);
           return;
         }
     
-        userData = await res.json();
-    
+        userData = await resUser.json();
         userData.uid = uid;
     
+        // 여기서 인벤토리도 불러오기
+        const resInv = await fetch(`https://autorpg.onrender.com/api/inventory`, {
+          headers: {
+            'Authorization': 'Bearer ' + idToken,
+          },
+        });
+    
+        if (!resInv.ok) {
+          alert("인벤토리를 불러오는 데 실패했습니다. 상태 코드: " + resInv.status);
+          userData.inventory = [];
+        } else {
+          const dataInv = await resInv.json();
+          userData.inventory = dataInv.inventory || [];
+        }
+    
+        // UI 처리
         document.getElementById("authUI").style.display = "none";
         document.getElementById("gameUI").style.display = "block";
         updateUI();
+        renderInventory();
         document.getElementById("nicknameDisplay").innerText = userData.nickname;
         document.getElementById("bottomStatus").style.display = "flex";
-        updateUI();
         showTab("home");
         log("로그인 성공!");
       } catch (error) {
         alert("로그인 실패: " + error.message);
       }
     }
+
 
 
     async function saveData() {
