@@ -714,7 +714,10 @@
             if (result.success && result.droppedItem) {
               userData.inventory.push(result.droppedItem);
               log(`🎁 보스 전리품 획득: ${result.droppedItem.name}`);
-              document.getElementById('bossFightResult').innerHTML = `🎁 보스 전리품 획득: ${result.droppedItem.name}`;
+
+              saveData();
+              updateUI();
+              renderInventory();
             }
           } catch (error) {
             console.error(error);
@@ -1392,19 +1395,10 @@
         });
     
         const data = await response.json();
-        if (data.success && data.droppedItem) {
-          // 보상 처리 완료
-          log(`보스 처치 후 ${data.droppedItem.name} 아이템을 획득했습니다!`);
-          loadInventory();
-          renderInventory();
-          return true;
-        } else {
-          console.error('보스 처치 보상 지급 실패:', data.error);
-          return false;
-        }
+        return data;
       } catch (err) {
         console.error('서버 통신 실패:', err);
-        return false;
+        return { success: false, error: err.message };
       }
     }
 
