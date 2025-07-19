@@ -1377,6 +1377,7 @@
         if (data.success && data.droppedItem) {
           // 보상 처리 완료
           log(`보스 처치 후 ${data.droppedItem.name} 아이템을 획득했습니다!`);
+          userData.inventory.push(data.droppedItem);
           renderInventory();
           return true;
         } else {
