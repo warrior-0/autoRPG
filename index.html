@@ -1466,7 +1466,7 @@
       try {
         const token = await firebase.auth().currentUser.getIdToken();
     
-        const res = await fetch(`https://autorpg.onrender.com/api/inventory?uid=${uid}`, {
+        const res = await fetch(`https://autorpg.onrender.com/api/inventory?uid=${userData.uid}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
     
