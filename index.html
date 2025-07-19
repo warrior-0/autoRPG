@@ -1474,9 +1474,6 @@
     
         const data = await res.json();
     
-        // 서버에서 inventory 배열을 data.inventory로 받았다고 가정
-        userData.inventory = data.inventory || [];
-    
         renderInventory();
         applyFinalStats();
       } catch (e) {
@@ -1484,6 +1481,7 @@
         log('인벤토리 불러오기에 실패했습니다.');
       }
     }
+    
     function renderInventoryUI() {
       const container = document.getElementById('inventoryContainer');
       container.innerHTML = ''; // 초기화
