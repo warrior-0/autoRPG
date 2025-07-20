@@ -1,1 +1,1 @@
-[autoRPG Homepage](https://warrior-0.github.io/autoRPG)
+[autoRPG Homepage](https://astraloa.mogo.kr/warrior)
