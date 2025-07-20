@@ -1096,34 +1096,40 @@
           item_type: item.item_type,
         }));
     
+        // ✅ 전송할 데이터 미리 변수에 담기
+        const payload = {
+          uid: userData.uid,
+          chatMessages: userData.chatMessages,
+          userInfo: {
+            nickname: userData.nickname,
+            gold: userData.gold,
+            exp: userData.exp,
+            level: userData.level,
+            hp: userData.hp,
+            maxHp: userData.maxHp,
+            potion_small: userData.potion_small || 0,
+            potion_medium: userData.potion_medium || 0,
+            potion_large: userData.potion_large || 0,
+            potion_extralarge: userData.potion_extralarge || 0,
+            potion_quarter: userData.potion_quarter || 0,
+            str: userData.str,
+            dex: userData.dex,
+            con: userData.con,
+            statPoints: userData.statPoints,
+          },
+          equippedItems
+        };
+    
+        // ✅ 실제 전송 전 확인용 로그 출력
+        console.log("📦 saveData() 전송 데이터:", JSON.stringify(payload, null, 2));
+    
         const res = await fetch('https://autorpg.onrender.com/api/save', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + idToken,
           },
-          body: JSON.stringify({
-            uid: userData.uid,
-            chatMessages: userData.chatMessages,
-            userInfo: {
-              nickname: userData.nickname,
-              gold: userData.gold,
-              exp: userData.exp,
-              level: userData.level,
-              hp: userData.hp,
-              maxHp: userData.maxHp,
-              potion_small: userData.potion_small || 0,
-              potion_medium: userData.potion_medium || 0,
-              potion_large: userData.potion_large || 0,
-              potion_extralarge: userData.potion_extralarge || 0,
-              potion_quarter: userData.potion_quarter || 0,
-              str: userData.str,
-              dex: userData.dex,
-              con: userData.con,
-              statPoints: userData.statPoints,
-            },
-            equippedItems // ✅ 장착된 장비 목록 추가
-          }),
+          body: JSON.stringify(payload),
         });
     
         if (!res.ok) throw new Error('저장 실패');
@@ -1131,6 +1137,7 @@
         console.error("저장 실패", error);
       }
     }
+
     
     async function signOut() {
       if (inDungeon) exitDungeon();
