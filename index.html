@@ -1084,36 +1084,29 @@
 
 
 
+    function getEquippedItems() {
+      return inventory.filter(item => item.equipped);
+    }
+    
     function saveData() {
-      if (!userData || !userData.uid) return;
+      const uid = userData?.uid;
+      if (!uid) return;
     
-      // 장착된 아이템만 추출
-      const equippedItems = inventory.filter(item => item.equipped);
-    
-      console.log("📦 saveData() 전송 데이터:", {
-        uid: userData.uid,
+      const payload = {
+        uid,
         userInfo: userData,
-        equippedItems
-      });
+        equippedItems: getEquippedItems(),  // 이 부분에서 getEquippedItems() 호출
+      };
+    
+      console.log("📦 saveData() 전송 데이터: ", payload);
     
       fetch("https://autorpg.onrender.com/api/save", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          uid: userData.uid,
-          userInfo: userData,
-          equippedItems
-        }),
-      }).then(res => res.json())
-        .then(data => {
-          console.log("✅ 저장 결과:", data);
-        })
-        .catch(err => {
-          console.error("❌ 저장 오류:", err);
-        });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
     }
+
 
 
     
@@ -1580,7 +1573,10 @@
       userData.maxHp = maxHp;
       if (userData.hp > maxHp) userData.hp = maxHp;
     }
-    
+
+    function getEquippedItems() {
+      return inventory.filter(item => item.equipped); // 장착된 항목만 추출
+    }
   </script>
 </body>
 </html>
