@@ -1084,59 +1084,37 @@
 
 
 
-    async function saveData() {
-      if (!userData) return;
-      try {
-        const idToken = await firebase.auth().currentUser.getIdToken(true);
+    function saveData() {
+      if (!userData || !userData.uid) return;
     
-        // 장착된 장비 필터링
-        const equippedItems = (Array.isArray(inventory) ? inventory : []).filter(item => item.equipped).map(item => ({
-          item_id: item.item_id,
-          item_name: item.item_name,
-          item_type: item.item_type,
-        }));
+      // 장착된 아이템만 추출
+      const equippedItems = inventory.filter(item => item.equipped);
     
-        // ✅ 전송할 데이터 미리 변수에 담기
-        const payload = {
+      console.log("📦 saveData() 전송 데이터:", {
+        uid: userData.uid,
+        userInfo: userData,
+        equippedItems
+      });
+    
+      fetch("https://autorpg.onrender.com/api/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           uid: userData.uid,
-          chatMessages: userData.chatMessages,
-          userInfo: {
-            nickname: userData.nickname,
-            gold: userData.gold,
-            exp: userData.exp,
-            level: userData.level,
-            hp: userData.hp,
-            maxHp: userData.maxHp,
-            potion_small: userData.potion_small || 0,
-            potion_medium: userData.potion_medium || 0,
-            potion_large: userData.potion_large || 0,
-            potion_extralarge: userData.potion_extralarge || 0,
-            potion_quarter: userData.potion_quarter || 0,
-            str: userData.str,
-            dex: userData.dex,
-            con: userData.con,
-            statPoints: userData.statPoints,
-          },
+          userInfo: userData,
           equippedItems
-        };
-    
-        // ✅ 실제 전송 전 확인용 로그 출력
-        console.log("📦 saveData() 전송 데이터:", JSON.stringify(payload, null, 2));
-    
-        const res = await fetch('https://autorpg.onrender.com/api/save', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + idToken,
-          },
-          body: JSON.stringify(payload),
+        }),
+      }).then(res => res.json())
+        .then(data => {
+          console.log("✅ 저장 결과:", data);
+        })
+        .catch(err => {
+          console.error("❌ 저장 오류:", err);
         });
-    
-        if (!res.ok) throw new Error('저장 실패');
-      } catch (error) {
-        console.error("저장 실패", error);
-      }
     }
+
 
     
     async function signOut() {
