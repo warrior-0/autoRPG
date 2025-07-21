@@ -427,17 +427,20 @@
     }
 
     function resetStat() {
-        let stats = userData.con + userData.str + userData.dex;
-        let stats2 = userData.level * 3;
-        if(stats > 0) {
-            userData.con = 0;
-            userData.str = 0;
-            userData.dex = 0;
-            let addstats = (stats > stats2 ? stats : stats2) - userData.statPoints;
-            userData.statPoints += addstats;
-            updateUI();
-            saveData();
-        }
+      let stats = userData.str + userData.con + userData.dex;
+      let expectedStats = userData.level * 3;
+      if (stats > 0) {
+        userData.str = 0;
+        userData.con = 0;
+        userData.dex = 0;
+        let recoveredPoints = Math.max(stats, expectedStats) - userData.statPoints;
+        userData.statPoints += recoveredPoints;
+    
+        // 능력치 재계산
+        calculateTotalStats();
+        updateUI();
+        saveData();
+      }
     }
 
     function addStat(type) {
@@ -448,23 +451,22 @@
         alert("증가시킬 스탯을 1 이상 올바르게 입력해주세요.");
         return;
       }
-      
+    
       if (userData.statPoints < count) {
-        alert(`보유한 스탯포인트가 ${count}보다 적습니다`)
+        alert(`보유한 스탯포인트가 ${count}보다 적습니다`);
         return;
       }
-
+    
       userData[type] += count;
       userData.statPoints -= count;
     
-      // 📌 스탯 변화에 따른 능력치 갱신
-      userData.maxHp = (Math.floor(userData.level / 3) + 1) * userData.con * 5 + 100;
-      userData.hp = Math.min(userData.hp, userData.maxHp);  // 현재 체력이 최대 체력을 넘지 않도록
-    
+      // ✅ 능력치 및 체력 계산을 갱신
+      calculateTotalStats();
       log(`${type.toUpperCase()} 스탯이 ${count} 증가했습니다.`);
       updateUI();
       saveData();
     }
+
     
     function checkLevelUp() {
       while (userData.exp >= userData.level * 100) {
