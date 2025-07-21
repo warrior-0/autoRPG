@@ -1083,33 +1083,51 @@
     }
 
 
-
     function getEquippedItems() {
-      return Object.values(equipped).filter(item => item); // null 제외
+      return Object.values(equipped).filter(item => item != null);
     }
     
-    function saveData() {
+    async function saveData() {
       const equippedItems = getEquippedItems();
     
-      fetch('/api/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          uid: userData.uid,
-          userInfo: userData,
-          equippedItems: equippedItems,
-        }),
-      });
+      try {
+        // 1) 기본 유저 정보 저장
+        const res1 = await fetch('/api/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            uid: userData.uid,
+            userInfo: userData,
+            equippedItems: [], // /api/save에는 빈 배열 또는 빼도 무방
+          }),
+        });
+        if (!res1.ok) {
+          const errData = await res1.json();
+          console.error('/api/save 오류:', errData.error || res1.statusText);
+          return;
+        }
     
-      console.log("📦 saveData() 전송 데이터:", {
-        uid: userData.uid,
-        userInfo: userData,
-        equippedItems,
-      });
+        // 2) 장착 아이템 정보 별도 저장
+        const res2 = await fetch('/api/save-equipped', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            uid: userData.uid,
+            equippedItems,
+          }),
+        });
+        if (!res2.ok) {
+          const errData = await res2.json();
+          console.error('/api/save-equipped 오류:', errData.error || res2.statusText);
+          return;
+        }
+    
+        console.log('saveData: 유저 정보 및 장착 아이템 모두 저장 완료');
+    
+      } catch (err) {
+        console.error('saveData 요청 실패:', err);
+      }
     }
-
-
-
     
     async function signOut() {
       if (inDungeon) exitDungeon();
