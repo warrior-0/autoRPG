@@ -1522,11 +1522,22 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ uid: userData.uid, item_id: itemId }),
         });
+    
         const result = await res.json();
+    
         if (res.ok) {
           log(result.message || '아이템 장착 완료');
-          await loadInventory(); // 다시 불러와서 UI 갱신 및 스탯 재적용
+    
+          // 서버에서 장착된 아이템 정보를 응답했을 경우
+          if (result.equippedItems) {
+            applyEquippedItems(result.equippedItems); // 직접 equipped: true 반영
+          } else {
+            await loadInventory(); // 아니면 전체 인벤토리를 다시 불러옴
+          }
+    
+          updateUI(); // 스탯 및 화면 갱신
           saveData();
+    
         } else {
           alert(result.error || '아이템 장착 실패');
         }
@@ -1536,28 +1547,54 @@
       }
     }
 
+
+    function applyEquippedItems(equippedItems) {
+      // inventory 배열 내 아이템에 equipped = true 적용
+      inventory.forEach(item => {
+        item.equipped = false; // 기존 장착 해제
+      });
+    
+      equippedItems.forEach(equippedItem => {
+        const invItem = inventory.find(i => i.id === equippedItem.id);
+        if (invItem) {
+          invItem.equipped = true;
+        }
+      });
+    }
+
     async function unequipItem(itemId) {
       try {
-        // 서버에 미장착 처리하는 별도 API가 없으면 equip 상태 false로 하는 API 재활용하거나 따로 만들기
-        // 여기서는 장착 취소용 API 가정 (POST /api/unequip)
         const res = await fetch('https://autorpg.onrender.com/api/unequip', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ uid: userData.uid, item_id: itemId }),
         });
+    
         const result = await res.json();
+    
         if (res.ok) {
           log(result.message || '아이템 해제 완료');
-          await loadInventory();
-          saveData();
+    
+          // 서버가 해제된 장비 목록을 응답하는 경우
+          if (result.equippedItems) {
+            applyEquippedItems(result.equippedItems); // equipped 상태 반영
+          } else {
+            await loadInventory(); // 아니면 전체 인벤토리를 다시 불러옴
+          }
+    
+          updateUI();  // UI/스탯 갱신
+          saveData();  // 서버 저장
+    
         } else {
           alert(result.error || '아이템 해제 실패');
         }
+    
       } catch (e) {
         console.error(e);
         alert('서버 오류로 아이템 해제에 실패했습니다.');
       }
     }
+
 
     function applyFinalStats() {
       if (!userData) return;
