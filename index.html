@@ -1085,7 +1085,7 @@
 
 
     function getEquippedItems() {
-      return inventory.filter(item => item.equipped);
+      return Object.values(equipped).filter(item => item); // null 제외
     }
     
     function saveData() {
