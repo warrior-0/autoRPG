@@ -357,9 +357,9 @@
       document.getElementById("goldShop").innerText = userData.gold;
       document.getElementById("goldDisplay").innerText = ` 골드: ${userData.gold}`;
       document.getElementById("statPointDisplay").innerText = userData.statPoints;
-      document.getElementById("str").innerText = `${userData.str} (+${userData.totalStr - userData.str})`;
-      document.getElementById("con").innerText = `${userData.con} (+${userData.totalCon - userData.con})`;
-      document.getElementById("dex").innerText = `${userData.dex} (+${userData.totalDex - userData.dex})`;
+      document.getElementById("statStr").innerText = `${userData.str} (+${userData.totalStr - userData.str})`;
+      document.getElementById("statCon").innerText = `${userData.con} (+${userData.totalCon - userData.con})`;
+      document.getElementById("statDex").innerText = `${userData.dex} (+${userData.totalDex - userData.dex})`;
 
 
       const hpPercent = (userData.hp / userData.maxHp) * 100;
@@ -1701,9 +1701,9 @@
       totalDex = Math.floor(totalDex);
       totalCon = Math.floor(totalCon);
     
-      document.getElementById("str").innerText = `${userData.str} (+${userData.totalStr - userData.str})`;
-      document.getElementById("con").innerText = `${userData.con} (+${userData.totalCon - userData.con})`;
-      document.getElementById("dex").innerText = `${userData.dex} (+${userData.totalDex - userData.dex})`;
+      document.getElementById("statStr").innerText = `${userData.str} (+${userData.totalStr - userData.str})`;
+      document.getElementById("statCon").innerText = `${userData.con} (+${userData.totalCon - userData.con})`;
+      document.getElementById("statDex").innerText = `${userData.dex} (+${userData.totalDex - userData.dex})`;
 
       const maxHp = (Math.floor(userData.level / 3) + 1) * totalCon * 5 + 100;
       userData.maxHp = maxHp;
