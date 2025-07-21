@@ -1089,21 +1089,22 @@
     }
     
     function saveData() {
-      const uid = userData?.uid;
-      if (!uid) return;
+      const equippedItems = getEquippedItems();
     
-      const payload = {
-        uid,
+      fetch('/api/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uid: userData.uid,
+          userInfo: userData,
+          equippedItems: equippedItems,
+        }),
+      });
+    
+      console.log("📦 saveData() 전송 데이터:", {
+        uid: userData.uid,
         userInfo: userData,
-        equippedItems: getEquippedItems(),  // 이 부분에서 getEquippedItems() 호출
-      };
-    
-      console.log("📦 saveData() 전송 데이터: ", payload);
-    
-      fetch("https://autorpg.onrender.com/api/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        equippedItems,
       });
     }
 
