@@ -1484,7 +1484,7 @@
       let bonusAdd = { str: 0, dex: 0, con: 0 };
       let bonusMul = { str: 1, dex: 1, con: 1 };
     
-      const equippedItems = inventory.filter(item => item.equipped);
+      const equippedItems = userData.inventory.filter(item => item.equipped);
     
       equippedItems.forEach(item => {
         bonusAdd.str += item.str_bonus || 0;
