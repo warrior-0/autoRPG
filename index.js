@@ -479,6 +479,41 @@ app.get('/api/inventory', verifyFirebaseToken, async (req, res) => {
   }
 });
 
+app.post('/api/save-equipped', async (req, res) => {
+  const { uid, equippedItems } = req.body;
+
+  if (!uid) return res.status(400).json({ error: 'uid is required' });
+  if (!Array.isArray(equippedItems)) return res.status(400).json({ error: 'equippedItems must be an array' });
+
+  const conn = await pool.getConnection();
+
+  try {
+    await conn.beginTransaction();
+
+    // 1) 유저의 모든 장비 장착 해제
+    await conn.query('UPDATE user_inventory SET equipped = false WHERE uid = ?', [uid]);
+
+    // 2) 전달받은 장착 아이템만 equipped = true 처리
+    for (const item of equippedItems) {
+      if (item.id) {
+        await conn.query(
+          'UPDATE user_inventory SET equipped = true WHERE uid = ? AND id = ?',
+          [uid, item.id]
+        );
+      }
+    }
+
+    await conn.commit();
+    res.json({ success: true });
+  } catch (error) {
+    await conn.rollback();
+    console.error('Error updating equipped items:', error);
+    res.status(500).json({ error: error.message });
+  } finally {
+    conn.release();
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`서버 ${PORT}번 포트에서 실행 중`);
