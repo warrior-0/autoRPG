@@ -1092,7 +1092,7 @@
     
       try {
         // 1) 기본 유저 정보 저장
-        const res1 = await fetch('/api/save', {
+        const res1 = await fetch('https://autorpg.onrender.com/api/save', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1108,7 +1108,7 @@
         }
     
         // 2) 장착 아이템 정보 별도 저장
-        const res2 = await fetch('/api/save-equipped', {
+        const res2 = await fetch('https://autorpg.onrender.com/api/save-equipped', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
