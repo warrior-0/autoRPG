@@ -467,6 +467,37 @@
       saveData();
     }
 
+    function calculateTotalStats() {
+      const equipmentBonuses = {
+        str: 0,
+        con: 0,
+        dex: 0,
+        str_multiplier: 1,
+        con_multiplier: 1,
+        dex_multiplier: 1
+      };
+    
+      for (let slot in equipped) {
+        const item = equipped[slot];
+        if (item) {
+          equipmentBonuses.str += item.str_bonus || 0;
+          equipmentBonuses.con += item.con_bonus || 0;
+          equipmentBonuses.dex += item.dex_bonus || 0;
+          equipmentBonuses.str_multiplier *= item.str_multiplier || 1;
+          equipmentBonuses.con_multiplier *= item.con_multiplier || 1;
+          equipmentBonuses.dex_multiplier *= item.dex_multiplier || 1;
+        }
+      }
+    
+      // 최종 스탯 계산
+      userData.totalStr = Math.floor((userData.str + equipmentBonuses.str) * equipmentBonuses.str_multiplier);
+      userData.totalCon = Math.floor((userData.con + equipmentBonuses.con) * equipmentBonuses.con_multiplier);
+      userData.totalDex = Math.floor((userData.dex + equipmentBonuses.dex) * equipmentBonuses.dex_multiplier);
+    
+      // 체력도 con 기반으로 재계산
+      userData.maxHp = (Math.floor(userData.level / 3) + 1) * userData.totalCon * 5 + 100;
+      userData.hp = Math.min(userData.hp, userData.maxHp); // 현재 체력 조정
+    }
     
     function checkLevelUp() {
       while (userData.exp >= userData.level * 100) {
