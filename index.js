@@ -198,18 +198,15 @@ app.get('/api/ranking', async (req, res) => {
 
 // 데이터 저장 API (유저 정보 + 채팅 메시지 저장)
 app.post('/api/save', async (req, res) => {
-  const { uid, chatMessages, pvpInfo, userInfo, equippedItems } = req.body;
+  const { uid, chatMessages, userInfo, equippedItems } = req.body;
 
-  if (!uid) {
-    return res.status(400).json({ error: 'uid is required' });
-  }
+  if (!uid) return res.status(400).json({ error: 'uid is required' });
 
   const conn = await pool.getConnection();
 
   try {
     await conn.beginTransaction();
 
-    // 1) 유저 정보 저장
     if (userInfo) {
       const {
         nickname,
@@ -271,51 +268,41 @@ app.post('/api/save', async (req, res) => {
       ]);
     }
 
-    // 2) 채팅 메시지 저장
     if (Array.isArray(chatMessages) && chatMessages.length > 0) {
       const chatInsertPromises = chatMessages.map(
-        ({ message, createdAt, nickname }) => {
-          return conn.query(
+        ({ message, createdAt, nickname }) =>
+          conn.query(
             'INSERT INTO chat_messages (uid, nickname, message, created_at) VALUES (?, ?, ?, ?)',
-            [
-              uid,
-              nickname || '',
-              message,
-              createdAt ? new Date(createdAt) : new Date(),
-            ]
-          );
-        }
+            [uid, nickname || '', message, createdAt ? new Date(createdAt) : new Date()]
+          )
       );
       await Promise.all(chatInsertPromises);
     }
 
-    // 3) 장착 장비 저장
     if (Array.isArray(equippedItems)) {
-      // 먼저 해당 유저의 모든 장비를 장착 해제
-      await conn.query(
-        'UPDATE user_inventory SET equipped = false WHERE uid = ?',
-        [uid]
-      );
-    
-      // 장착된 장비만 다시 equipped = true로 업데이트
+      await conn.query('UPDATE user_inventory SET equipped = false WHERE uid = ?', [uid]);
+
       for (const item of equippedItems) {
-        await conn.query(
-          'UPDATE user_inventory SET equipped = true WHERE uid = ? AND item_id = ?',
-          [uid, item.item_id]
-        );
+        if (item.id) {
+          await conn.query(
+            'UPDATE user_inventory SET equipped = true WHERE uid = ? AND id = ?',
+            [uid, item.id]
+          );
+        }
       }
     }
-    
+
     await conn.commit();
     res.json({ success: true });
-  } catch (err) {
+  } catch (error) {
     await conn.rollback();
-    console.error('/api/save error:', err);
-    res.status(500).json({ success: false, error: err.message });
+    console.error(error);
+    res.status(500).json({ error: error.message });
   } finally {
     conn.release();
   }
 });
+
 
 // 채팅 메시지 목록 조회 API
 app.get('/api/chat/list', async (req, res) => {
