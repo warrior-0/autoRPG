@@ -1340,14 +1340,22 @@
     function renderInventory() {
       const container = document.getElementById("inventoryContainer");
       container.innerHTML = "";
+    
+      if (!userData.inventory || userData.inventory.length === 0) {
+        container.innerText = '인벤토리가 비어 있습니다.';
+        return;
+      }
+    
       userData.inventory.forEach((item, index) => {
         const div = document.createElement("div");
         div.className = "item";
-        div.innerText = item.item_name;
+        div.innerText = `${item.item_name} [${item.equipped ? '장착됨' : '미장착'}]`;
+        div.style.cursor = "pointer";
         div.onclick = () => handleItemClick(index);
         container.appendChild(div);
       });
     }
+
 
     
     function renderEquipment() {
@@ -1371,18 +1379,23 @@
       const item = userData.inventory[index];
       const slot = item.item_type;
     
-      // 이미 장착된 상태면 해제
-      if (equipped[slot]?.name === item.item_name) {
-        userData.inventory.push(equipped[slot]); // 장비를 다시 인벤토리에 추가
+      if (equipped[slot]?.item_name === item.item_name) {
+        // 해제
+        userData.inventory.push(equipped[slot]);
         equipped[slot] = null;
+        item.equipped = false;
         alert(`${item.item_name} 해제됨`);
       } else {
-        // 기존 장비 있으면 인벤토리로 되돌림
-        if (equipped[slot]) userData.inventory.push(equipped[slot]);
+        // 장착
+        if (equipped[slot]) {
+          equipped[slot].equipped = false;
+          userData.inventory.push(equipped[slot]);
+        }
     
         equipped[slot] = item;
+        item.equipped = true;
+        userData.inventory.splice(index, 1);
         alert(`${item.item_name} 장착됨`);
-        userData.inventory.splice(index, 1); // 인벤토리에서 제거
       }
     
       renderInventory();
@@ -1477,8 +1490,8 @@
         if (!res.ok) throw new Error('인벤토리 불러오기 실패');
     
         const data = await res.json();
-
-        inventory = data.inventory || [];
+    
+        userData.inventory = data.inventory || [];
     
         renderInventory();
         applyFinalStats();
@@ -1528,14 +1541,13 @@
         if (res.ok) {
           log(result.message || '아이템 장착 완료');
     
-          // 서버에서 장착된 아이템 정보를 응답했을 경우
           if (result.equippedItems) {
-            applyEquippedItems(result.equippedItems); // 직접 equipped: true 반영
+            applyEquippedItems(result.equippedItems);
           } else {
-            await loadInventory(); // 아니면 전체 인벤토리를 다시 불러옴
+            await loadInventory();
           }
     
-          updateUI(); // 스탯 및 화면 갱신
+          updateUI();
           saveData();
     
         } else {
@@ -1549,19 +1561,23 @@
 
 
     function applyEquippedItems(equippedItems) {
-      // inventory 배열 내 아이템에 equipped = true 적용
-      inventory.forEach(item => {
-        item.equipped = false; // 기존 장착 해제
+      if (!userData || !userData.inventory) return;
+    
+      // 우선 모두 미장착 처리
+      userData.inventory.forEach(item => {
+        item.equipped = false;
       });
     
+      // 서버에서 받은 equippedItems 배열을 기준으로 장착 표시
       equippedItems.forEach(equippedItem => {
-        const invItem = inventory.find(i => i.id === equippedItem.id);
+        // 서버에서 id가 아닌 item_id일 수 있으니 맞춰서 변경하세요
+        const invItem = userData.inventory.find(i => i.item_id === equippedItem.item_id);
         if (invItem) {
           invItem.equipped = true;
         }
       });
     }
-
+    
     async function unequipItem(itemId) {
       try {
         const res = await fetch('https://autorpg.onrender.com/api/unequip', {
@@ -1599,7 +1615,7 @@
     function applyFinalStats() {
       if (!userData) return;
     
-      const equippedItems = userData.inventory.filter(item => item.equipped);
+      const equippedItems = getEquippedItems();
     
       let totalStr = userData.str;
       let totalDex = userData.dex;
@@ -1619,19 +1635,13 @@
       totalDex = Math.floor(totalDex);
       totalCon = Math.floor(totalCon);
     
-      // UI에 반영 (예: 스탯 표시하는 엘리먼트에 출력)
       document.getElementById('statStr').textContent = totalStr;
       document.getElementById('statDex').textContent = totalDex;
       document.getElementById('statCon').textContent = totalCon;
     
-      // 최대체력 재계산 및 적용
       const maxHp = (Math.floor(userData.level / 3) + 1) * totalCon * 5 + 100;
       userData.maxHp = maxHp;
       if (userData.hp > maxHp) userData.hp = maxHp;
-    }
-
-    function getEquippedItems() {
-      return inventory.filter(item => item.equipped); // 장착된 항목만 추출
     }
 
 
