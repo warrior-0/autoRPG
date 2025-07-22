@@ -1713,7 +1713,7 @@
       if (worker) worker.terminate();
   
       worker = new Worker("worker.js");
-  
+      document.getElementById("dungeonToggleBtn").innerText = "던전 나가기";
       worker.postMessage({
         type: "start",
         data: {
@@ -1731,6 +1731,7 @@
           updateUI();
         }
         if (type === "dead") {
+          document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
           userData = updatedData;
           updateUI();
           saveData();
@@ -1742,6 +1743,7 @@
   
     function stopDungeonWorker() {
       if (worker) {
+        document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
         worker.postMessage({ type: "stop" });
         worker.terminate();
         worker = null;
