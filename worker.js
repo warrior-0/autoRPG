@@ -78,8 +78,8 @@ function autoUsePotion() {
 }
 
 function checkLevelUp() {
-  const expToLevel = userData.level * 100;
-  while (userData.exp >= expToLevel) {
+  while (userData.exp >= userData.level * 100) {
+    const expToLevel = userData.level * 100;
     userData.exp -= expToLevel;
     userData.level++;
     userData.statPoints += 3;
