@@ -15,6 +15,44 @@ onmessage = function (e) {
   }
 };
 
+function autoUsePotion() {
+  const missingHp = userData.maxHp - userData.hp;
+  if (missingHp <= 0) return;
+
+  if (userData.potion_quarter > 0 && missingHp >= 100000 + userData.maxHp * 0.50) {
+    userData.potion_quarter--;
+    const heal = Math.floor(100000 + userData.maxHp * 0.50);
+    userData.hp += heal;
+    postMessage({ type: "log", message: `슈퍼 물약 사용! 체력 ${heal} 회복` });
+
+  } else if (userData.potion_extralarge > 0 && missingHp >= 10000 + userData.maxHp * 0.15) {
+    userData.potion_extralarge--;
+    const heal = Math.floor(10000 + userData.maxHp * 0.15);
+    userData.hp += heal;
+    postMessage({ type: "log", message: `초대형 물약 사용! 체력 ${heal} 회복` });
+
+  } else if (userData.potion_large > 0 && missingHp >= 1000 + userData.maxHp * 0.07) {
+    userData.potion_large--;
+    const heal = Math.floor(1000 + userData.maxHp * 0.07);
+    userData.hp += heal;
+    postMessage({ type: "log", message: `대형 물약 사용! 체력 ${heal} 회복` });
+
+  } else if (userData.potion_medium > 0 && missingHp >= 100 + userData.maxHp * 0.03) {
+    userData.potion_medium--;
+    const heal = Math.floor(100 + userData.maxHp * 0.03);
+    userData.hp += heal;
+    postMessage({ type: "log", message: `중형 물약 사용! 체력 ${heal} 회복` });
+
+  } else if (userData.potion_small > 0 && missingHp >= 10 + userData.maxHp * 0.01) {
+    userData.potion_small--;
+    const heal = Math.floor(10 + userData.maxHp * 0.01);
+    userData.hp += heal;
+    postMessage({ type: "log", message: `소형 물약 사용! 체력 ${heal} 회복` });
+  }
+
+  userData.hp = Math.min(userData.hp, userData.maxHp);
+}
+
 function checkLevelUp() {
   const expToLevel = userData.level * 100;
   while (userData.exp >= expToLevel) {
