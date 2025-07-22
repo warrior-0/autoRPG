@@ -7,8 +7,9 @@ self.onmessage = function (event) {
   const { type, userData: newUserData, stage: newStage } = event.data;
 
   if (type === 'start') {
-    // 사냥 시작
-    startAutoBattle();
+    if (!currentStage) currentStage = 1;
+    setupMonster();
+    startBattleLoop();
   } else if (type === 'stop') {
     stopAutoBattle();
   } else if (type === 'updateUserData') {
@@ -19,6 +20,14 @@ self.onmessage = function (event) {
     setupMonster();
   }
 };
+
+function stopAutoBattle() {
+  if (intervalId) {
+    clearInterval(intervalId);
+    intervalId = null;
+  }
+}
+
 
 function autoUsePotion() {
   const missingHp = userData.maxHp - userData.hp;
