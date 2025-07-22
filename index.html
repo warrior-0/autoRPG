@@ -202,7 +202,7 @@
         <button id="stageNext">➡</button>
         <button id="stageJumpNext">⏩ +10</button>
       </div>
-      <button onclick="enterDungeon()" id="dungeonToggleBtn">던전 입장</button>
+      <button onclick="toggleDungeon()" id="dungeonToggleBtn">던전 입장</button>
     </div>
 
     <div id="bossTab" style="display:none; padding:10px;">
@@ -1709,46 +1709,60 @@
 
     let worker;
 
-    function startDungeonWorker() {
-      if (worker) worker.terminate();
-  
-      worker = new Worker("worker.js");
-      document.getElementById("dungeonToggleBtn").innerText = "던전 나가기";
-      worker.postMessage({
-        type: "start",
-        data: {
-          userData: userData,
-          currentStage: currentStage
-        }
-      });
-  
-      worker.onmessage = function (e) {
-        const { type, message, userData: updatedData } = e.data;
-  
-        if (type === "log") log(message);
-        if (type === "update") {
-          userData = updatedData;
-          updateUI();
-        }
-        if (type === "dead") {
+    function toggleDungeon() {
+        if (!inDungeon) {
+          startDungeonWorker();
+          document.getElementById("dungeonToggleBtn").innerText = "던전 나가기";
+          inDungeon = true;
+        } else {
+          stopDungeonWorker();
           document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
-          userData = updatedData;
-          updateUI();
-          saveData();
-          showTab("home");
-          alert("던전에서 사망했습니다. 체력이 100%회복되고 보유 경험치의 30%를 잃습니다");
+          inDungeon = false;
         }
-      };
-    }
-  
-    function stopDungeonWorker() {
-      if (worker) {
-        document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
-        worker.postMessage({ type: "stop" });
-        worker.terminate();
-        worker = null;
       }
-    }
+    
+      function startDungeonWorker() {
+        if (worker) worker.terminate();
+    
+        worker = new Worker("worker.js");
+    
+        worker.postMessage({
+          type: "start",
+          data: {
+            userData: userData,
+            currentStage: currentStage
+          }
+        });
+    
+        worker.onmessage = function (e) {
+          const { type, message, userData: updatedData } = e.data;
+    
+          if (type === "log") log(message);
+          if (type === "update") {
+            userData = updatedData;
+            updateUI();
+          }
+          if (type === "dead") {
+            userData = updatedData;
+            updateUI();
+            saveData();
+            showTab("home");
+            alert("던전에서 사망했습니다. 체력이 100%회복되고 보유 경험치의 30%를 잃습니다");
+    
+            // 죽었을 때 던전 종료 처리
+            document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
+            inDungeon = false;
+          }
+        };
+      }
+    
+      function stopDungeonWorker() {
+        if (worker) {
+          worker.postMessage({ type: "stop" });
+          worker.terminate();
+          worker = null;
+        }
+      }
   </script>
 </body>
 </html>
