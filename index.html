@@ -439,6 +439,9 @@
     
         // 능력치 재계산
         calculateTotalStats();
+        if (dungeonWorker) {
+          dungeonWorker.postMessage({ type: 'updateUserData', userData });
+        }
         updateUI();
         saveData();
       }
@@ -464,6 +467,9 @@
       // ✅ 능력치 및 체력 계산을 갱신
       calculateTotalStats();
       log(`${type.toUpperCase()} 스탯이 ${count} 증가했습니다.`);
+      if (dungeonWorker) {
+          dungeonWorker.postMessage({ type: 'updateUserData', userData });
+      }
       updateUI();
       saveData();
     }
@@ -1183,6 +1189,7 @@
       }
       currentStage = count;
       updateStageDisplay();
+      changeStage(currentStage);
     }
     
     // 버튼 눌렀을 때 실행 설정 함수
@@ -1196,6 +1203,7 @@
       if (currentStage > 1) {
         currentStage--;
         updateStageDisplay();
+        changeStage(currentStage);
       }
     });
     
@@ -1204,6 +1212,7 @@
       if (currentStage < maxStage) {
         currentStage++;
         updateStageDisplay();
+        changeStage(currentStage);
       }
     });
     
@@ -1215,12 +1224,14 @@
         currentStage = 1;
       }
       updateStageDisplay();
+      changeStage(currentStage);
     });
 
     setupHoldButton("stageJumpNext", () => {
       if (currentStage < maxStage) {
         currentStage += 10;
         updateStageDisplay();
+        changeStage(currentStage);
       }
     });
 
@@ -1761,6 +1772,13 @@
           worker.postMessage({ type: "stop" });
           worker.terminate();
           worker = null;
+        }
+      }
+    
+      function changeStage(newStage) {
+        currentStage = newStage;
+        if (dungeonWorker) {
+          dungeonWorker.postMessage({ type: 'updateStage', stage: newStage });
         }
       }
   </script>
