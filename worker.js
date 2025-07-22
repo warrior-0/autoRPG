@@ -88,9 +88,13 @@ function startBattleLoop() {
       userData.exp += reward * 10;
 
       postMessage({ type: "log", message: `몬스터 처치 보상 획득! 골드: ${reward * 20} 경험치: ${reward * 10}` });
+      
+      checkLevelUp();
 
       setupMonster(); // 다음 몬스터 재생성
     }
+    
+    autoUsePotion();
 
     // 유저 사망
     if (userData.hp <= 0) {
