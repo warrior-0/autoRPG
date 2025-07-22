@@ -1707,8 +1707,46 @@
       if (userData.hp > maxHp) userData.hp = maxHp;
     }
 
+    let worker;
 
-    
+    function startDungeonWorker() {
+      if (worker) worker.terminate();
+  
+      worker = new Worker("worker.js");
+  
+      worker.postMessage({
+        type: "start",
+        data: {
+          userData: userData,
+          currentStage: currentStage
+        }
+      });
+  
+      worker.onmessage = function (e) {
+        const { type, message, userData: updatedData } = e.data;
+  
+        if (type === "log") log(message);
+        if (type === "update") {
+          userData = updatedData;
+          updateUI();
+        }
+        if (type === "dead") {
+          userData = updatedData;
+          updateUI();
+          saveData();
+          showTab("home");
+          alert("던전에서 사망했습니다. 체력이 100%회복되고 보유 경험치의 30%를 잃습니다");
+        }
+      };
+    }
+  
+    function stopDungeonWorker() {
+      if (worker) {
+        worker.postMessage({ type: "stop" });
+        worker.terminate();
+        worker = null;
+      }
+    }
   </script>
 </body>
 </html>
