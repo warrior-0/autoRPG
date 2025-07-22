@@ -3,15 +3,20 @@ let monsterHp, monsterCrit, monsterHit, monsterDef, monsterAtk, reward;
 let evasionRatePlayer, monsterEvasion, evasionRateMonster;
 let intervalId;
 
-onmessage = function (e) {
-  const { type, data } = e.data;
-  if (type === "start") {
-    userData = data.userData;
-    currentStage = data.currentStage;
+self.onmessage = function (event) {
+  const { type, userData: newUserData, stage: newStage } = event.data;
+
+  if (type === 'start') {
+    // 사냥 시작
+    startAutoBattle();
+  } else if (type === 'stop') {
+    stopAutoBattle();
+  } else if (type === 'updateUserData') {
+    userData = newUserData;
     setupMonster();
-    startBattleLoop();
-  } else if (type === "stop") {
-    clearInterval(intervalId);
+  } else if (type === 'updateStage') {
+    currentStage = newStage;
+    setupMonster();
   }
 };
 
