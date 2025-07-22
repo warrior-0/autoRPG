@@ -327,6 +327,8 @@
     let currentBossStage = 1;
     const maxBossStage = 1;
     const maxStage = 10000000;
+    let worker;
+    let dungeonWorker;
 
     function log(msg) {
       const logDiv = document.getElementById("log");
@@ -1717,8 +1719,6 @@
       userData.maxHp = maxHp;
       if (userData.hp > maxHp) userData.hp = maxHp;
     }
-
-    let worker;
 
     function toggleDungeon() {
         if (!inDungeon) {
