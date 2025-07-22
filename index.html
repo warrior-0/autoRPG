@@ -955,6 +955,7 @@
       if ((name === "home" || name === "shop" || name === "boss" || name === "donate" || name === "ranking" || name === "arena" || name === "inventory") && (inDungeon || inBossDungeon)) {
         exitDungeon();
         exitBossDungeon();
+        stopDungeonWorker();
       }
     
       document.getElementById("homeTab").style.display = name === "home" ? "block" : "none";
