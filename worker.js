@@ -15,6 +15,19 @@ onmessage = function (e) {
   }
 };
 
+function checkLevelUp() {
+  const expToLevel = userData.level * 100;
+  while (userData.exp >= expToLevel) {
+    userData.exp -= expToLevel;
+    userData.level++;
+    userData.statPoints += 3;
+    postMessage({
+      type: "log",
+      message: `레벨업! 현재 레벨: ${userData.level}, 스탯 포인트 +3`
+    });
+  }
+}
+
 function setupMonster() {
   reward = currentStage;
   monsterHp = Math.floor((currentStage / 7 + 1) * currentStage * 2);
