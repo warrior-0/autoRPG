@@ -1739,10 +1739,8 @@
     
         worker.postMessage({
           type: "start",
-          data: {
-            userData: userData,
-            currentStage: currentStage
-          }
+          userData: userData,
+          stage: currentStage
         });
     
         worker.onmessage = function (e) {
