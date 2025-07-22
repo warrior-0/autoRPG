@@ -83,6 +83,7 @@ function checkLevelUp() {
     userData.exp -= expToLevel;
     userData.level++;
     userData.statPoints += 3;
+    userData.hp = userData.maxHp;
     postMessage({
       type: "log",
       message: `레벨업! 현재 레벨: ${userData.level}, 스탯 포인트 +3`
