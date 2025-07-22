@@ -7,14 +7,24 @@ self.onmessage = function (event) {
   const { type, userData: newUserData, stage: newStage } = event.data;
 
   if (type === 'start') {
-    if (!currentStage) currentStage = 1;
+    if (newUserData) userData = newUserData;
+    if (newStage) currentStage = newStage;
+
+    if (!userData || !currentStage) {
+      postMessage({ type: 'log', message: 'userData 또는 currentStage가 없습니다. 전투를 시작할 수 없습니다.' });
+      return;
+    }
+
     setupMonster();
     startBattleLoop();
+
   } else if (type === 'stop') {
     stopAutoBattle();
+
   } else if (type === 'updateUserData') {
     userData = newUserData;
     setupMonster();
+
   } else if (type === 'updateStage') {
     currentStage = newStage;
     setupMonster();
