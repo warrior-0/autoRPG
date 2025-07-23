@@ -1490,42 +1490,6 @@
       return { bonusAdd, bonusMul };
     }
     
-    function getFinalStats(userData, equipped) {
-      const baseStr = userData.str || 0;
-      const baseDex = userData.dex || 0;
-      const baseCon = userData.con || 0;
-    
-      let bonusAdd = { str: 0, dex: 0, con: 0 };
-      let bonusMul = { str: 1, dex: 1, con: 1 };
-    
-      const equippedItems = userData.inventory.filter(item => item.equipped);
-    
-      equippedItems.forEach(item => {
-        bonusAdd.str += item.str_bonus || 0;
-        bonusAdd.dex += item.dex_bonus || 0;
-        bonusAdd.con += item.con_bonus || 0;
-        bonusMul.str *= item.str_multiplier || 1;
-        bonusMul.dex *= item.dex_multiplier || 1;
-        bonusMul.con *= item.con_multiplier || 1;
-      });
-    
-      return {
-        str: Math.floor((baseStr + bonusAdd.str) * bonusMul.str),
-        dex: Math.floor((baseDex + bonusAdd.dex) * bonusMul.dex),
-        con: Math.floor((baseCon + bonusAdd.con) * bonusMul.con),
-        bonusAdd,
-        bonusMul
-      };
-    }
-    
-    function updateStatDisplay(userData) {
-      const { str, dex, con, bonusAdd, bonusMul } = getFinalStats(userData);
-    
-      document.getElementById("statStr").innerText = `${str} (+${bonusAdd.str}, x${bonusMul.str.toFixed(2)})`;
-      document.getElementById("statDex").innerText = `${dex} (+${bonusAdd.dex}, x${bonusMul.dex.toFixed(2)})`;
-      document.getElementById("statCon").innerText = `${con} (+${bonusAdd.con}, x${bonusMul.con.toFixed(2)})`;
-    }
-    
     window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("fullHealBtn").addEventListener("click", () => {
         if (!userData || !userData.maxHp) {
@@ -1574,7 +1538,7 @@
     
         renderInventory();
         renderEquipment();
-        applyFinalStats();
+        updateFinalStats(userData);
     
       } catch (e) {
         console.error(e);
@@ -1692,39 +1656,6 @@
       }
     }
 
-
-    function applyFinalStats() {
-      if (!userData) return;
-    
-      const equippedItems = getEquippedItems();
-    
-      let totalStr = userData.str;
-      let totalDex = userData.dex;
-      let totalCon = userData.con;
-    
-      equippedItems.forEach(item => {
-        totalStr += item.str_bonus || 0;
-        totalDex += item.dex_bonus || 0;
-        totalCon += item.con_bonus || 0;
-    
-        totalStr *= item.str_multiplier || 1;
-        totalDex *= item.dex_multiplier || 1;
-        totalCon *= item.con_multiplier || 1;
-      });
-    
-      totalStr = Math.floor(totalStr);
-      totalDex = Math.floor(totalDex);
-      totalCon = Math.floor(totalCon);
-    
-      document.getElementById("statStr").innerText = `${userData.str} (+${userData.totalStr - userData.str})`;
-      document.getElementById("statCon").innerText = `${userData.con} (+${userData.totalCon - userData.con})`;
-      document.getElementById("statDex").innerText = `${userData.dex} (+${userData.totalDex - userData.dex})`;
-
-      const maxHp = (Math.floor(userData.level / 3) + 1) * totalCon * 5 + 100;
-      userData.maxHp = maxHp;
-      if (userData.hp > maxHp) userData.hp = maxHp;
-    }
-
     function toggleDungeon() {
         if (!inDungeon) {
           startDungeonWorker();
@@ -1784,6 +1715,48 @@
           dungeonWorker.postMessage({ type: 'updateStage', stage: newStage });
         }
       }
+    
+    function updateFinalStats(userData) {
+      if (!userData || !userData.inventory) return;
+    
+      const baseStr = userData.str || 0;
+      const baseDex = userData.dex || 0;
+      const baseCon = userData.con || 0;
+    
+      let bonusAdd = { str: 0, dex: 0, con: 0 };
+      let bonusMul = { str: 1, dex: 1, con: 1 };
+    
+      const equippedItems = userData.inventory.filter(item => item.equipped);
+    
+      equippedItems.forEach(item => {
+        bonusAdd.str += item.str_bonus || 0;
+        bonusAdd.dex += item.dex_bonus || 0;
+        bonusAdd.con += item.con_bonus || 0;
+    
+        bonusMul.str *= item.str_multiplier || 1;
+        bonusMul.dex *= item.dex_multiplier || 1;
+        bonusMul.con *= item.con_multiplier || 1;
+      });
+    
+      const finalStr = Math.floor((baseStr + bonusAdd.str) * bonusMul.str);
+      const finalDex = Math.floor((baseDex + bonusAdd.dex) * bonusMul.dex);
+      const finalCon = Math.floor((baseCon + bonusAdd.con) * bonusMul.con);
+    
+      // userData에 최종 스탯 반영
+      userData.totalStr = finalStr;
+      userData.totalDex = finalDex;
+      userData.totalCon = finalCon;
+    
+      // 최대 체력 계산 및 현재 체력 조정
+      const maxHp = (Math.floor(userData.level / 3) + 1) * finalCon * 5 + 100;
+      userData.maxHp = maxHp;
+      if (userData.hp > maxHp) userData.hp = maxHp;
+    
+      // UI 업데이트
+      document.getElementById("statStr").innerText = `${baseStr} (+${finalStr - baseStr}, x${bonusMul.str.toFixed(2)})`;
+      document.getElementById("statDex").innerText = `${baseDex} (+${finalDex - baseDex}, x${bonusMul.dex.toFixed(2)})`;
+      document.getElementById("statCon").innerText = `${baseCon} (+${finalCon - baseCon}, x${bonusMul.con.toFixed(2)})`;
+    }
   </script>
 </body>
 </html>
