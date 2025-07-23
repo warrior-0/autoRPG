@@ -368,19 +368,39 @@ async function handleBossDefeat(uid, bossStage) {
     let droppedItem = null;
 
     if (Math.random() < dropChance) {
-      const item = await getRandomStageItem(bossStage, conn);
-      if (item) {
+      // boss_stage가 일치하는 items 중 무작위 1개 선택
+      const [rows] = await conn.query(
+        'SELECT * FROM items WHERE boss_stage = ? ORDER BY RAND() LIMIT 1',
+        [bossStage]
+      );
+
+      if (rows.length > 0) {
+        const item = rows[0]; // 드랍된 아이템 정보
         await conn.query(
-          'INSERT INTO user_inventory (uid, item_id, item_name, item_type, equipped) VALUES (?, ?, ?, ?, ?)',
-          [uid, item.id, item.name, item.type, false]
+          `INSERT INTO user_inventory 
+            (uid, item_id, item_name, item_type, str_bonus, dex_bonus, con_bonus, str_multiplier, dex_multiplier, con_multiplier, equipped) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            uid,
+            item.id,
+            item.name,
+            item.type,
+            item.str_bonus,
+            item.dex_bonus,
+            item.con_bonus,
+            item.str_multiplier,
+            item.dex_multiplier,
+            item.con_multiplier,
+            false,
+          ]
         );
-        droppedItem = item; // 드랍된 아이템 저장
+        droppedItem = item;
       }
     }
 
     await conn.commit();
 
-    return droppedItem; // 드랍된 아이템 반환 (없으면 null)
+    return droppedItem; // 드랍된 아이템 객체 반환
   } catch (error) {
     await conn.rollback();
     throw error;
