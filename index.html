@@ -440,7 +440,7 @@
         userData.statPoints += recoveredPoints;
     
         // 능력치 재계산
-        calculateTotalStats();
+        updateStatsAndDisplay();
         if (dungeonWorker) {
           dungeonWorker.postMessage({ type: 'updateUserData', userData });
         }
@@ -467,7 +467,7 @@
       userData.statPoints -= count;
     
       // ✅ 능력치 및 체력 계산을 갱신
-      calculateTotalStats();
+      updateStatsAndDisplay();
       log(`${type.toUpperCase()} 스탯이 ${count} 증가했습니다.`);
       if (dungeonWorker) {
           dungeonWorker.postMessage({ type: 'updateUserData', userData });
@@ -506,6 +506,11 @@
       // 체력도 con 기반으로 재계산
       userData.maxHp = (Math.floor(userData.level / 3) + 1) * userData.totalCon * 5 + 100;
       userData.hp = Math.min(userData.hp, userData.maxHp); // 현재 체력 조정
+    }
+
+    function updateStatsAndDisplay() {
+      calculateTotalStats();
+      updateStatDisplay(userData);
     }
     
     function checkLevelUp() {
@@ -1122,7 +1127,7 @@
       } catch (error) {
         alert("로그인 실패: " + error.message);
       }
-      updateStatDisplay(userData, equipped);
+      updateStatsAndDisplay();
     }
 
 
@@ -1400,8 +1405,6 @@
         container.appendChild(div);
       });
     }
-
-
     
     function renderEquipment() {
       for (let slot in slotNames) {
@@ -1522,6 +1525,7 @@
       document.getElementById("statDex").innerText = `${dex} (+${bonusAdd.dex}, x${bonusMul.dex.toFixed(2)})`;
       document.getElementById("statCon").innerText = `${con} (+${bonusAdd.con}, x${bonusMul.con.toFixed(2)})`;
     }
+    
     window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("fullHealBtn").addEventListener("click", () => {
         if (!userData || !userData.maxHp) {
