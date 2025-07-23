@@ -50,43 +50,111 @@ async function verifyFirebaseToken(req, res, next) {
 }
 
 // 사용자 생성 API
-app.post('/api/createUser', async (req, res) => {
-  const { uid, nickname } = req.body;
-  if (!uid || !nickname) {
-    return res.status(400).json({ error: 'uid and nickname are required' });
-  }
+async function calculateTotalStats(uid, conn) {
+  const [items] = await conn.query(
+    `SELECT str_bonus, dex_bonus, con_bonus, str_multiplier, dex_multiplier, con_multiplier
+     FROM user_inventory WHERE uid = ? AND equipped = 1`,
+    [uid]
+  );
 
+  let bonusStr = 0, bonusDex = 0, bonusCon = 0;
+  let strMultiplier = 1, dexMultiplier = 1, conMultiplier = 1;
+
+  items.forEach(item => {
+    bonusStr += item.str_bonus || 0;
+    bonusDex += item.dex_bonus || 0;
+    bonusCon += item.con_bonus || 0;
+    strMultiplier *= (1 + (item.str_multiplier || 0));
+    dexMultiplier *= (1 + (item.dex_multiplier || 0));
+    conMultiplier *= (1 + (item.con_multiplier || 0));
+  });
+
+  const [[user]] = await conn.query(`SELECT str, dex, con FROM users WHERE uid = ?`, [uid]);
+
+  const totalStr = Math.floor((user.str + bonusStr) * strMultiplier);
+  const totalDex = Math.floor((user.dex + bonusDex) * dexMultiplier);
+  const totalCon = Math.floor((user.con + bonusCon) * conMultiplier);
+
+  await conn.query(
+    `UPDATE users SET totalStr = ?, totalDex = ?, totalCon = ? WHERE uid = ?`,
+    [totalStr, totalDex, totalCon, uid]
+  );
+}
+
+// ✅ 로그인 시 사용자 정보 제공 + total스탯 적용
+app.post('/api/userdata', async (req, res) => {
+  const { uid } = req.body;
+  if (!uid) return res.status(400).json({ error: 'uid required' });
+
+  const conn = await pool.getConnection();
   try {
-    await pool.query(
+    await calculateTotalStats(uid, conn);
+
+    const [[user]] = await conn.query(`SELECT * FROM users WHERE uid = ?`, [uid]);
+    const [inventory] = await conn.query(`SELECT * FROM user_inventory WHERE uid = ?`, [uid]);
+
+    res.json({ user, inventory });
+  } catch (err) {
+    console.error('userdata error:', err);
+    res.status(500).json({ error: 'Server error' });
+  } finally {
+    conn.release();
+  }
+});
+
+// ✅ 유저 생성
+app.post('/api/create', async (req, res) => {
+  const { uid, nickname } = req.body;
+  if (!uid || !nickname) return res.status(400).json({ error: 'uid, nickname required' });
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.query(
       `INSERT INTO users 
-      (uid, nickname, gold, exp, level, hp, maxHp, str, dex, con, statPoints, potion_small, potion_medium, potion_large, potion_extralarge, potion_quarter)
-      VALUES (?, ?, 0, 0, 1, 100, 100, 0, 0, 0, 0, 3, 1, 0, 0, 0)`,
+       (uid, nickname, level, exp, hp, maxHp, str, dex, con, statPoints, totalStr, totalDex, totalCon, created_at, updated_at)
+       VALUES (?, ?, 1, 0, 100, 100, 0, 0, 0, 0, 0, 0, 0, NOW(), NOW())`,
       [uid, nickname]
     );
     res.json({ success: true });
   } catch (err) {
-    console.error('Create user error:', err);
-    res.status(500).json({ success: false, error: err.message });
+    console.error('create error:', err);
+    res.status(500).json({ error: 'Server error' });
+  } finally {
+    conn.release();
   }
 });
 
-// 유저 데이터 조회 API
-app.get('/api/userdata', async (req, res) => {
-  const uid = req.query.uid;
-  if (!uid) return res.status(400).json({ error: 'uid is required' });
+// ✅ 게임 저장
+app.post('/api/save', async (req, res) => {
+  const { uid, userInfo } = req.body;
+  if (!uid || !userInfo) return res.status(400).json({ error: 'uid, userInfo required' });
 
+  const conn = await pool.getConnection();
   try {
-    const [rows] = await pool.query('SELECT * FROM users WHERE uid = ?', [uid]);
-    if (rows.length === 0)
-      return res.status(404).json({ error: 'User not found' });
+    await conn.beginTransaction();
 
-    const user = rows[0];
-    res.json(user);
+    await conn.query(
+      `UPDATE users SET 
+        level = ?, exp = ?, hp = ?, maxHp = ?, 
+        str = ?, dex = ?, con = ?, statPoints = ?, 
+        updated_at = NOW()
+       WHERE uid = ?`,
+      [userInfo.level, userInfo.exp, userInfo.hp, userInfo.maxHp,
+       userInfo.str, userInfo.dex, userInfo.con, userInfo.statPoints, uid]
+    );
+
+    await calculateTotalStats(uid, conn);
+    await conn.commit();
+    res.json({ success: true });
   } catch (err) {
-    console.error('DB error:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
+    await conn.rollback();
+    console.error('save error:', err);
+    res.status(500).json({ error: 'Server error' });
+  } finally {
+    conn.release();
   }
 });
+
 
 // 유저 및 물약 저장 API
 app.post('/api/save-user-and-potions', async (req, res) => {
@@ -193,113 +261,6 @@ app.get('/api/ranking', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch ranking' });
-  }
-});
-
-// 데이터 저장 API (유저 정보 + 채팅 메시지 저장)
-app.post('/api/save', async (req, res) => {
-  const { uid, chatMessages, userInfo, equippedItems } = req.body;
-
-  if (!uid) return res.status(400).json({ error: 'uid is required' });
-
-  const conn = await pool.getConnection();
-
-  try {
-    await conn.beginTransaction();
-
-    if (userInfo) {
-      const {
-        nickname,
-        gold,
-        exp,
-        level,
-        hp,
-        maxHp,
-        str,
-        dex,
-        con,
-        statPoints,
-        potion_small,
-        potion_medium,
-        potion_large,
-        potion_extralarge,
-        potion_quarter,
-      } = userInfo;
-
-      const sqlUser = `
-        INSERT INTO users
-          (uid, nickname, gold, exp, level, hp, maxHp, str, dex, con, statPoints, potion_small, potion_medium, potion_large, potion_extralarge, potion_quarter)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ON DUPLICATE KEY UPDATE
-          nickname = VALUES(nickname),
-          gold = VALUES(gold),
-          exp = VALUES(exp),
-          level = VALUES(level),
-          hp = VALUES(hp),
-          maxHp = VALUES(maxHp),
-          str = VALUES(str),
-          dex = VALUES(dex),
-          con = VALUES(con),
-          statPoints = VALUES(statPoints),
-          potion_small = VALUES(potion_small),
-          potion_medium = VALUES(potion_medium),
-          potion_large = VALUES(potion_large),
-          potion_extralarge = VALUES(potion_extralarge),
-          potion_quarter = VALUES(potion_quarter)
-      `;
-
-      await conn.query(sqlUser, [
-        uid,
-        nickname,
-        gold,
-        exp,
-        level,
-        hp,
-        maxHp,
-        str,
-        dex,
-        con,
-        statPoints,
-        potion_small,
-        potion_medium,
-        potion_large,
-        potion_extralarge,
-        potion_quarter,
-      ]);
-    }
-
-    if (Array.isArray(chatMessages) && chatMessages.length > 0) {
-      const chatInsertPromises = chatMessages.map(
-        ({ message, createdAt, nickname }) =>
-          conn.query(
-            'INSERT INTO chat_messages (uid, nickname, message, created_at) VALUES (?, ?, ?, ?)',
-            [uid, nickname || '', message, createdAt ? new Date(createdAt) : new Date()]
-          )
-      );
-      await Promise.all(chatInsertPromises);
-    }
-
-    if (Array.isArray(equippedItems)) {
-      await conn.query('UPDATE user_inventory SET equipped = false WHERE uid = ?', [uid]);
-
-      for (const item of equippedItems) {
-        if (item.id) {
-          await conn.query(
-            'UPDATE user_inventory SET equipped = true WHERE uid = ? AND id = ?',
-            [uid, item.id]
-          );
-        }
-      }
-    }
-
-    await conn.commit();
-    res.json({ success: true });
-  } catch (error) {
-    await conn.rollback();
-    console.error(error);
-    res.status(500).json({ error: error.message });
-  } finally {
-    conn.release();
   }
 });
 
