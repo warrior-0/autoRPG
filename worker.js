@@ -98,9 +98,9 @@ function setupMonster() {
   monsterHit = currentStage * 7;
   monsterDef = (currentStage / 20 + 1) * currentStage;
   monsterAtk = Math.floor((currentStage / 4 + 1) * currentStage);
-  evasionRatePlayer = userData.dex / (userData.dex + monsterHit);
+  evasionRatePlayer = userData.totalDex / (userData.totalDex + monsterHit);
   monsterEvasion = currentStage - 1;
-  evasionRateMonster = monsterEvasion / (monsterEvasion + userData.dex * 5 + userData.str * 5 + 1);
+  evasionRateMonster = monsterEvasion / (monsterEvasion + userData.totalDex * 5 + userData.totalStr * 5 + 1);
 }
 
 function startBattleLoop() {
@@ -108,7 +108,7 @@ function startBattleLoop() {
     // 몬스터 -> 플레이어 공격
     if (Math.random() >= evasionRatePlayer) {
       const isCrit = Math.random() * 100 < monsterCrit;
-      const playerDef = userData.con;
+      const playerDef = userData.totalCon;
       const dmgReduction = 1 - (playerDef / (userData.level * 2 + playerDef));
       let dmg = monsterAtk;
 
@@ -131,8 +131,8 @@ function startBattleLoop() {
 
     // 플레이어 -> 몬스터 공격
     if (Math.random() >= evasionRateMonster) {
-      const playerAtk = 1 + ((userData.level / 2) + 1) * userData.str * 1.5;
-      const critStat = userData.dex * 5;
+      const playerAtk = 1 + ((userData.level / 2) + 1) * userData.totalStr * 1.5;
+      const critStat = userData.totalDex * 5;
       const critChance = (critStat / (critStat + 150)) * 100;
       const isCrit = Math.random() * 100 < critChance;
 
