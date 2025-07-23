@@ -1044,12 +1044,14 @@
         // Firebase ID 토큰 받아오기
         const idToken = await userCredential.user.getIdToken();
     
-        // MySQL API에서 유저 데이터 요청 (Authorization 헤더 포함)
-        const resUser = await fetch(`https://autorpg.onrender.com/api/userdata?uid=${uid}`, {
+        // MySQL API에서 유저 데이터 요청 (POST, Authorization 헤더 포함)
+        const resUser = await fetch(`https://autorpg.onrender.com/api/userdata`, {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + idToken,
           },
+          body: JSON.stringify({ uid }),
         });
     
         if (!resUser.ok) {
@@ -1057,11 +1059,17 @@
           return;
         }
     
-        userData = await resUser.json();
+        const dataUser = await resUser.json();
+        // userData 에 user 객체와 inventory가 같이 있음
+        userData = dataUser.user;
         userData.uid = uid;
+        userData.inventory = dataUser.inventory || [];
     
-        // 여기서 인벤토리도 불러오기
-        const resInv = await fetch(`https://autorpg.onrender.com/api/inventory?uid=${uid}`, {
+        // 인벤토리 API 호출 (GET, Authorization 헤더만 포함)
+        // 사실 /api/userdata에서 이미 inventory를 받으므로 인벤토리 따로 호출 안 해도 됨
+        // 하지만 혹시 따로 호출해야 한다면 아래 코드 참고
+        /*
+        const resInv = await fetch(`https://autorpg.onrender.com/api/inventory`, {
           headers: {
             'Authorization': 'Bearer ' + idToken,
           },
@@ -1074,6 +1082,7 @@
           const dataInv = await resInv.json();
           userData.inventory = dataInv.inventory || [];
         }
+        */
     
         // UI 처리
         document.getElementById("authUI").style.display = "none";
@@ -1090,6 +1099,7 @@
       }
       updateFinalStats(userData);
     }
+
 
 
     function getEquippedItems() {
