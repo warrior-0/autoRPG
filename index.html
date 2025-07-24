@@ -1561,6 +1561,7 @@
         const invItem = userData.inventory.find(i => i.item_id === equippedItem.item_id);
         if (invItem) {
           invItem.equipped = true;
+          updateUI();
         }
       });
     }
