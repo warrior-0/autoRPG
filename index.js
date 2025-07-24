@@ -382,7 +382,7 @@ async function handleBossDefeat(uid, bossStage) {
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             uid,
-            item.id,
+            item.item_id,
             item.name,
             item.type,
             item.str_bonus,
