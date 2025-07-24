@@ -1218,45 +1218,35 @@
     function updateBossStageDisplay() {
       document.getElementById("bossStageDisplay").innerText = currentBossStage;
     }
-    
-    // 보스 스테이지 버튼 세팅 함수
-    function setupBossStageButtons() {
-      const btnPrev = document.getElementById("bossStagePrev");
-      const btnNext = document.getElementById("bossStageNext");
-      const btnJumpPrev = document.getElementById("bossStageJumpPrev");
-      const btnJumpNext = document.getElementById("bossStageJumpNext");
-    
-      btnPrev.onclick = () => {
-        if (currentBossStage > 1) {
-          currentBossStage--;
-          updateBossStageDisplay();
-        }
-      };
-    
-      btnNext.onclick = () => {
-        if (currentBossStage < maxBossStage) {
-          currentBossStage++;
-          updateBossStageDisplay();
-        }
-      };
-    
-      btnJumpPrev.onclick = () => {
-        if (currentBossStage > 10) {
-          currentBossStage -= 10;
-        } else {
-          currentBossStage = 1;
-        }
+
+    // ✅ 보스 스테이지 버튼 설정
+    setupHoldButton("bossStagePrev", () => {
+      if (currentBossStage > 1) {
+        currentBossStage--;
         updateBossStageDisplay();
-      };
+      }
+    });
     
-      btnJumpNext.onclick = () => {
-        if (currentBossStage < maxBossStage) {
-          currentBossStage += 10;
-          if(currentBossStage > maxBossStage) currentBossStage = maxBossStage;
-        }
+    setupHoldButton("bossStageNext", () => {
+      if (currentBossStage < maxBossStage) {
+        currentBossStage++;
         updateBossStageDisplay();
-      };
-    }
+      }
+    });
+    
+    setupHoldButton("bossStageJumpPrev", () => {
+      currentBossStage = currentBossStage > 10 ? currentBossStage - 10 : 1;
+      updateBossStageDisplay();
+    });
+    
+    setupHoldButton("bossStageJumpNext", () => {
+      if (currentBossStage < maxBossStage) {
+        currentBossStage += 10;
+        if (currentBossStage > maxBossStage) currentBossStage = maxBossStage;
+        updateBossStageDisplay();
+      }
+    });
+
 
 
     //채팅 관련 코드
