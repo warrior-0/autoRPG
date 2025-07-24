@@ -422,7 +422,6 @@ app.post('/api/boss/defeat', verifyFirebaseToken, async (req, res) => {
     const droppedItem = await handleBossDefeat(uid, bossStage);
   
     const apiItem = {
-      uid: droppedItem.uid,
       item_id: droppedItem.item_id,
       item_name: droppedItem.name,
       item_type: droppedItem.type,
