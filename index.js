@@ -437,6 +437,74 @@ app.post('/api/save-equipped', async (req, res) => {
   }
 });
 
+app.post("/api/enhance", async (req, res) => {
+  const { uid, item_id } = req.body;
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // 골드 확인
+    const [[user]] = await conn.query("SELECT gold FROM users WHERE uid = ?", [uid]);
+    if (!user || user.gold < 100000000000) {
+      await conn.rollback();
+      conn.release();
+      return res.status(400).json({ message: "골드가 부족합니다." });
+    }
+
+    // 아이템 조회
+    const [[item]] = await conn.query("SELECT * FROM user_inventory WHERE uid = ? AND item_id = ?", [uid, item_id]);
+    if (!item) {
+      await conn.rollback();
+      conn.release();
+      return res.status(404).json({ message: "아이템이 없습니다." });
+    }
+
+    const enhancementLevel = item.enhancement_level || 0;
+    const successRate = 1 / (enhancementLevel + 1);
+
+    // 골드 차감 (강화 시도시 무조건 차감)
+    await conn.query("UPDATE users SET gold = gold - 100000000000 WHERE uid = ?", [uid]);
+
+    const success = Math.random() < successRate;
+
+    if (success) {
+      const newLevel = enhancementLevel + 1;
+      const baseName = item.item_name.replace(/(\d+강\s*)?/, ""); // 기존 이름에서 "n강 " 제거
+      const newName = `${newLevel}강 ${baseName}`;
+
+      // 강화 수치 2배
+      await conn.query(`
+        UPDATE user_inventory SET
+          enhancement_level = ?,
+          item_name = ?,
+          str_bonus = str_bonus * 2,
+          dex_bonus = dex_bonus * 2,
+          con_bonus = con_bonus * 2,
+          str_multiplier = str_multiplier * 2,
+          dex_multiplier = dex_multiplier * 2,
+          con_multiplier = con_multiplier * 2
+        WHERE uid = ? AND item_id = ?
+      `, [newLevel, newName, uid, item_id]);
+
+      await conn.commit();
+      res.json({ success: true, message: `${newName} 강화 성공!` });
+
+    } else {
+      // 실패 - 아이템 파괴(삭제)
+      await conn.query("DELETE FROM user_inventory WHERE uid = ? AND item_id = ?", [uid, item_id]);
+      await conn.commit();
+      res.json({ success: false, message: "강화 실패! 아이템이 파괴되었습니다." });
+    }
+  } catch (err) {
+    await conn.rollback();
+    console.error(err);
+    res.status(500).json({ message: "서버 오류" });
+  } finally {
+    conn.release();
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`서버 ${PORT}번 포트에서 실행 중`);
