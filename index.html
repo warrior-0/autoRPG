@@ -1768,7 +1768,7 @@
       }
     
       try {
-        const res = await fetch("/api/enhance", {
+        const res = await fetch("https://autorpg.onrender.com/api/enhance", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ uid: userData.uid, item_id: itemId }),
