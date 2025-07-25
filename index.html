@@ -1122,6 +1122,7 @@
         alert("로그인 실패: " + error.message);
       }
       updateFinalStats(userData);
+      populateEnhanceList(userData.inventory);
     }
 
 
