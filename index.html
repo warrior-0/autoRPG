@@ -271,10 +271,21 @@
       <div id="inventoryContainer" style="display: flex; gap: 10px; flex-wrap: wrap; border: 1px solid #ccc; padding: 10px;"></div>
     </div>
     
-    <div id="enhancePanel" style="display:none">
-      <select id="itemSelect"></select>
-      <button onclick="enhanceItem()">강화하기</button>
-      <p id="enhanceResult"></p>
+    <div id="enhanceTab" style="display:none; padding: 10px; border: 1px solid #ccc;">
+      <h2>강화</h2>
+      
+      <div style="margin-bottom: 10px;">
+        <label for="itemSelect">강화할 아이템 선택:</label><br />
+        <select id="itemSelect" style="width: 100%; padding: 5px; font-size: 1rem;">
+          <!-- JS로 옵션 채움 -->
+        </select>
+      </div>
+      
+      <button onclick="enhanceItem()" style="padding: 8px 16px; font-size: 1rem; cursor: pointer;">
+        강화하기 (1000억 골드)
+      </button>
+      
+      <p id="enhanceResult" style="margin-top: 15px; font-weight: bold; min-height: 1.5em;"></p>
     </div>
     
     <p><strong>현재 유저:</strong> <span id="nicknameDisplay"></span></p>
