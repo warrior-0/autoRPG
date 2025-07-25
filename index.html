@@ -1419,7 +1419,7 @@
         div.className = "item";
         div.innerText = `${item.item_name} [${item.equipped ? '장착됨' : '미장착'}]`;
         div.style.cursor = "pointer";
-        div.onclick = () => handleItemClick(index);
+        div.onclick = () => handleEquipItem(index);
         container.appendChild(div);
       });
     }
