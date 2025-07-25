@@ -298,28 +298,6 @@ app.get('/api/pvp/targets', async (req, res) => {
   }
 });
 
-// PVP 대상자 조회 (excludeUid 파라미터 사용)
-app.get('/api/pvpTargets', async (req, res) => {
-  const excludeUid = req.query.excludeUid;
-  if (!excludeUid)
-    return res.status(400).json({ error: 'excludeUid is required' });
-
-  try {
-    const [rows] = await pool.query(
-      `SELECT uid, nickname, level, exp, hp, maxHp
-      FROM users
-      WHERE uid != ?
-      ORDER BY level DESC, exp DESC
-      LIMIT 10`,
-      [excludeUid]
-    );
-    res.json(rows);
-  } catch (err) {
-    console.error('/api/pvpTargets error:', err);
-    res.status(500).json({ error: 'PVP 대상자 불러오기 실패' });
-  }
-});
-
 // 개별 채팅 메시지 전송 API
 app.post('/api/chat/send', async (req, res) => {
   const { uid, nickname, message } = req.body;
