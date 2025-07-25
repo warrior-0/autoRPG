@@ -484,8 +484,8 @@ app.post("/api/enhance", async (req, res) => {
           str_multiplier = str_multiplier * 2,
           dex_multiplier = dex_multiplier * 2,
           con_multiplier = con_multiplier * 2
-        WHERE uid = ? AND item_id = ?
-      `, [newLevel, newName, uid, item_id]);
+        WHERE uid = ? AND id = ?
+      `, [newLevel, newName, uid, id]);
 
       await conn.commit();
       res.json({ success: true, message: `${newName} 강화 성공!` });
