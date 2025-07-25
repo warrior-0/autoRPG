@@ -740,10 +740,13 @@
             if (result.success && result.droppedItem) {
               userData.inventory.push(result.droppedItem);
               log(`🎁 보스 전리품 획득: ${result.droppedItem.item_name}`);
+            } else {
+              log(`⚠️ 보스 전리품 획득 실패: ${result.message || '아이템이 드랍되지 않았습니다.'}`);
+            }
 
-              saveData();
-              updateUI();
-              renderInventory();
+            saveData();
+            updateUI();
+            renderInventory();
             }
           } catch (error) {
             console.error(error);
