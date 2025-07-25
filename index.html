@@ -1759,7 +1759,6 @@
       });
     }
     
-    // 강화 시도 함수
     async function enhanceItem() {
       const itemId = document.getElementById("itemSelect").value;
       if (!itemId) {
@@ -1777,17 +1776,31 @@
         const result = await res.json();
         alert(result.message);
     
-        if (result.success) {
-          // 강화 성공 시 인벤토리, UI 갱신
-          await loadUserData();  // 서버에서 최신 유저 데이터 불러오는 함수
-          updateUI();            // 화면 갱신 함수
-          populateEnhanceList(userData.inventory);
-        } else {
-          // 실패 시 아이템 파괴됨으로 인벤토리 다시 로드 및 UI 갱신
-          await loadUserData();
-          updateUI();
-          populateEnhanceList(userData.inventory);
+        // 기존 로그인 때처럼 idToken이 필요하면 전역 또는 로그인 시 저장해둔 토큰 사용
+        if (!window.idToken) {
+          console.error("idToken이 없습니다. 로그인 상태를 확인하세요.");
+          return;
         }
+    
+        const resUser = await fetch('https://autorpg.onrender.com/api/userdata', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + window.idToken,
+          },
+          body: JSON.stringify({ uid: userData.uid }),
+        });
+    
+        if (!resUser.ok) throw new Error('유저 데이터 불러오기 실패');
+    
+        const dataUser = await resUser.json();
+        userData = dataUser.user;
+        userData.uid = userData.uid;
+        userData.inventory = dataUser.inventory || [];
+    
+        updateUI();
+        populateEnhanceList(userData.inventory);
+    
       } catch (err) {
         console.error("강화 실패:", err);
         alert("강화 중 오류가 발생했습니다.");
