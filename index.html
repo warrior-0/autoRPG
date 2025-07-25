@@ -1445,11 +1445,10 @@
       const item = userData.inventory[index];
       if (!item) return;
     
-      // 상세 정보 영역 보이기
+      // 장비 상세 표시
       const detailDiv = document.getElementById("equipmentDetail");
       detailDiv.style.display = "block";
     
-      // 상세 정보 채우기
       document.getElementById("equipName").innerText = item.item_name;
       document.getElementById("equipStrBonus").innerText = item.str_bonus || 0;
       document.getElementById("equipDexBonus").innerText = item.dex_bonus || 0;
@@ -1458,29 +1457,61 @@
       document.getElementById("equipDexMultiplier").innerText = item.dex_multiplier?.toFixed(2) || 1;
       document.getElementById("equipConMultiplier").innerText = item.con_multiplier?.toFixed(2) || 1;
     
-      // 나가기 버튼 이벤트
+      // 버튼 리스너 초기화
       document.getElementById("closeDetailBtn").onclick = () => {
         detailDiv.style.display = "none";
       };
     
-      // 장착하기 버튼 이벤트
       document.getElementById("equipBtn").onclick = async () => {
         detailDiv.style.display = "none";
     
         try {
-          await equipItem(item.id); // 서버에 장착 요청 보내는 함수 (비동기)
-          await loadInventory(); // 서버에서 최신 인벤토리 로드
-          renderInventory();     // 인벤토리 UI 갱신
-          renderEquipment();     // 장착 슬롯 UI 갱신
-          updateFinalStats(userData); // 최종 스탯 갱신
-          updateUI();            // 기타 UI 업데이트
-          saveData();            // 로컬 저장
+          const slot = item.item_type;
+    
+          // 현재 그 타입에 장착된 아이템이 있다면 해제
+          const currentlyEquipped = userData.inventory.find(
+            (i) => i.item_type === slot && i.equipped && i.id !== item.id
+          );
+    
+          const equippedItems = [];
+    
+          // 새로 장착할 아이템 추가
+          equippedItems.push({ id: item.id });
+    
+          // 기존 장비가 있으면 장착 해제 포함 (== 안 보내면 서버에서 false 처리함)
+          if (currentlyEquipped) {
+            log(`기존 장비 ${currentlyEquipped.item_name} 해제됨`);
+          }
+          
+          // 서버에 저장
+          await saveEquippedItems(userData.uid, equippedItems);
+    
+          // 갱신
+          await loadInventory();
+          renderInventory();
+          renderEquipment();
+          updateFinalStats(userData);
+          saveData();
+    
         } catch (e) {
-          alert("장착 중 오류가 발생했습니다.");
           console.error(e);
+          alert("장비 장착 오류 발생");
         }
       };
     }
+
+    async function saveEquippedItems(uid, equippedItems) {
+      const res = await fetch('https://autorpg.onrender.com/api/save-equipped', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid, equippedItems })
+      });
+    
+      const data = await res.json();
+    
+      if (!data.success) throw new Error(data.error || '장착 저장 실패');
+    }
+
         
     async function reportBossDefeat(bossStage, firebaseToken) {
       try {
@@ -1576,8 +1607,9 @@
           if (item.equipped) {
             unequipItem(item.item_id);
           } else {
-            equipItem(item.item_id);
+            handleEquipItem(index); // 상세창 열기 + 장착 처리
           }
+        };
           saveData();
         };
     
@@ -1649,17 +1681,11 @@
     
         if (res.ok) {
           log(result.message || '아이템 해제 완료');
-    
-          // 서버가 해제된 장비 목록을 응답하는 경우
-          if (result.equippedItems) {
-            applyEquippedItems(result.equippedItems); // equipped 상태 반영
-          } else {
-            await loadInventory(); // 아니면 전체 인벤토리를 다시 불러옴
-          }
-    
-          updateUI();  // UI/스탯 갱신
-          saveData();  // 서버 저장
-    
+          await loadInventory();
+          renderInventory();
+          renderEquipment();
+          updateFinalStats(userData);
+          saveData();
         } else {
           alert(result.error || '아이템 해제 실패');
         }
