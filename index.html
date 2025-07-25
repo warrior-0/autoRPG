@@ -1687,9 +1687,14 @@
     
     async function unequipItem(itemId) {
       try {
+        const token = await firebase.auth().currentUser.getIdToken(); // 토큰 가져오기
+        
         const res = await fetch('https://autorpg.onrender.com/api/unequip', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token,   // 토큰 헤더 추가
+          },
           body: JSON.stringify({ uid: userData.uid, item_id: itemId }),
         });
     
@@ -1927,9 +1932,6 @@
     function closeEquipmentDetail() {
       document.getElementById("equipmentDetail").style.display = "none";
     }
-
-
-    
   </script>
 </body>
 </html>
