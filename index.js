@@ -453,7 +453,7 @@ app.post("/api/enhance", async (req, res) => {
     }
 
     // 아이템 조회
-    const [[item]] = await conn.query("SELECT * FROM user_inventory WHERE uid = ? AND item_id = ?", [uid, item_id]);
+    const [[item]] = await conn.query("SELECT * FROM user_inventory WHERE uid = ? AND id = ?", [uid, id]);
     if (!item) {
       await conn.rollback();
       conn.release();
@@ -492,7 +492,7 @@ app.post("/api/enhance", async (req, res) => {
 
     } else {
       // 실패 - 아이템 파괴(삭제)
-      await conn.query("DELETE FROM user_inventory WHERE uid = ? AND item_id = ?", [uid, item_id]);
+      await conn.query("DELETE FROM user_inventory WHERE uid = ? AND id = ?", [uid, id]);
       await conn.commit();
       res.json({ success: false, message: "강화 실패! 아이템이 파괴되었습니다." });
     }
