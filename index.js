@@ -438,7 +438,7 @@ app.post('/api/save-equipped', async (req, res) => {
 });
 
 app.post("/api/enhance", async (req, res) => {
-  const { uid, item_id } = req.body;
+  const { uid, id } = req.body;
 
   const conn = await pool.getConnection();
   try {
