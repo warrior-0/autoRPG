@@ -1441,35 +1441,47 @@
       boots: "신발"
     };
         
-    function handleItemClick(index) {
+    function handleEquipItem(index) {
       const item = userData.inventory[index];
-      const slot = item.item_type;
+      if (!item) return;
     
-      if (equipped[slot]?.item_name === item.item_name) {
-        // 해제
-        userData.inventory.push(equipped[slot]);
-        equipped[slot] = null;
-        item.equipped = false;
-        alert(`${item.item_name} 해제됨`);
-      } else {
-        // 장착
-        if (equipped[slot]) {
-          equipped[slot].equipped = false;
-          userData.inventory.push(equipped[slot]);
+      // 상세 정보 영역 보이기
+      const detailDiv = document.getElementById("equipmentDetail");
+      detailDiv.style.display = "block";
+    
+      // 상세 정보 채우기
+      document.getElementById("equipName").innerText = item.item_name;
+      document.getElementById("equipStrBonus").innerText = item.str_bonus || 0;
+      document.getElementById("equipDexBonus").innerText = item.dex_bonus || 0;
+      document.getElementById("equipConBonus").innerText = item.con_bonus || 0;
+      document.getElementById("equipStrMultiplier").innerText = item.str_multiplier?.toFixed(2) || 1;
+      document.getElementById("equipDexMultiplier").innerText = item.dex_multiplier?.toFixed(2) || 1;
+      document.getElementById("equipConMultiplier").innerText = item.con_multiplier?.toFixed(2) || 1;
+    
+      // 나가기 버튼 이벤트
+      document.getElementById("closeDetailBtn").onclick = () => {
+        detailDiv.style.display = "none";
+      };
+    
+      // 장착하기 버튼 이벤트
+      document.getElementById("equipBtn").onclick = async () => {
+        detailDiv.style.display = "none";
+    
+        try {
+          await equipItem(item.id); // 서버에 장착 요청 보내는 함수 (비동기)
+          await loadInventory(); // 서버에서 최신 인벤토리 로드
+          renderInventory();     // 인벤토리 UI 갱신
+          renderEquipment();     // 장착 슬롯 UI 갱신
+          updateFinalStats(userData); // 최종 스탯 갱신
+          updateUI();            // 기타 UI 업데이트
+          saveData();            // 로컬 저장
+        } catch (e) {
+          alert("장착 중 오류가 발생했습니다.");
+          console.error(e);
         }
-    
-        equipped[slot] = item;
-        item.equipped = true;
-        userData.inventory.splice(index, 1);
-        alert(`${item.item_name} 장착됨`);
-      }
-    
-      renderInventory();
-      renderEquipment();
-      updateFinalStats(userData);
-      saveData();
+      };
     }
-    
+        
     async function reportBossDefeat(bossStage, firebaseToken) {
       try {
         const response = await fetch('https://autorpg.onrender.com/api/boss/defeat', {
