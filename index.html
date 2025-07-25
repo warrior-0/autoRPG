@@ -1779,7 +1779,7 @@
             "Content-Type": "application/json",
             "Authorization": "Bearer " + window.idToken
           },
-          body: JSON.stringify({ uid: userData.uid, item_id: itemId }),
+          body: JSON.stringify({ uid: userData.uid, id: itemId  }),
         });
     
         const result = await res.json();
