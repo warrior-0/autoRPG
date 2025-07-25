@@ -1604,7 +1604,9 @@
     
         if (data.success) {
           log('장비가 성공적으로 장착되었습니다.');
+          loadInventory();
           updateUI();
+          saveData();
         } else {
           log(`장착 실패: ${data.error}`);
         }
