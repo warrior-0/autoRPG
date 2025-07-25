@@ -1603,14 +1603,14 @@
         const data = await res.json();
     
         if (data.success) {
-          logSystem('장비가 성공적으로 장착되었습니다.');
+          log('장비가 성공적으로 장착되었습니다.');
           updateInventoryUI(); // UI 갱신
           updateStatDisplay(); // 스탯 갱신
         } else {
-          logSystem(`장착 실패: ${data.error}`);
+          log(`장착 실패: ${data.error}`);
         }
       } catch (err) {
-        logSystem('장비 장착 중 오류 발생');
+        log('장비 장착 중 오류 발생');
         console.error(err);
       }
     }
