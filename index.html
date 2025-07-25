@@ -1441,7 +1441,7 @@
       boots: "신발"
     };
         
-    function handleEquipItem(index) {
+    async function handleEquipItem(index) {
       const item = userData.inventory[index];
       if (!item) return;
     
@@ -1453,9 +1453,9 @@
       document.getElementById("equipStrBonus").innerText = item.str_bonus || 0;
       document.getElementById("equipDexBonus").innerText = item.dex_bonus || 0;
       document.getElementById("equipConBonus").innerText = item.con_bonus || 0;
-      document.getElementById("equipStrMultiplier").innerText = item.str_multiplier?.toFixed(2) || 1;
-      document.getElementById("equipDexMultiplier").innerText = item.dex_multiplier?.toFixed(2) || 1;
-      document.getElementById("equipConMultiplier").innerText = item.con_multiplier?.toFixed(2) || 1;
+      document.getElementById("equipStrMultiplier").innerText = (item.str_multiplier || 1).toFixed(2);
+      document.getElementById("equipDexMultiplier").innerText = (item.dex_multiplier || 1).toFixed(2);
+      document.getElementById("equipConMultiplier").innerText = (item.con_multiplier || 1).toFixed(2);
     
       // 버튼 리스너 초기화
       document.getElementById("closeDetailBtn").onclick = () => {
@@ -1468,21 +1468,19 @@
         try {
           const slot = item.item_type;
     
-          // 현재 그 타입에 장착된 아이템이 있다면 해제
-          const currentlyEquipped = userData.inventory.find(
-            (i) => i.item_type === slot && i.equipped && i.id !== item.id
-          );
+          // 같은 부위 장비 해제
+          userData.inventory.forEach(i => {
+            if (i.item_type === slot) {
+              i.equipped = false;
+            }
+          });
     
-          const equippedItems = [];
+          // 선택한 아이템 장착
+          item.equipped = true;
     
-          // 새로 장착할 아이템 추가
-          equippedItems.push({ id: item.id });
+          // 현재 장착 상태인 모든 아이템 배열 (서버에 보낼 용도)
+          const equippedItems = userData.inventory.filter(i => i.equipped).map(i => ({ id: i.id }));
     
-          // 기존 장비가 있으면 장착 해제 포함 (== 안 보내면 서버에서 false 처리함)
-          if (currentlyEquipped) {
-            log(`기존 장비 ${currentlyEquipped.item_name} 해제됨`);
-          }
-          
           // 서버에 저장
           await saveEquippedItems(userData.uid, equippedItems);
     
@@ -1499,6 +1497,7 @@
         }
       };
     }
+
 
     async function saveEquippedItems(uid, equippedItems) {
       const res = await fetch('https://autorpg.onrender.com/api/save-equipped', {
