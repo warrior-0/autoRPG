@@ -441,6 +441,35 @@ app.post('/api/save-equipped', async (req, res) => {
   }
 });
 
+app.post('/api/unequip', verifyFirebaseToken, async (req, res) => {
+  const { uid } = req;
+  const { item_id } = req.body;
+
+  if (!item_id) {
+    return res.status(400).json({ error: 'item_id is required' });
+  }
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // 해당 아이템 장착 해제
+    await conn.query(
+      'UPDATE user_inventory SET equipped = false WHERE uid = ? AND item_id = ?',
+      [uid, item_id]
+    );
+
+    await conn.commit();
+    res.json({ success: true, message: '아이템이 해제되었습니다.' });
+  } catch (error) {
+    await conn.rollback();
+    console.error(error);
+    res.status(500).json({ error: '서버 오류가 발생했습니다.' });
+  } finally {
+    conn.release();
+  }
+});
+
 app.post("/api/enhance", async (req, res) => {
   const { uid, id } = req.body;
 
