@@ -514,7 +514,7 @@ function updateEnhanceChance() {
   const selectedItem = userInventory.find(item => item.item_id === selectedItemId);
   
   if (selectedItem) {
-    const tries = selectedItem.enhance_tries || 0;
+    const tries = selectedItem.enhancement_level || 0;
     const chance = 1 / (1 + tries);
     const percent = (chance * 100).toFixed(2);
     document.getElementById('enhanceChance').innerText = `강화 성공 확률: ${percent}%`;
