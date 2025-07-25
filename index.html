@@ -810,13 +810,18 @@
     
     async function startPvpBattle() {
       const targetUid = document.getElementById("pvpTargetSelect").value;
-      const res = await fetch(`https://autorpg.onrender.com/api/userdata?uid=${encodeURIComponent(targetUid)}`);
+      const res = await fetch('https://autorpg.onrender.com/api/userdata', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: targetUid }),
+      });
       if (!res.ok) {
         logPvp("상대 유저 정보를 찾을 수 없습니다.");
         return;
       }
-      const text = await res.text();
-      const enemy = JSON.parse(text);
+      const data = await res.json();
+      const enemy = data.user;
+
       logPvp(`▶️ ${enemy.nickname}님과의 대전을 시작합니다.`);
     
       // 1. 스탯 보정 (1.07배)
