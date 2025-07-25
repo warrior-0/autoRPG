@@ -441,30 +441,34 @@ app.post('/api/save-equipped', async (req, res) => {
   }
 });
 
-app.post('/api/unequip', verifyFirebaseToken, async (req, res) => {
-  const { uid } = req;
-  const { item_id } = req.body;
+app.post('/api/unequip', async (req, res) => {
+  const { uid, item_id } = req.body;
 
-  if (!item_id) {
-    return res.status(400).json({ error: 'item_id is required' });
+  if (!uid || !item_id) {
+    return res.status(400).json({ error: 'uid and item_id are required' });
   }
 
   const conn = await pool.getConnection();
   try {
-    await conn.beginTransaction();
+    const [rows] = await conn.query(
+      'SELECT * FROM user_inventory WHERE uid = ? AND item_id = ?',
+      [uid, item_id]
+    );
 
-    // 해당 아이템 장착 해제
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Item not found' });
+    }
+
+    // 장비 해제 처리
     await conn.query(
       'UPDATE user_inventory SET equipped = false WHERE uid = ? AND item_id = ?',
       [uid, item_id]
     );
 
-    await conn.commit();
-    res.json({ success: true, message: '아이템이 해제되었습니다.' });
-  } catch (error) {
-    await conn.rollback();
-    console.error(error);
-    res.status(500).json({ error: '서버 오류가 발생했습니다.' });
+    res.json({ success: true, message: 'Item unequipped' });
+  } catch (err) {
+    console.error('Error unequipping item:', err);
+    res.status(500).json({ error: err.message });
   } finally {
     conn.release();
   }
