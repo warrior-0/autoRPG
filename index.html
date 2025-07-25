@@ -1660,6 +1660,9 @@
             document.getElementById("dungeonToggleBtn").innerText = "던전 입장";
             inDungeon = false;
           }
+          if (type === 'save') {
+            saveData(userData);
+          }
         };
       }
     
