@@ -509,20 +509,6 @@ app.post("/api/enhance", async (req, res) => {
   }
 });
 
-function updateEnhanceChance() {
-  const selectedItemId = document.getElementById('itemSelect').value;
-  const selectedItem = userInventory.find(item => item.item_id === selectedItemId);
-  
-  if (selectedItem) {
-    const tries = selectedItem.enhancement_level || 0;
-    const chance = 1 / (1 + tries);
-    const percent = (chance * 100).toFixed(2);
-    document.getElementById('enhanceChance').innerText = `강화 성공 확률: ${percent}%`;
-  } else {
-    document.getElementById('enhanceChance').innerText = '강화 성공 확률: -';
-  }
-}
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`서버 ${PORT}번 포트에서 실행 중`);
