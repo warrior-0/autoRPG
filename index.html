@@ -1687,13 +1687,13 @@
     
     async function unequipItem(itemId) {
       try {
-        const token = await firebase.auth().currentUser.getIdToken(); // 토큰 가져오기
-        
+        const token = await firebase.auth().currentUser.getIdToken();
+    
         const res = await fetch('https://autorpg.onrender.com/api/unequip', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token,   // 토큰 헤더 추가
+            'Authorization': 'Bearer ' + token,
           },
           body: JSON.stringify({ uid: userData.uid, item_id: itemId }),
         });
@@ -1702,15 +1702,21 @@
     
         if (res.ok) {
           log(result.message || '아이템 해제 완료');
-          await loadInventory();
+    
+          if (result.equippedItems) {
+            applyEquippedItems(result.equippedItems);
+          } else {
+            await loadInventory();
+          }
+    
           renderInventory();
           renderEquipment();
           updateFinalStats(userData);
           saveData();
+    
         } else {
           alert(result.error || '아이템 해제 실패');
         }
-    
       } catch (e) {
         console.error(e);
         alert('서버 오류로 아이템 해제에 실패했습니다.');
