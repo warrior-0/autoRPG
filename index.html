@@ -269,18 +269,6 @@
         <div id="slot-boots">신발: 없음</div>
       </div>
       <div id="inventoryContainer" style="display: flex; gap: 10px; flex-wrap: wrap; border: 1px solid #ccc; padding: 10px;"></div>
-      <div id="equipmentDetail" style="display:none; border:1px solid #ccc; padding:10px; margin-top:10px;">
-        <h3 id="equipName"></h3>
-        <p>STR 보너스: <span id="equipStrBonus"></span></p>
-        <p>DEX 보너스: <span id="equipDexBonus"></span></p>
-        <p>CON 보너스: <span id="equipConBonus"></span></p>
-        <p>STR 배율: <span id="equipStrMultiplier"></span></p>
-        <p>DEX 배율: <span id="equipDexMultiplier"></span></p>
-        <p>CON 배율: <span id="equipConMultiplier"></span></p>
-      
-        <button id="equipBtn">장착하기</button>
-        <button id="closeDetailBtn">나가기</button>
-      </div>
     </div>
     
     <div id="enhanceTab" style="display:none; padding: 10px; border: 1px solid #ccc;">
@@ -1405,41 +1393,23 @@
       }
     });
     
-    // 기존 renderInventory 함수 수정 — 각 아이템 클릭 시 상세 표시 호출하도록 변경
     function renderInventory() {
-      const container = document.getElementById('inventoryList');
+      const container = document.getElementById("inventoryContainer");
       container.innerHTML = "";
-      userData.inventory.forEach(item => {
-        const btn = document.createElement('button');
-        const enhLevel = item.enhancement_level || 0;
-        const baseName = item.item_name.replace(/(\d+강\s*)?/, "");
-        const displayName = enhLevel > 0 ? `${enhLevel}강 ${baseName}` : baseName;
-        btn.innerText = displayName;
-        btn.onclick = () => showEquipmentDetail(item.id);
-        container.appendChild(btn);
+    
+      if (!userData.inventory || userData.inventory.length === 0) {
+        container.innerText = '인벤토리가 비어 있습니다.';
+        return;
+      }
+    
+      userData.inventory.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerText = `${item.item_name} [${item.equipped ? '장착됨' : '미장착'}]`;
+        div.style.cursor = "pointer";
+        div.onclick = () => handleItemClick(index);
+        container.appendChild(div);
       });
-    }
-
-    // 장비 상세 표시
-    function showEquipmentDetail(itemId) {
-      const item = userData.inventory.find(i => i.id === itemId);
-      if (!item) return;
-    
-      document.getElementById('equipName').innerText = item.item_name;
-      document.getElementById('equipStrBonus').innerText = item.str_bonus;
-      document.getElementById('equipDexBonus').innerText = item.dex_bonus;
-      document.getElementById('equipConBonus').innerText = item.con_bonus;
-      document.getElementById('equipStrMultiplier').innerText = item.str_multiplier;
-      document.getElementById('equipDexMultiplier').innerText = item.dex_multiplier;
-      document.getElementById('equipConMultiplier').innerText = item.con_multiplier;
-    
-      document.getElementById('equipBtn').dataset.itemId = itemId;
-      document.getElementById('equipmentDetail').style.display = 'block';
-    }
-    
-    // 상세창 닫기
-    function closeEquipmentDetail() {
-      document.getElementById('equipmentDetail').style.display = 'none';
     }
     
     function renderEquipment() {
@@ -1591,41 +1561,36 @@
       });
     }
 
-    // 장착 요청 함수 (기존 saveData, updateUI 등과 연계)
-    async function equipItem() {
-      const itemId = document.getElementById('equipBtn').dataset.itemId;
-      if (!itemId) {
-        alert("장착할 아이템이 없습니다.");
-        return;
-      }
-    
+    async function equipItem(itemId) {
       try {
         const res = await fetch('https://autorpg.onrender.com/api/equip', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + window.idToken
-          },
-          body: JSON.stringify({ uid: userData.uid, id: itemId })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uid: userData.uid, item_id: itemId }),
         });
     
         const result = await res.json();
     
-        if (result.success) {
-          alert("장착 성공!");
-          await loadInventory();
+        if (res.ok) {
+          log(result.message || '아이템 장착 완료');
+    
+          if (result.equippedItems) {
+            applyEquippedItems(result.equippedItems);
+          } else {
+            await loadInventory();
+          }
+    
           updateUI();
-          closeEquipmentDetail();
-          saveData(); // 기존 저장 함수 호출 (필요하면)
+          saveData();
+    
         } else {
-          alert("장착 실패: " + (result.message || '알 수 없는 오류'));
+          alert(result.error || '아이템 장착 실패');
         }
-      } catch (err) {
-        console.error(err);
-        alert("서버 오류가 발생했습니다.");
+      } catch (e) {
+        console.error(e);
+        alert('서버 오류로 아이템 장착에 실패했습니다.');
       }
     }
-
 
 
     function applyEquippedItems(equippedItems) {
