@@ -271,6 +271,12 @@
       <div id="inventoryContainer" style="display: flex; gap: 10px; flex-wrap: wrap; border: 1px solid #ccc; padding: 10px;"></div>
     </div>
     
+    <div id="enhancePanel" style="display:none">
+      <select id="itemSelect"></select>
+      <button onclick="enhanceItem()">강화하기</button>
+      <p id="enhanceResult"></p>
+    </div>
+    
     <p><strong>현재 유저:</strong> <span id="nicknameDisplay"></span></p>
     <p>레벨: <span id="level">1</span></p>
     <p>체력: <span id="hp">100</span> / <span id="maxHp">100</span></p>
