@@ -1586,37 +1586,32 @@
     }
 
     async function equipItem(itemId) {
+      const uid = userData.uid;
+    
+      // 인벤토리에서 장착된 장비 목록을 수집
+      const equippedItems = userData.inventory
+        .filter(item => item.id === itemId || item.equipped) // 지금 선택한 아이템 or 기존 장착된 아이템
+        .map(item => ({ id: item.id }));
+    
       try {
-        const res = await fetch('/api/save-equipped', {
+        const res = await fetch('https://autorpg.onrender.com/api/save-equipped', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            uid: userData.uid,
-            equippedItems: equippedItems
-          })
+          body: JSON.stringify({ uid, equippedItems }),
         });
-
     
-        const result = await res.json();
+        const data = await res.json();
     
-        if (res.ok) {
-          log(result.message || '아이템 장착 완료');
-    
-          if (result.equippedItems) {
-            applyEquippedItems(result.equippedItems);
-          } else {
-            await loadInventory();
-          }
-    
-          updateUI();
-          saveData();
-    
+        if (data.success) {
+          logSystem('장비가 성공적으로 장착되었습니다.');
+          updateInventoryUI(); // UI 갱신
+          updateStatDisplay(); // 스탯 갱신
         } else {
-          alert(result.error || '아이템 장착 실패');
+          logSystem(`장착 실패: ${data.error}`);
         }
-      } catch (e) {
-        console.error(e);
-        alert('서버 오류로 아이템 장착에 실패했습니다.');
+      } catch (err) {
+        logSystem('장비 장착 중 오류 발생');
+        console.error(err);
       }
     }
 
