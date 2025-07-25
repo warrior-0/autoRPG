@@ -1115,24 +1115,8 @@
       const equippedItems = getEquippedItems();
     
       try {
-        // 1) 기본 유저 정보 저장
-        const res1 = await fetch('https://autorpg.onrender.com/api/save', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            uid: userData.uid,
-            userInfo: userData,
-            equippedItems: [], // /api/save에선 무시됨
-          }),
-        });
-    
-        if (!res1.ok) {
-          const errData = await res1.json();
-          console.error('/api/save 오류:', errData.error || res1.statusText);
-        }
-    
-        // ✅ 2) 골드 + 물약 저장
-        const res2 = await fetch('https://autorpg.onrender.com/api/save-user-and-potions', {
+        // 유저 정보 + 물약 + 스탯 통합 저장
+        const resUser = await fetch('https://autorpg.onrender.com/api/save-user', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1155,13 +1139,13 @@
           }),
         });
     
-        if (!res2.ok) {
-          const errData = await res2.json();
-          console.error('/api/save-user-and-potions 오류:', errData.error || res2.statusText);
+        if (!resUser.ok) {
+          const errData = await resUser.json();
+          console.error('save-user 오류:', errData.error || resUser.statusText);
         }
     
-        // 3) 장착 아이템 저장
-        const res3 = await fetch('https://autorpg.onrender.com/api/save-equipped', {
+        // 장착 아이템 저장
+        const resEquip = await fetch('https://autorpg.onrender.com/api/save-equipped', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1170,17 +1154,16 @@
           }),
         });
     
-        if (!res3.ok) {
-          const errData = await res3.json();
-          console.error('/api/save-equipped 오류:', errData.error || res3.statusText);
+        if (!resEquip.ok) {
+          const errData = await resEquip.json();
+          console.error('save-equipped 오류:', errData.error || resEquip.statusText);
         }
     
       } catch (err) {
         console.error('saveData 요청 실패:', err);
       }
     }
-
-    
+        
     async function signOut() {
       if (inDungeon) exitDungeon();
       await firebase.auth().signOut();
