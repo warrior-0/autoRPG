@@ -1587,11 +1587,15 @@
 
     async function equipItem(itemId) {
       try {
-        const res = await fetch('https://autorpg.onrender.com/api/equip', {
+        const res = await fetch('/api/save-equipped', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ uid: userData.uid, item_id: itemId }),
+          body: JSON.stringify({
+            uid: userData.uid,
+            equippedItems: equippedItems
+          })
         });
+
     
         const result = await res.json();
     
