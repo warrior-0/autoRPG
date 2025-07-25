@@ -744,11 +744,10 @@
               log(`⚠️ 보스 전리품 획득 실패: ${result.message || '아이템이 드랍되지 않았습니다.'}`);
             }
 
-            saveData();
-            updateUI();
-            renderInventory();
-            }
-          } catch (error) {
+              saveData();
+              updateUI();
+              renderInventory();
+            } catch (error) {
             console.error(error);
             document.getElementById('bossFightResult').innerHTML = '서버 통신 실패';
           }
