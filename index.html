@@ -1839,7 +1839,10 @@
     // 인벤토리에서 강화 가능한 아이템 목록 셀렉트 박스에 세팅
     function populateEnhanceList(inventory) {
       const select = document.getElementById("itemSelect");
+      const prevSelectedId = select.value; // 기존 선택된 아이템 ID 저장
+    
       select.innerHTML = "";
+    
       inventory.forEach(item => {
         const enhLevel = item.enhancement_level || 0;
         const baseName = item.item_name.replace(/(\d+강\s*)?/, "");
@@ -1850,8 +1853,13 @@
         option.textContent = displayName;
         select.appendChild(option);
       });
-      // 첫 번째 아이템 자동 선택
-      select.selectedIndex = 0;
+    
+      // 기존에 선택하던 아이템이 여전히 존재하면 다시 선택
+      const indexToSelect = Array.from(select.options).findIndex(
+        option => option.value === prevSelectedId
+      );
+      select.selectedIndex = indexToSelect !== -1 ? indexToSelect : 0;
+    
       updateEnhanceChance();
     }
     
