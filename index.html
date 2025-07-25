@@ -1598,10 +1598,11 @@
             equipped[item.item_type] = item;
           }
         });
-    
+        
         renderInventory();
         renderEquipment();
         updateFinalStats(userData);
+        populateEnhanceList(userData.inventory);
         saveData();
     
       } catch (e) {
@@ -1658,6 +1659,7 @@
         if (data.success) {
           log('장비가 성공적으로 장착되었습니다.');
           loadInventory();
+          populateEnhanceList(userData.inventory);
           updateUI();
           saveData();
         } else {
@@ -1684,6 +1686,7 @@
         const invItem = userData.inventory.find(i => i.item_id === equippedItem.item_id);
         if (invItem) {
           invItem.equipped = true;
+          populateEnhanceList(userData.inventory);
           updateUI();
           saveData();
         }
