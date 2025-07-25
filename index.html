@@ -1907,6 +1907,8 @@
     
         updateUI();
         populateEnhanceList(userData.inventory);
+        loadInventory();
+        saveData();
     
       } catch (err) {
         console.error("강화 실패:", err);
