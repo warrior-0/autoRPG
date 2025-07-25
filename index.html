@@ -770,7 +770,7 @@
           stopBossBattle(); // 자동전투 중지
           checkLevelUp();
         }
-    
+        populateEnhanceList(userData.inventory);
         autoUsePotion();
         updateUI();
         saveData();
