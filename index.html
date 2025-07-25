@@ -763,12 +763,10 @@
 
               saveData();
               updateUI();
-              renderInventory();
             } catch (error) {
             console.error(error);
             document.getElementById('bossFightResult').innerHTML = '서버 통신 실패';
           }
-          loadInventory();
           stopBossBattle(); // 자동전투 중지
           checkLevelUp();
         }
