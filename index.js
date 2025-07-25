@@ -362,19 +362,23 @@ app.post('/api/boss/defeat', verifyFirebaseToken, async (req, res) => {
   if (!bossStage || typeof bossStage !== 'number') {
     return res.status(400).json({ error: 'bossStage is required and must be a number' });
   }
-  
+
   try {
     const droppedItem = await handleBossDefeat(uid, bossStage);
-  
+
+    if (!droppedItem) {
+      return res.json({ success: false, message: "아이템 획득에 실패했습니다." });
+    }
+
     const apiItem = {
       item_id: droppedItem.item_id,
-      item_name: droppedItem.name,
-      item_type: droppedItem.type,
-      equipped: 0
+      item_name: droppedItem.item_name,
+      item_type: droppedItem.item_type,
+      equipped: droppedItem.equipped
     };
 
-  res.json({ success: true, droppedItem: apiItem });
-    
+    res.json({ success: true, droppedItem: apiItem });
+
   } catch (err) {
     console.error('Boss defeat error:', err);
     res.status(500).json({ success: false, error: err.message });
