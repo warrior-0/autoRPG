@@ -1067,6 +1067,7 @@
     
         // Firebase ID 토큰 받아오기
         const idToken = await userCredential.user.getIdToken();
+        window.idToken = idToken;
     
         // MySQL API에서 유저 데이터 요청 (POST, Authorization 헤더 포함)
         const resUser = await fetch(`https://autorpg.onrender.com/api/userdata`, {
@@ -1766,22 +1767,25 @@
         return;
       }
     
+      if (!window.idToken) {
+        alert("로그인 상태가 아닙니다. 다시 로그인하세요.");
+        return;
+      }
+    
       try {
         const res = await fetch("https://autorpg.onrender.com/api/enhance", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + window.idToken
+          },
           body: JSON.stringify({ uid: userData.uid, item_id: itemId }),
         });
     
         const result = await res.json();
         alert(result.message);
     
-        // 기존 로그인 때처럼 idToken이 필요하면 전역 또는 로그인 시 저장해둔 토큰 사용
-        if (!window.idToken) {
-          console.error("idToken이 없습니다. 로그인 상태를 확인하세요.");
-          return;
-        }
-    
+        // 성공/실패 모두 최신 유저 데이터 불러오기
         const resUser = await fetch('https://autorpg.onrender.com/api/userdata', {
           method: 'POST',
           headers: {
