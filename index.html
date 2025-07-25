@@ -1842,6 +1842,8 @@
       select.innerHTML = "";
     
       inventory.forEach(item => {
+        if (item.equipped) return; // ✅ 장착된 아이템은 제외
+    
         const enhLevel = item.enhancement_level || 0;
         const baseName = item.item_name.replace(/(\d+강\s*)?/, "");
         const displayName = enhLevel > 0 ? `${enhLevel}강 ${baseName}` : baseName;
@@ -1852,7 +1854,7 @@
         select.appendChild(option);
       });
     
-      // 기존에 선택하던 아이템이 여전히 존재하면 다시 선택
+      // 기존 선택된 아이템이 여전히 존재하면 다시 선택
       const indexToSelect = Array.from(select.options).findIndex(
         option => option.value === prevSelectedId
       );
