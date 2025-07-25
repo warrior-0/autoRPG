@@ -1819,7 +1819,7 @@
     
     function updateEnhanceChance() {
       const selectedItemId = document.getElementById('itemSelect').value;
-      const selectedItem = userData.inventory.find(item => item.id === selectedItemId);
+      const selectedItem = userData.inventory.find(item => item.id == selectedItemId);
       
       if (selectedItem) {
         const tries = selectedItem.enhancement_level || 0;
