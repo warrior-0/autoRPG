@@ -1474,45 +1474,47 @@
     
       // 장착/해제 버튼 클릭 이벤트
       equipBtn.onclick = async () => {
-        detailDiv.style.display = "none";
+      detailDiv.style.display = "none";
     
-        try {
-          if (item.equipped) {
-            // 해제 처리
-            await unequipItem(item.id);
-          } else {
-            // 장착 처리
-            const slot = item.item_type;
+      try {
+        const slot = item.item_type;
     
-            // 같은 부위 장비 해제
-            userData.inventory.forEach(i => {
-              if (i.item_type === slot) {
-                i.equipped = false;
-              }
-            });
+        if (item.equipped) {
+          // 해제 처리: 같은 부위 장비 모두 해제
+          userData.inventory.forEach(i => {
+            if (i.item_type === slot) {
+              i.equipped = false;
+            }
+          });
+          // item.equipped = false; // 위에서 이미 해제됨
+        } else {
+          // 장착 처리: 같은 부위 장비 해제 후 선택한 아이템 장착
+          userData.inventory.forEach(i => {
+            if (i.item_type === slot) {
+              i.equipped = false;
+            }
+          });
     
-            // 선택한 아이템 장착
-            item.equipped = true;
-    
-            // 현재 장착 중인 아이템만 서버에 저장
-            const equippedItems = userData.inventory.filter(i => i.equipped).map(i => ({ id: i.id }));
-    
-            await saveEquippedItems(userData.uid, equippedItems);
-          }
-    
-          // 데이터 및 UI 갱신
-          await loadInventory();
-          renderInventory();
-          renderEquipment();
-          updateFinalStats(userData);
-          saveData();
-    
-        } catch (e) {
-          console.error(e);
-          alert("장비 장착/해제 오류 발생");
+          item.equipped = true;
         }
-      };
-    }
+    
+        const equippedItems = userData.inventory
+          .filter(i => i.equipped)
+          .map(i => ({ id: i.id }));
+    
+        await saveEquippedItems(userData.uid, equippedItems);
+    
+        await loadInventory();
+        renderInventory();
+        renderEquipment();
+        updateFinalStats(userData);
+        saveData();
+    
+      } catch (e) {
+        console.error(e);
+        alert("장비 장착/해제 오류 발생");
+      }
+    };
 
 
 
