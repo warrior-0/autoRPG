@@ -1744,13 +1744,13 @@
     
     // 인벤토리에서 강화 가능한 아이템 목록 셀렉트 박스에 세팅
     function populateEnhanceList(inventory) {
-      const select = document.getElementById("enhanceSelect");
+      const select = document.getElementById("itemSelect");
       select.innerHTML = "";
       inventory.forEach(item => {
         const enhLevel = item.enhancement_level || 0;
-        const baseName = item.item_name.replace(/(\d+강\s*)?/, ""); // "3강 철검" → "철검"
+        const baseName = item.item_name.replace(/(\d+강\s*)?/, "");
         const displayName = enhLevel > 0 ? `${enhLevel}강 ${baseName}` : baseName;
-        
+    
         const option = document.createElement("option");
         option.value = item.item_id;
         option.textContent = displayName;
