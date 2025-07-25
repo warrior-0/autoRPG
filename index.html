@@ -1604,8 +1604,7 @@
     
         if (data.success) {
           log('장비가 성공적으로 장착되었습니다.');
-          updateInventoryUI(); // UI 갱신
-          updateStatDisplay(); // 스탯 갱신
+          updateUI();
         } else {
           log(`장착 실패: ${data.error}`);
         }
