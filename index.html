@@ -1117,17 +1117,46 @@
           body: JSON.stringify({
             uid: userData.uid,
             userInfo: userData,
-            equippedItems: [], // /api/save에는 빈 배열 또는 빼도 무방
+            equippedItems: [], // /api/save에선 무시됨
           }),
         });
+    
         if (!res1.ok) {
           const errData = await res1.json();
           console.error('/api/save 오류:', errData.error || res1.statusText);
-          return;
         }
     
-        // 2) 장착 아이템 정보 별도 저장
-        const res2 = await fetch('https://autorpg.onrender.com/api/save-equipped', {
+        // ✅ 2) 골드 + 물약 저장
+        const res2 = await fetch('https://autorpg.onrender.com/api/save-user-and-potions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            uid: userData.uid,
+            nickname: userData.nickname,
+            gold: userData.gold,
+            exp: userData.exp,
+            level: userData.level,
+            hp: userData.hp,
+            maxHp: userData.maxHp,
+            str: userData.str,
+            dex: userData.dex,
+            con: userData.con,
+            statPoints: userData.statPoints,
+            potion_small: userData.potion_small,
+            potion_medium: userData.potion_medium,
+            potion_large: userData.potion_large,
+            potion_extralarge: userData.potion_extralarge,
+            potion_quarter: userData.potion_quarter,
+          }),
+        });
+    
+        if (!res2.ok) {
+          const errData = await res2.json();
+          console.error('/api/save-user-and-potions 오류:', errData.error || res2.statusText);
+        }
+    
+        // 3) 장착 아이템 저장
+        const res3 = await fetch('https://autorpg.onrender.com/api/save-equipped', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1135,15 +1164,17 @@
             equippedItems,
           }),
         });
-        if (!res2.ok) {
-          const errData = await res2.json();
-          console.error('/api/save-equipped 오류:', errData.error || res2.statusText);
-          return;
+    
+        if (!res3.ok) {
+          const errData = await res3.json();
+          console.error('/api/save-equipped 오류:', errData.error || res3.statusText);
         }
+    
       } catch (err) {
         console.error('saveData 요청 실패:', err);
       }
     }
+
     
     async function signOut() {
       if (inDungeon) exitDungeon();
