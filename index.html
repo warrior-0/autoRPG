@@ -1441,7 +1441,7 @@
       boots: "신발"
     };
         
-    async function handleEquipItem(index) {
+    function handleEquipItem(index) {
       const item = userData.inventory[index];
       if (!item) return;
     
@@ -1457,34 +1457,50 @@
       document.getElementById("equipDexMultiplier").innerText = (item.dex_multiplier || 1).toFixed(2);
       document.getElementById("equipConMultiplier").innerText = (item.con_multiplier || 1).toFixed(2);
     
-      // 버튼 리스너 초기화
-      document.getElementById("closeDetailBtn").onclick = () => {
+      const equipBtn = document.getElementById("equipBtn");
+      const detailCloseBtn = document.getElementById("closeDetailBtn");
+    
+      // 버튼 텍스트 변경 (장착 여부에 따라)
+      if (item.equipped) {
+        equipBtn.innerText = "해제하기";
+      } else {
+        equipBtn.innerText = "장착하기";
+      }
+    
+      // 나가기 버튼 이벤트
+      detailCloseBtn.onclick = () => {
         detailDiv.style.display = "none";
       };
     
-      document.getElementById("equipBtn").onclick = async () => {
+      // 장착/해제 버튼 클릭 이벤트
+      equipBtn.onclick = async () => {
         detailDiv.style.display = "none";
     
         try {
-          const slot = item.item_type;
+          if (item.equipped) {
+            // 해제 처리
+            await unequipItem(item.id);
+          } else {
+            // 장착 처리
+            const slot = item.item_type;
     
-          // 같은 부위 장비 해제
-          userData.inventory.forEach(i => {
-            if (i.item_type === slot) {
-              i.equipped = false;
-            }
-          });
+            // 같은 부위 장비 해제
+            userData.inventory.forEach(i => {
+              if (i.item_type === slot) {
+                i.equipped = false;
+              }
+            });
     
-          // 선택한 아이템 장착
-          item.equipped = true;
+            // 선택한 아이템 장착
+            item.equipped = true;
     
-          // 현재 장착 상태인 모든 아이템 배열 (서버에 보낼 용도)
-          const equippedItems = userData.inventory.filter(i => i.equipped).map(i => ({ id: i.id }));
+            // 현재 장착 중인 아이템만 서버에 저장
+            const equippedItems = userData.inventory.filter(i => i.equipped).map(i => ({ id: i.id }));
     
-          // 서버에 저장
-          await saveEquippedItems(userData.uid, equippedItems);
+            await saveEquippedItems(userData.uid, equippedItems);
+          }
     
-          // 갱신
+          // 데이터 및 UI 갱신
           await loadInventory();
           renderInventory();
           renderEquipment();
@@ -1493,10 +1509,11 @@
     
         } catch (e) {
           console.error(e);
-          alert("장비 장착 오류 발생");
+          alert("장비 장착/해제 오류 발생");
         }
       };
     }
+
 
 
     async function saveEquippedItems(uid, equippedItems) {
