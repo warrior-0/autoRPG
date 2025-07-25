@@ -1764,6 +1764,9 @@
         option.textContent = displayName;
         select.appendChild(option);
       });
+      // 첫 번째 아이템 자동 선택
+      select.selectedIndex = 0;
+      updateEnhanceChance();
     }
     
     async function enhanceItem() {
