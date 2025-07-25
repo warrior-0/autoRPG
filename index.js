@@ -124,67 +124,21 @@ app.post('/api/create', async (req, res) => {
   }
 });
 
-// ✅ 게임 저장
-app.post('/api/save', async (req, res) => {
-  const { uid, userInfo } = req.body;
-  if (!uid || !userInfo) return res.status(400).json({ error: 'uid, userInfo required' });
-
-  const conn = await pool.getConnection();
-  try {
-    await conn.beginTransaction();
-
-    await conn.query(
-      `UPDATE users SET 
-        level = ?, exp = ?, hp = ?, maxHp = ?, 
-        str = ?, dex = ?, con = ?, statPoints = ?, 
-        updated_at = NOW()
-       WHERE uid = ?`,
-      [userInfo.level, userInfo.exp, userInfo.hp, userInfo.maxHp,
-       userInfo.str, userInfo.dex, userInfo.con, userInfo.statPoints, uid]
-    );
-
-    await calculateTotalStats(uid, conn);
-    await conn.commit();
-    res.json({ success: true });
-  } catch (err) {
-    await conn.rollback();
-    console.error('save error:', err);
-    res.status(500).json({ error: 'Server error' });
-  } finally {
-    conn.release();
-  }
-});
-
-
-// 유저 및 물약 저장 API
-app.post('/api/save-user-and-potions', async (req, res) => {
+//유저 정보 저장
+app.post('/api/save-user', async (req, res) => {
   const {
-    uid,
-    nickname,
-    gold,
-    exp,
-    level,
-    hp,
-    maxHp,
-    str,
-    dex,
-    con,
-    statPoints,
-    potion_small,
-    potion_medium,
-    potion_large,
-    potion_extralarge,
-    potion_quarter,
+    uid, nickname, gold, exp, level, hp, maxHp,
+    str, dex, con, statPoints,
+    potion_small, potion_medium, potion_large, potion_extralarge, potion_quarter,
   } = req.body;
 
   const conn = await pool.getConnection();
-
   try {
     await conn.beginTransaction();
 
-    const sqlUser = `
-      INSERT INTO users
-        (uid, nickname, gold, exp, level, hp, maxHp, str, dex, con, statPoints, potion_small, potion_medium, potion_large, potion_extralarge, potion_quarter)
+    const sql = `
+      INSERT INTO users (uid, nickname, gold, exp, level, hp, maxHp, str, dex, con, statPoints,
+                         potion_small, potion_medium, potion_large, potion_extralarge, potion_quarter)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE
         nickname = VALUES(nickname),
@@ -204,35 +158,25 @@ app.post('/api/save-user-and-potions', async (req, res) => {
         potion_quarter = VALUES(potion_quarter)
     `;
 
-    await conn.query(sqlUser, [
-      uid,
-      nickname,
-      gold,
-      exp,
-      level,
-      hp,
-      maxHp,
-      str,
-      dex,
-      con,
-      statPoints,
-      potion_small,
-      potion_medium,
-      potion_large,
-      potion_extralarge,
-      potion_quarter,
+    await conn.query(sql, [
+      uid, nickname, gold, exp, level, hp, maxHp,
+      str, dex, con, statPoints,
+      potion_small, potion_medium, potion_large, potion_extralarge, potion_quarter,
     ]);
+
+    await calculateTotalStats(uid, conn);
 
     await conn.commit();
     res.json({ success: true });
   } catch (err) {
     await conn.rollback();
-    console.error('Save user and potions error:', err);
-    res.status(500).json({ success: false, error: err.message });
+    console.error('Save user error:', err);
+    res.status(500).json({ error: 'Server error' });
   } finally {
     conn.release();
   }
 });
+
 
 // 기본 사용자 정보 조회 (Firebase 토큰 필요)
 app.get('/user', verifyFirebaseToken, async (req, res) => {
