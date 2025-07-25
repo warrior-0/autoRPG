@@ -1754,7 +1754,7 @@
         const displayName = enhLevel > 0 ? `${enhLevel}강 ${baseName}` : baseName;
     
         const option = document.createElement("option");
-        option.value = item.item_id;
+        option.value = item.id;
         option.textContent = displayName;
         select.appendChild(option);
       });
