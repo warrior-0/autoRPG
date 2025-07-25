@@ -1835,6 +1835,7 @@
     
     // 인벤토리에서 강화 가능한 아이템 목록 셀렉트 박스에 세팅
     function populateEnhanceList(inventory) {
+      loadInventory();
       const select = document.getElementById("itemSelect");
       select.innerHTML = "";
       inventory.forEach(item => {
