@@ -165,6 +165,8 @@ function startBattleLoop() {
 
       postMessage({ type: "log", message: `몬스터 처치 보상 획득! 골드: ${reward * 20} 경험치: ${reward * 10}` });
       
+      postMessage({ type: "save", userData });
+      
       checkLevelUp();
 
       setupMonster(); // 다음 몬스터 재생성
@@ -178,6 +180,7 @@ function startBattleLoop() {
       userData.hp = userData.maxHp;
 
       postMessage({ type: "dead", userData, message: "던전에서 사망했습니다." });
+      postMessage({ type: "save", userData });
       clearInterval(intervalId);
     }
 
