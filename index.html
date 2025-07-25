@@ -756,6 +756,7 @@
               userData.inventory.push(result.droppedItem);
               log(`🎁 보스 전리품 획득: ${result.droppedItem.item_name}`);
               document.getElementById('bossFightResult').innerHTML = `🎁 보스 전리품 획득: ${result.droppedItem.item_name}`
+              loadInventory();
             } else {
               log(`⚠️ 보스 전리품 획득 실패: ${result.message || '아이템이 드랍되지 않았습니다.'}`);
               document.getElementById('bossFightResult').innerHTML = "⚠️ 보스 전리품 획득 실패";
