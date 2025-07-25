@@ -1486,7 +1486,6 @@
               i.equipped = false;
             }
           });
-          // item.equipped = false; // 위에서 이미 해제됨
         } else {
           // 장착 처리: 같은 부위 장비 해제 후 선택한 아이템 장착
           userData.inventory.forEach(i => {
@@ -1513,8 +1512,9 @@
       } catch (e) {
         console.error(e);
         alert("장비 장착/해제 오류 발생");
-      }
-    };
+        }
+      };
+    }
 
 
 
