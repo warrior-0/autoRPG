@@ -483,7 +483,7 @@ app.post("/api/enhance", async (req, res) => {
 
     // 골드 확인
     const [[user]] = await conn.query("SELECT gold FROM users WHERE uid = ?", [uid]);
-    if (!user || user.gold < 100000000000) {
+    if (!user || user.gold < 100000000) {
       await conn.rollback();
       conn.release();
       return res.status(400).json({ message: "골드가 부족합니다." });
@@ -501,7 +501,7 @@ app.post("/api/enhance", async (req, res) => {
     const successRate = 1 / (enhancementLevel + 1);
 
     // 골드 차감 (강화 시도시 무조건 차감)
-    await conn.query("UPDATE users SET gold = gold - 100000000000 WHERE uid = ?", [uid]);
+    await conn.query("UPDATE users SET gold = gold - 100000000 WHERE uid = ?", [uid]);
 
     const success = Math.random() < successRate;
 
