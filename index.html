@@ -1834,6 +1834,33 @@
         document.getElementById('enhanceChance').innerText = '강화 성공 확률: -';
       }
     }
+
+    function showEquipmentDetail(item) {
+      document.getElementById("equipmentDetail").style.display = "block";
+      
+      document.getElementById("equipName").innerText = item.item_name;
+      document.getElementById("equipStrBonus").innerText = item.str_bonus || 0;
+      document.getElementById("equipDexBonus").innerText = item.dex_bonus || 0;
+      document.getElementById("equipConBonus").innerText = item.con_bonus || 0;
+      
+      document.getElementById("equipStrMultiplier").innerText = (item.str_multiplier || 1).toFixed(2);
+      document.getElementById("equipDexMultiplier").innerText = (item.dex_multiplier || 1).toFixed(2);
+      document.getElementById("equipConMultiplier").innerText = (item.con_multiplier || 1).toFixed(2);
+    
+      // 장착 버튼 이벤트 등록
+      const equipBtn = document.getElementById("equipBtn");
+      equipBtn.onclick = () => {
+        equipItem(item.id);  // 장착 함수 (별도 구현 필요)
+        closeEquipmentDetail();
+      };
+    
+      // 나가기 버튼 이벤트 등록
+      document.getElementById("closeDetailBtn").onclick = closeEquipmentDetail;
+    }
+    
+    function closeEquipmentDetail() {
+      document.getElementById("equipmentDetail").style.display = "none";
+    }
   </script>
 </body>
 </html>
