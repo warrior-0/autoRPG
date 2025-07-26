@@ -103,7 +103,7 @@ app.post('/api/userdata', async (req, res) => {
 });
 
 // ✅ 유저 생성
-app.post('/api/create', async (req, res) => {
+app.post('/api/createUser', async (req, res) => {
   const { uid, nickname } = req.body;
   if (!uid || !nickname) return res.status(400).json({ error: 'uid, nickname required' });
 
