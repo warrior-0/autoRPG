@@ -1682,7 +1682,7 @@
       // 서버에서 받은 equippedItems 배열을 기준으로 장착 표시
       equippedItems.forEach(equippedItem => {
         // 서버에서 id가 아닌 item_id일 수 있으니 맞춰서 변경하세요
-        const invItem = userData.inventory.find(i => i.item_id === equippedItem.item_id);
+        const invItem = userData.inventory.find(i => i.id === equippedItem.id);
         if (invItem) {
           invItem.equipped = true;
           populateEnhanceList(userData.inventory);
