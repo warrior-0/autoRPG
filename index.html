@@ -1580,33 +1580,30 @@
     
         const data = await res.json();
     
-        if (data.success) {
-          userData.inventory = data.inventory || [];
+        userData.inventory = data.inventory || [];
     
-          // userData.equipped이 없으면 초기화
-          if (!userData.equipped) {
-            userData.equipped = {
-              weapon: null,
-              helmet: null,
-              armor: null,
-              shield: null,
-              boots: null
-            };
+        // 장착 상태 초기화
+        equipped = {
+          weapon: null,
+          helmet: null,
+          armor: null,
+          shield: null,
+          boots: null
+        };
+    
+        // inventory 내 장착된 아이템 찾아 equipped 객체에 넣기
+        userData.inventory.forEach(item => {
+          if (item.equipped) {
+            equipped[item.item_type] = item;
           }
+        });
+        
+        renderInventory();
+        renderEquipment();
+        updateFinalStats(userData);
+        populateEnhanceList(userData.inventory);
+        saveData();
     
-          // 서버에서 equipped가 true인 장비를 equipped 슬롯에 반영
-          userData.inventory.forEach(item => {
-            if (item.equipped) {
-              userData.equipped[item.item_type] = item;
-            }
-          });
-    
-          renderInventory();
-          renderEquipment();
-          updateFinalStats(userData);
-          populateEnhanceList(userData.inventory);
-          saveData();
-        }
       } catch (e) {
         console.error(e);
         log('인벤토리 불러오기에 실패했습니다.');
