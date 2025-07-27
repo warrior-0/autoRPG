@@ -442,17 +442,17 @@ app.post('/api/save-equipped', async (req, res) => {
 });
 
 app.post('/api/unequip', async (req, res) => {
-  const { uid, item_id } = req.body;
+  const { uid, id } = req.body;
 
-  if (!uid || !item_id) {
-    return res.status(400).json({ error: 'uid and item_id are required' });
+  if (!uid || !id) {
+    return res.status(400).json({ error: 'uid and id are required' });
   }
 
   const conn = await pool.getConnection();
   try {
     const [rows] = await conn.query(
-      'SELECT * FROM user_inventory WHERE uid = ? AND item_id = ?',
-      [uid, item_id]
+      'SELECT * FROM user_inventory WHERE uid = ? AND id = ?',
+      [uid, id]
     );
 
     if (rows.length === 0) {
@@ -461,8 +461,8 @@ app.post('/api/unequip', async (req, res) => {
 
     // 장비 해제 처리
     await conn.query(
-      'UPDATE user_inventory SET equipped = false WHERE uid = ? AND item_id = ?',
-      [uid, item_id]
+      'UPDATE user_inventory SET equipped = false WHERE uid = ? AND id = ?',
+      [uid, id]
     );
 
     res.json({ success: true, message: 'Item unequipped' });
