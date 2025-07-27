@@ -420,14 +420,17 @@ app.post('/api/save-equipped', async (req, res) => {
     // 1) 유저의 모든 장비 장착 해제
     await conn.query('UPDATE user_inventory SET equipped = false WHERE uid = ?', [uid]);
 
-    // 2) 전달받은 장착 아이템만 equipped = true 처리
-    for (const item of equippedItems) {
-      if (item.id) {
-        await conn.query(
-          'UPDATE user_inventory SET equipped = true WHERE uid = ? AND id = ?',
-          [uid, item.id]
-        );
-      }
+    // 2) 전달받은 장착 아이템 id 배열 생성
+    const ids = equippedItems
+      .filter(item => item && item.id != null)
+      .map(item => item.id);
+
+    // 3) ids가 있으면 한 번에 equipped = true 처리
+    if (ids.length > 0) {
+      await conn.query(
+        'UPDATE user_inventory SET equipped = true WHERE uid = ? AND id IN (?)',
+        [uid, ids]
+      );
     }
 
     await conn.commit();
