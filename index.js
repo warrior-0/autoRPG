@@ -64,9 +64,9 @@ async function calculateTotalStats(uid, conn) {
     bonusStr += item.str_bonus || 0;
     bonusDex += item.dex_bonus || 0;
     bonusCon += item.con_bonus || 0;
-    strMultiplier *= (1 + (item.str_multiplier || 0));
-    dexMultiplier *= (1 + (item.dex_multiplier || 0));
-    conMultiplier *= (1 + (item.con_multiplier || 0));
+    strMultiplier *= (1 + (item.str_multiplier || 1));
+    dexMultiplier *= (1 + (item.dex_multiplier || 1));
+    conMultiplier *= (1 + (item.con_multiplier || 1));
   });
 
   const [[user]] = await conn.query(`SELECT str, dex, con FROM users WHERE uid = ?`, [uid]);
