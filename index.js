@@ -545,68 +545,6 @@ app.post("/api/enhance", async (req, res) => {
   }
 });
 
-app.post('/api/upgrade-selected', async (req, res) => {
-  const { uid, selectedItemIds, targetLevel, breakOnFail } = req.body;
-  if (!uid || !Array.isArray(selectedItemIds) || typeof targetLevel !== 'number') {
-    return res.status(400).json({ error: '잘못된 요청입니다' });
-  }
-
-  const conn = await pool.getConnection();
-  try {
-    // 선택한 장비 가져오기
-    const [items] = await conn.query(
-      `SELECT * FROM user_inventory WHERE uid = ? AND id IN (?) AND equipped = 0`,
-      [uid, selectedItemIds]
-    );
-
-    let totalGoldUsed = 0;
-    let upgradeResults = [];
-
-    for (let item of items) {
-      let level = item.enhancement_level;
-      let success = true;
-
-      while (level < targetLevel && success) {
-        const cost = 100000000; // 강화 비용
-        const successRate = 1 / (level + 1); // 강화 확률
-
-        const [user] = await conn.query(`SELECT gold FROM users WHERE uid = ?`, [uid]);
-        if (!user.length || user[0].gold < cost) {
-          success = false;
-          break;
-        }
-
-        // 골드 차감
-        await conn.query(`UPDATE users SET gold = gold - ? WHERE uid = ?`, [cost, uid]);
-        totalGoldUsed += cost;
-
-        // 강화 시도
-        if (Math.random() < successRate) {
-          level++;
-        } else {
-          success = false;
-          if (breakOnFail) level = 0; // 실패 시 깨짐 처리
-        }
-      }
-
-      // 강화 결과 반영
-      await conn.query(`UPDATE user_inventory SET enhancement_level = ? WHERE id = ?`, [level, item.id]);
-      upgradeResults.push({ item_id: item.item_id, item_name: item.item_name, final_level: level });
-    }
-
-    res.json({
-      message: '일괄 강화 완료',
-      totalGoldUsed,
-      results: upgradeResults
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: '서버 오류' });
-  } finally {
-    conn.release();
-  }
-});
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`서버 ${PORT}번 포트에서 실행 중`);
